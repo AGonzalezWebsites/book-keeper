@@ -1,5 +1,27 @@
 const bookContainer = document.querySelector(".books");
 const titleHeader = document.querySelector('.titleTitle').addEventListener('click', () => toggleParameters.alphabeticalOrderCheck());
+const bookSearchContainer = document.querySelector('.bookSearch');
+const loader = document.createElement(`div`);
+loader.classList.add('loader');
+
+let searchTimer;
+let searchBox;
+let searching = false;
+const bookSearch = document.querySelector(`.bookSearchInput`);
+bookSearch.addEventListener("keydown", () => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout( () => {
+        if (bookSearch.searchBox) bookSearch.removeAllChildren(searchBox);
+        checkSearchInput()
+        removeBooks('.searchedBookInfo');//remove from previous search
+        if (searchBox) addLoader(searchBox);
+        if (searching) {
+            addSearchBox();
+            searchBooks();
+        }
+    }, 700)
+});
+
 
 
 
@@ -10,7 +32,7 @@ const titleHeader = document.querySelector('.titleTitle').addEventListener('clic
 
 // Fetching JSON file
 const fetchJSON = () => {
-    return fetch("./reading-list.json")
+    return fetch("./reading-list-testing.json")
         .then((res) => {
             return res.json();
         })
@@ -57,23 +79,15 @@ async function getApiData(text) {
 // JSON Fetch Above ^
 /////////////////////////////////////////////////
 
-//
 let bookList = [];
-const extractBooks = () => {
-    for (i=0; i < books.length; i++) {
-        bookList[i] = books[i];
-    }
-}
-
-//main function that pulls books
-const pullBooks = () => {
+//Pulls from JSON
+const pullBooks = (toAdd) => {
     getJsonData().then((bookList) => {
-        console.log(bookList)
-
         //toggling for alphabetical filter
-        if (toggleParameters.alphabeticalOrder.clicked) {
-            console.log(true)
-            bookList = filterAlphabetically(bookList);
+        if (toggleParameters.title.alphabeticalOrder.clicked) {
+            bookList = filterAlphabetically(bookList, title);
+        } else if (toggleParameters.author.alphabeticalOrder.clicked) {
+            bookList = filterAlphabetically(bookList, author);
         }
         //For adding and refreshing entire book list
         for (i=0; i < bookList.length; i++) {
@@ -81,15 +95,18 @@ const pullBooks = () => {
             title = bookList[i]["Title"];
             author = bookList[i]["Author "];
             kindleUnlimited = bookList[i]["Kindle Unlimited"]; 
+            rating = bookList[i]["rating"]; 
             link = bookList[i]["Link"];
+
             //replaced undefined elements with "N/A"
             title = replaceUndefined(title);
             author = replaceUndefined(author);
             kindleUnlimited = replaceUndefined(kindleUnlimited);
+            rating = replaceUndefined(rating);
             link = replaceUndefined(link);
 
-            //finals step
-            addToPage();
+            //toggle ading to page depending on condition
+            if (toAdd) addToPage();
         }
 
     }).catch((error) => {
@@ -98,15 +115,60 @@ const pullBooks = () => {
     
 }
 
-const addToPage = () => {
-    bookItem = document.createElement('div');
-    bookItem.classList.add('bookInfo');
-    
+let lastSearch;
+//Book search referencing api pull
+const searchBooks = () => {
+    let searchedList = [];
+    getApiData(bookSearch.value).then((booksSearched) => {
+        if (searching) {
+            for (i=0; i<5; i++) {
+                searchedList.push(booksSearched.docs[i])
+                title = searchedList[i].title
+                author = searchedList[i].author_name;
+                kindleUnlimited = searchedList[i]["Kindle Unlimited"]; 
+                rating = searchedList[i].ratings_average;
+                cover = `https://covers.openlibrary.org/b/id/${searchedList[i].cover_i}-M.jpg`;
+                console.log(cover)
+                link = searchedList[i]["link"];
+                //replaced undefined elements with "N/A"
+                title = replaceUndefined(title);
+                cover = replaceUndefined(cover);
+                author = replaceUndefined(author);
+                kindleUnlimited = replaceUndefined(kindleUnlimited);
+                rating = replaceUndefined(rating);
+                link = replaceUndefined(link);
+                //finals step
+                appendToSearchBox(addValuesToElements());
+                addEventListeners(tempBookItem);
+                styleSearchBox();
+            }
+            removeLoader(searchBox)
+            console.log(searchedList)
+        }
+    })
+};
+
+const checkSearchInput = () => {
+    //do nothing if same value
+    if (lastSearch === bookSearch.value) return;
+    lastSearch = bookSearch.value;
+    //remove searchBox if no value in search
+    if (bookSearch.value.length === 0) {
+        removeSearchBox();
+        removeBooks('.searchedBookInfo');
+        removeAllChildren(searchBox)
+        searching = false;
+        return;
+    } else if (bookSearch.value.length <= 2) removeAllChildren(searchBox); //do nothing search has less than 2 characters
+    searching = true;
+}
+const addValuesToElements = () => {
+    tempBookItem = document.createElement('div');    
     numberElement = document.createElement(`p`)
     numberElement.classList.add('number');
     numberElement.textContent = `${number}`;
-
-
+    
+    
     titleElement = document.createElement('p');
     titleElement.classList.add('title');
     titleElement.textContent = `${title}`;
@@ -119,71 +181,136 @@ const addToPage = () => {
     kindleUnlimitedElement.classList.add('kindleUnlimited');
     kindleUnlimitedElement.textContent = `${kindleUnlimited}`;
     
+    ratingElement = document.createElement('p');
+    ratingElement.classList.add('rating');
+    ratingElement.textContent = `${rating}`;
+    
     linkElement = document.createElement('a');
     linkElement.classList.add('link');
     linkElement.innerHTML = `${link}`;
     linkElement.href=`${link}`;
     linkElement.title="book";
-    
-    bookItem.appendChild(numberElement)
-    bookItem.appendChild(titleElement)
-    bookItem.appendChild(authorElement)
-    bookItem.appendChild(kindleUnlimitedElement)
-    bookItem.appendChild(linkElement)
-    bookContainer.appendChild(bookItem);
+
+    if (searching) {
+        coverElement = document.createElement('img');
+        coverElement.src = cover;
+        coverElement.classList.add('cover');
+
+        titleElement.textContent = `Title: ${title}`
+        authorElement.textContent = `Author: ${author}`
+        console.log(coverElement)
+    }
+}
+
+const appendToSearchBox = () => {
+    tempBookItem.classList.add('searchedBookInfo');
+    tempBookItem.appendChild(coverElement)
+    searchedTextContent = document.createElement('div');
+    searchedTextContent.appendChild(titleElement)
+    searchedTextContent.appendChild(authorElement)
+    tempBookItem.appendChild(searchedTextContent)
+    searchBox.appendChild(tempBookItem);
+}
+
+const styleSearchBox = () => {
+    searchBox.setAttribute('id', 'toggleSearchStyle'); 
+}
+
+const addSearchBox = () => {
+    if (!searchBox) {
+        searchBox = document.createElement('div');
+        searchBox.classList.add('searchResults');
+        addLoader(searchBox);
+        bookSearchContainer.appendChild(searchBox)
+    } else {
+        bookSearchContainer.appendChild(searchBox)
+    }
+}
+
+const removeSearchBox = () => {
+    searchBox.remove(searchBox);
+}
+
+const removeAllChildren = (parent) => {
+    console.log(`remomove items`)
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+const addToPage = (x) => {
+    addValuesToElements()
+    tempBookItem.classList.add('bookInfo');
+    tempBookItem.appendChild(numberElement)
+    tempBookItem.appendChild(titleElement)
+    tempBookItem.appendChild(authorElement)
+    tempBookItem.appendChild(kindleUnlimitedElement)
+    tempBookItem.appendChild(ratingElement)
+    tempBookItem.appendChild(linkElement)
+    bookContainer.appendChild(tempBookItem);
+}
+
+const addEventListeners = (element) => {
+    element.addEventListener('click', (e) => {
+        console.log(`clicked ${e.target.innerHTML}`);
+    });
+}
+
+const addLoader = (parent) => {
+    parent.appendChild(loader)
+}
+
+const removeLoader = (parent) => {
+    parent.removeChild(loader)
 }
 
 const toggleParameters = {
-    alphabeticalOrder: {
-        clicked: false, 
-        ascending: false, 
-        descending: false}, 
-        alphabeticalOrderCheck() {
-        if (!this.alphabeticalOrder.clicked) {
-            this.alphabeticalOrder.clicked = true;
-            removeBooks();
-            pullBooks();
+    title: {
+        alphabeticalOrder: {
+            ascending: false
         }
+    },
+    author: {
+        alphabeticalOrder: {
+            ascending: false
+        },
+    },
+    alphabeticalOrderCheck() {
+        if (!this.title.alphabeticalOrder.clicked) {
+        this.title.alphabeticalOrder.clicked = true;
+        removeBooks('.bookInfo');
+        pullBooks(true);
+    }
     },
 
 }
 
-//Book search referencing api pull
-const bookSearch = document.querySelector(`.bookSearch`);
-bookSearch.addEventListener("keydown", function (e){
-    if (e.code === 'Enter'){
-    getApiData(bookSearch.value).then((booksSearched) => {
-        let searchedList = [];
-        console.log(booksSearched.docs[0])
-
-        for (i=0; i<10; i++) {
-            searchedList.push(booksSearched.docs[i])
-            tempTitle = searchedList[i].title;
-            console.log(title)
-        }
-
-
-
-
-    })}
-});
 
 const filterAlphabetically = (arr) => {
-    newArr = arr.sort((a, b) => a["Title"] > b['Title'] ? 1 : -1);
-    return newArr
+    if (!toggleParameters.title.alphabeticalOrder.ascending) {
+        newArr = arr.sort((a, b) => a["Title"] > b['Title'] ? 1 : -1);
+        toggleParameters.title.alphabeticalOrder.ascending = true;
+        toggleParameters.title.alphabeticalOrder.clicked = false;
+        return newArr
+    } else if (toggleParameters.title.alphabeticalOrder.ascending) {
+        newArr = arr.sort((a, b) => b["Title"] > a['Title'] ? 1 : -1);
+        toggleParameters.title.alphabeticalOrder.ascending = false;
+        toggleParameters.title.alphabeticalOrder.clicked = false;
+        return newArr
+    }
+
 }
 
-const removeBooks = () => {
-    const nodes = document.querySelectorAll(`.bookInfo`);
-    console.log(nodes)
+const removeBooks = (x) => {
+    const nodes = document.querySelectorAll(`${x}`);
     nodes.forEach((node) => {
         node.parentElement.removeChild(node);
     });
 }
 
 const replaceUndefined = (text) => {
-    if (!text) text = `N/A`;
+    if (!text) text = `~`;
     return text
 }
-    
-pullBooks();
+//true makes it add pulled books to webpage
+pullBooks(true);
