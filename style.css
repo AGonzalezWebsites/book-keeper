@@ -121,14 +121,15 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 
 .searchedBookInfo:hover {
     cursor: pointer;
-    background: black;
-    color: white;
+    background: var(--text-100);
+    color: var(--bg-100);
 }
 
 .searchedBookInfo img {
     aspect-ratio: 1 / 1.5;
     width: 50px;
     height: auto;
+    background: silver;
 }
 
 .searchedBookInfo p {

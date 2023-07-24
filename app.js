@@ -23,34 +23,31 @@ bookSearch.addEventListener("keydown", () => {
 });
 
 
-
-
-
 ///////////////////////////////////////////////////
 // Document Selectors Above
 /////////////////////////////////////////////////
 
 // Fetching JSON file
-const fetchJSON = () => {
-    return fetch("./reading-list-testing.json")
-        .then((res) => {
-            return res.json();
-        })
-        .then((data) => {
-            return data;
-        });
-}
+// const fetchJSON = () => {
+//     return fetch("./reading-list-testing.json")
+//         .then((res) => {
+//             return res.json();
+//         })
+//         .then((data) => {
+//             return data;
+//         });
+// }
 
-async function getJsonData() {
-    try {
-        const fetched = await fetchJSON();
-        const bookList = fetched["Books interested in Reading "];
-        return bookList; // Returning the specific data wanted
-    } catch (error) {
-        console.error("Error while fetching data:", error);
-        throw error;
-    }
-}
+// async function getJsonData() {
+//     try {
+//         const fetched = await fetchJSON();
+//         const bookList = fetched["Books interested in Reading "];
+//         return bookList; // Returning the specific data wanted
+//     } catch (error) {
+//         console.error("Error while fetching data:", error);
+//         throw error;
+//     }
+// }
 
 
 //Fetching from Books API
@@ -79,41 +76,41 @@ async function getApiData(text) {
 // JSON Fetch Above ^
 /////////////////////////////////////////////////
 
-let bookList = [];
-//Pulls from JSON
-const pullBooks = (toAdd) => {
-    getJsonData().then((bookList) => {
-        //toggling for alphabetical filter
-        if (toggleParameters.title.alphabeticalOrder.clicked) {
-            bookList = filterAlphabetically(bookList, title);
-        } else if (toggleParameters.author.alphabeticalOrder.clicked) {
-            bookList = filterAlphabetically(bookList, author);
-        }
-        //For adding and refreshing entire book list
-        for (i=0; i < bookList.length; i++) {
-            number = i + 1;
-            title = bookList[i]["Title"];
-            author = bookList[i]["Author "];
-            kindleUnlimited = bookList[i]["Kindle Unlimited"]; 
-            rating = bookList[i]["rating"]; 
-            link = bookList[i]["Link"];
+// let bookList = [];
+// //Pulls from JSON
+// const pullBooks = (toAdd) => {
+//     getJsonData().then((bookList) => {
+//         //toggling for alphabetical filter
+//         if (toggleParameters.title.alphabeticalOrder.clicked) {
+//             bookList = filterAlphabetically(bookList, title);
+//         } else if (toggleParameters.author.alphabeticalOrder.clicked) {
+//             bookList = filterAlphabetically(bookList, author);
+//         }
+//         //For adding and refreshing entire book list
+//         for (i=0; i < bookList.length; i++) {
+//             number = i + 1;
+//             title = bookList[i]["Title"];
+//             author = bookList[i]["Author "];
+//             kindleUnlimited = bookList[i]["Kindle Unlimited"]; 
+//             rating = bookList[i]["rating"]; 
+//             link = bookList[i]["Link"];
 
-            //replaced undefined elements with "N/A"
-            title = replaceUndefined(title);
-            author = replaceUndefined(author);
-            kindleUnlimited = replaceUndefined(kindleUnlimited);
-            rating = replaceUndefined(rating);
-            link = replaceUndefined(link);
+//             //replaced undefined elements with "N/A"
+//             title = replaceUndefined(title);
+//             author = replaceUndefined(author);
+//             kindleUnlimited = replaceUndefined(kindleUnlimited);
+//             rating = replaceUndefined(rating);
+//             link = replaceUndefined(link);
 
-            //toggle ading to page depending on condition
-            if (toAdd) addToPage();
-        }
+//             //toggle ading to page depending on condition
+//             if (toAdd) addToPage();
+//         }
 
-    }).catch((error) => {
-        console.error("Error in getJsonData:", error);
-    });
+//     }).catch((error) => {
+//         console.error("Error in getJsonData:", error);
+//     });
     
-}
+// }
 
 let lastSearch;
 //Book search referencing api pull
@@ -143,10 +140,58 @@ const searchBooks = () => {
                 styleSearchBox();
             }
             removeLoader(searchBox)
-            console.log(searchedList)
         }
+        addToObject(searchedList) //send full searched list to function
     })
 };
+
+
+//Object that stores book data from search
+//filter
+const searchedBooks = {}
+searchedBooks.books = {}
+const addToObject = (info) => {
+    console.log(info)
+    for (let i = 0; i < info.length; i++) {
+        const bookKeysToArray = []; // Create a new array for each book key value pair
+        bookKeysToArray.push(toArray("title", info[i].title, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("author", info[i][`author_name`], bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("yearPublished", info[i].first_publish_year, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("subject", info[i].subject, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("pages", info[i].number_of_pages_median, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("rating", info[i].ratings_average, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("ratingCount", info[i].ratings_count, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("cover", `https://covers.openlibrary.org/b/id/${info[i].cover_i}-M.jpg`, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("amazonID", info[i].id_amazon, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("goodReadsID", info[i].id_goodreads, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("wikiID", info[i].id_wikidata, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("seed", info[i].seed, bookKeysToArray, i)) // creates both key and value and pushed into array
+        bookKeysToArray.push(toArray("key", info[i].key, bookKeysToArray, i)) // creates both key and value and pushed into array
+        searchedBooks.books[i] = Object.fromEntries(bookKeysToArray);
+    }
+    
+    console.log(searchedBooks);
+};
+
+const toArray = (a, b, array, i) => {
+    array = []
+    array.push(a);
+    array.push(b);
+    return array
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const checkSearchInput = () => {
     //do nothing if same value
