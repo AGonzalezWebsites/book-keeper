@@ -5,21 +5,122 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 :root {
     --container-borders: 5px;
     --header-font: Inspiration;
+    --book-border-radius-top: 10px 10px 0 0;
+    --book-border-radius-botom: 0 0 10px 10px;
+    --book-border-radius: 10px;
+    
+        
+    /* --primary-100:#0077C2;
+    --primary-200:#59a5f5;
+    --primary-300:#c8ffff;
+    --accent-100:#00BFFF;
+    --accent-200:#00619a;
+    --text-100:#333333;
+    --text-200:#5c5c5c;
+    --bg-100:#FFFFFF;
+    --bg-200:#f5f5f5;
+    --bg-300:#cccccc; */
+
+    /* --primary-100:#1e295a;
+    --primary-200:#4c5187;
+    --primary-300:#abacea;
+    --accent-100:#F18F01;
+    --accent-200:#833500;
+    --text-100:#353535;
+    --text-200:#5f5f5f;
+    --bg-100:#F5ECD7;
+    --bg-200:#ebe2cd;
+    --bg-300:#c2baa6; */
+
+    /* --primary-100:#0085ff;
+    --primary-200:#69b4ff;
+    --primary-300:#e0ffff;
+    --accent-100:#006fff;
+    --accent-200:#e1ffff;
+    --text-100:#9e9e9e;
+    --text-200:#FFFFFF;
+    --bg-100:#1E1E1E;
+    --bg-200:#2d2d2d;
+    --bg-300:#454545; */
+
+    /* --primary-100:#8B5A2B;
+    --primary-200:#be8756;
+    --primary-300:#ffe9b3;
+    --accent-100:#FFEBCD;
+    --accent-200:#9a896e;
+    --text-100:#000000;
+    --text-200:#5f5f5f;
+    --bg-100:#F5F5DC;
+    --bg-200:#ebebd2;
+    --bg-300:#c2c2aa; */
 
 
-    --primary-100:#DDDDDD;
-    --primary-200:#EEEEEE;
-    --primary-300:#fdf6fd;
-    --accent-100:#bc6c25;
-    --accent-200:#ecd79b;
-    --text-100:#292524;
-    --text-200:#78716c;
-    --bg-100:#DDDDDD;
-    --bg-200:#EEEEEE;
-    --bg-100-darker:#cfcfcf;
-    --bg-200-darker:#e9e9e9;
-    --bg-300:#d1d1d1;   
+    /* BEST ONE
+    --primary-100:#C7B299; 
+    --primary-200:#a9957d;
+    --primary-300:#675640;
+    --accent-100:#A68B5B;
+    --accent-200:#483507;
+    --text-100:#4D4D4D;
+    --text-200:#797979;
+    --bg-100:#F5EFE7;
+    --bg-200:#ebe5dd;
+    --bg-300:#c2bdb5; */
+
+    /* MIDNIGHT
+    --primary-100:#FFFFFF;
+    --primary-200:#e0e0e0;
+    --primary-300:#9b9b9b;
+    --accent-100:#7F7F7F;
+    --accent-200:#ffffff;
+    --text-100:#FFFFFF;
+    --text-200:#777777;
+    --bg-100:#000000;
+    --bg-200:#161616;
+    --bg-300:#2c2c2c;
+       */
       
+    /* --primary-100:#8B6B61;
+    --primary-200:#bc998e;
+    --primary-300:#fffdf1;
+    --accent-100:#F2A900;
+    --accent-200:#854e00;
+    --text-100:#4D4D4D;
+    --text-200:#797979;
+    --bg-100:#F5ECD7;
+    --bg-200:#ebe2cd;
+    --bg-300:#c2baa6; */
+
+    /* GOOD 
+    --primary-100:#2C3E50;
+    --primary-200:#57687c;
+    --primary-300:#b4c7dd;
+    --accent-100:#F7CAC9;
+    --accent-200:#926b6a;
+    --text-100:#333333;
+    --text-200:#5c5c5c;
+    --bg-100:#F2F2F2;
+    --bg-200:#e8e8e8;
+    --bg-300:#bfbfbf; */
+      
+      
+    --primary-100:#BFAE9F;
+    --primary-200:#937962;
+    --primary-300:#FFFFFF;
+    --accent-100:#C9BEB9;
+    --accent-200:#978178;
+    --text-100:#4D4D4D;
+    --text-200:#9e9e9e;
+    --bg-100:#F5EFE8;
+    --bg-200:#EEE3D7;
+    --bg-300:#FFFFFF;
+      
+      
+      
+      
+      
+      
+
 }
 
 body {
@@ -33,14 +134,14 @@ body {
     height: auto;
     width: 100%;
     color: var(--text-100);
-    background: var(--bg-100-darker);
+    background-image: -webkit-linear-gradient(var(--primary-100), var(--primary-200));
 }
 
 .navBar h1 {
     display: flex;
     align-items: center;
     padding: 0 20px;
-    background: var(--bg-100-d);
+    background: var(--bg-100);
     border: 4px solid var(--text-100);
     border-radius: 91% 9% 89% 11% / 18% 77% 23% 82%;
     font-size: 4rem;
@@ -62,25 +163,11 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     position: relative;
 }
 
-.loader {
-    align-self: center;
-    border: 5px solid var(--bg-100); /* Light grey */
-    border-top: 5px solid var(--text-100); /* Blue */
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin .5s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
 .navBar .bookSearch input {
     display: flex;
     align-items: center;
     border: 4px solid var(--text-100);
+    color: var(--text-100);
     border-radius: 100% 9% 100% 9% / 8% 77% 8% 77%;
     background: var(--bg-100);
     font-family: Tangerine;
@@ -106,7 +193,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     z-index: 1;
     transition: .5s;
     opacity: 0;
-    border: 4px solid var(--text-100);
+    border: 4px solid var(--bg-300);
 }
 
 .searchedBookInfo {
@@ -116,28 +203,54 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     justify-content: flex-start;
     align-items: flex-end;
     margin: 5px 0;
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid var(--bg-300);
 }
+
+.loader {
+    align-self: center;
+    border: 5px solid var(--bg-100); /* Light grey */
+    border-top: 5px solid var(--bg-300); /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin .5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
 .searchedBookInfo:hover {
     cursor: pointer;
-    background: var(--text-100);
-    color: var(--bg-100);
+    background: var(--bg-300);
+    color: var(--text-200);
+}
+
+.searchedBookInfo .coverContainer {
+    aspect-ratio: 1 / 1.5;
+    width: 50px;
+    min-width: 50px;
 }
 
 .searchedBookInfo img {
     aspect-ratio: 1 / 1.5;
-    width: 50px;
+    width: 100%;
     height: auto;
     background: silver;
 }
 
-.searchedBookInfo p {
+.searchedBookInfo .titleAndAuthor {
+    margin: 0 4px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    margin: 0 2px;
+}
+
+.searchedBookInfo p {
     font-size: 1.5rem;
+    color: var(--text-100);
+
 }
 
 #toggleSearchStyle {
@@ -146,17 +259,86 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     top: 50px;
 }
 
+/* NAVBAR AND SEARCH DONE */
+
 .books {
+    flex: 1 1 60vw;
     transition: .5s;
+    min-width: 700px;
+    margin: 2vw;
+    border-radius: var(--book-border-radius)
 }
 
-.bookListHeader {
+.books:nth-child(1n + 1) {
+    color: var(--text-100);
+
+}
+
+.bookListContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    margin: 2vw;
+    flex-wrap: wrap;
+}
+
+.filterBox {
+    display: flex;
+    position: sticky;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    flex: 1 3 8vw;
+    margin: 2vw;
+    background-color: var(--bg-200);
+    min-width: 200px;
+    max-height: 400px;
+    border-radius: var(--book-border-radius);
+}
+
+.filterHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.filterBox h1 {
+    margin: 5px;
+    flex-wrap: wrap;
+    color: var(--text-100)
+}
+
+.toggleHeightSmall {
+    padding-right: 400px !important;
+    margin-right: 600px !important;
+    opacity: 0;
+}
+
+.toggleHeightNormal {
+    padding-right: 0 !important;
+    transition: .5s !important;
+    opacity: 1;
+}
+
+
+.books div:last-child {
+    border-radius: var(--book-border-radius-botom)
+}
+
+.books div:first-child {
+    border-radius: var(--book-border-radius-top)
+}
+
+.bookListHeader, .filterHeader {
     position: sticky;
     top: 0;
-    background-image: -webkit-linear-gradient(var(--text-200), var(--text-100));
+    height: 35px;
+    background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200));
     font-size: 1.6rem;
     color: var(--bg-100);
     margin: 0;
+    border-radius: var(--book-border-radius-top)
 }
 
 .bookListHeader p:first-child, .bookInfo p:first-child {
@@ -170,19 +352,36 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 .bookListHeader, .bookInfo {
     display: flex;
     justify-content: space-evenly;
+    align-items: center;
     width: 100%;
     flex: 1;
-    padding: 5px;
-    border-bottom: 2px solid var(--text-100);
+    padding: 5px 0;
+    border-bottom: 2px solid var(--primary-200);
+
 }
 
-.titleTitle, .authorTitle, .kindleTitle, .linkTitle, .numberTitle, .ratingTitle {
-    display: flex;
+.numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
     flex: 1;
+    margin: 0 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.titleTitle {
-    flex: 1.3 1 0%;
+.numberTitle, .bookInfo p:first-child {
+    flex: 1;
+    max-width: 30px;
+}
+
+.titleTitle, .title {
+    flex: 3 1 25px !important;
+    max-width: 400px;
+}
+
+.coverTitle, .bookInfo img {
+    max-width: 40px;
+    min-width: 40px;
+    margin-right: 3vw;
 }
 
 .titleTitle:hover {
@@ -190,50 +389,36 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     color: silver;
 }
 
+.ratingTitle, .ratings_average {
+    max-width: 50px;
+}
+
+
+.subjectTitle, .subject {
+    flex: 2 1 25px !important;
+    max-width: 350px;
+}
+
 .bookInfo {
+    display: flex;
     background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     color: var(--text-100);
     margin: var(--container-margins)
 }
-
-.bookInfo:nth-child(2n + 1) {
+.bookInfo:nth-child(2n + 2) {
     background-image: -webkit-linear-gradient(var(--bg-100-darker), var(--bg-200-darker));
 }
 
-.title, .author, .kindleUnlimited, .link, .number, .rating {
+.bookInfo a {
     display: flex;
-    flex: 1;
-}
-
-.title {
-    flex: 1.3 1 0%;
-}
-
-.number {
-    max-width: 55px;
-}
-
-.numberTitle {
-    max-width: 55px;
-}
-
-.link {
-    display: flex;
-    flex: 0 1 150px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     text-decoration: none;
     color: var(--text-100);
     font-style: italic;
 }
 
-.link:hover {
-    color: silver;
-}
-
-.linkTitle {
-    display: flex;
-    flex: 0 1 150px;
+.bookInfo img {
+    aspect-ratio: 1 / 1.5;
+    height: auto;
+    background: silver;
 }

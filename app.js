@@ -1,5 +1,10 @@
 const bookContainer = document.querySelector(".books");
-const titleHeader = document.querySelector('.titleTitle').addEventListener('click', () => toggleParameters.alphabeticalOrderCheck());
+const titleHeader = document.querySelector('.titleTitle').addEventListener('click', () => {
+    newList = {}
+    newList = bookList.toggleParameters.filterAlphabetically();
+    console.log(newList)
+});
+
 const bookSearchContainer = document.querySelector('.bookSearch');
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
@@ -11,7 +16,7 @@ const bookSearch = document.querySelector(`.bookSearchInput`);
 bookSearch.addEventListener("keydown", () => {
     clearTimeout(searchTimer)
     searchTimer = setTimeout( () => {
-        if (bookSearch.searchBox) bookSearch.removeAllChildren(searchBox);
+        if (bookSearch.nextElementSibling) removeAllChildren(searchBox);
         checkSearchInput()
         removeBooks('.searchedBookInfo');//remove from previous search
         if (searchBox) addLoader(searchBox);
@@ -21,6 +26,316 @@ bookSearch.addEventListener("keydown", () => {
         }
     }, 700)
 });
+
+
+//Fetching from Books API
+const fetchBooksAPI = (text) => {
+    return fetch(`https://openlibrary.org/search.json?q=${text}`)
+        .then((res) => {
+            return res.json();
+        })
+        .then((data) => {
+            return data;
+        });
+}
+
+async function getApiData(text) {
+    try {
+        const fetched = await fetchBooksAPI(text);
+        return fetched; // Returning the specific data wanted
+    } catch (error) {
+        console.error("Error while fetching data:", error);
+        throw error;
+    }
+}
+
+const checkSearchInput = () => {
+    //do nothing if same value
+    if (lastSearch === bookSearch.value) return;
+    lastSearch = bookSearch.value;
+    //remove searchBox if no value in search
+    if (bookSearch.value.length === 0) {
+        removeSearchBox();
+        removeBooks('.searchedBookInfo');
+        removeAllChildren(searchBox)
+        searching = false;
+        return;
+    } else if (bookSearch.value.length <= 2) removeAllChildren(searchBox); //do nothing search has less than 2 characters
+    searching = true;
+}
+
+let lastSearch;
+//Book search referencing api pull
+const searchedBooks = {};
+const searchBooks = () => {
+    let searchedList = [];
+    getApiData(bookSearch.value).then((booksSearched) => {
+        if (searching) {
+            for (i=0; i<5; i++) {
+                searchedList.push(booksSearched.docs[i])
+            }
+        }
+        styleSearchBox();
+        removeLoader(searchBox)
+        
+        addToObject(searchedBooks, searchedList) //send full searched list to function
+        appendToSearchBox(addValuesToElements(searchedBooks, `cover_i`, `title`, `author_name`));
+    })
+};
+
+//adding book data to object of books
+const addToObject = (object, bookSelected) => {
+    if (object === searchedBooks) object.books = {};
+    if (Array.isArray(bookSelected)) {
+        for (const book of bookSelected) {
+            const bookKeysToArray = []; // Create a new array for each book key value pair
+            bookKeysToArray.push(toArray("cover_i", book.cover_i, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("title", book.title, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("author_name", book[`author_name`], bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("first_publish_year", book.first_publish_year, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("number_of_pages_median", book.number_of_pages_median, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("ratings_average", book.ratings_average, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("ratings_count", book.ratings_count, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("subject", book.subject, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("id_amazon", `${book.id_amazon}`, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("id_goodreads", book.id_goodreads, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("wikid_wikidataiID", book.id_wikidata, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("seed", book.seed, bookKeysToArray, i)) // creates both key and value and pushed into array
+            bookKeysToArray.push(toArray("key", book.key, bookKeysToArray, i)) // creates both key and value and pushed into array
+            object.books[book.key] = Object.fromEntries(bookKeysToArray);
+        }
+    } else alert(`Could not add, invalid selection`)
+};
+
+const toArray = (a, b, array, i) => {
+    array = []
+    array.push(a);
+    array.push(b);
+    return array
+}
+
+
+const addValuesToElements = (object, ...keys) => {
+    console.log(object)
+    console.log(keys)
+    tempBookItem = document.createElement('div');  
+    tempBooks = Object.keys(object.books);
+    let combinedTempElements = [];
+    let allElements = [];
+    tempBooks.forEach((id) => {
+        if (id){
+            tempBook = Object.keys(object.books[id]);
+            combinedTempElements = []; //resetting so each iteration is fresh to append to allElements
+            tempBook.forEach((key) => {
+                for (i = 0 ; i < keys.length; i++) { //iterate through ...keys to match the key in each book entry
+                    console.log(keys[i])
+                    if (keys[i] === key) {
+                    tempSelection = object.books[id][key] //tempSelection points to book object
+                    if (Array.isArray(tempSelection)) tempSelection = tempSelection.join()
+                    if (key === `cover_i`) {
+                        tempElement = document.createElement('img');
+                        tempElement.src = `https://covers.openlibrary.org/b/id/${tempSelection}-M.jpg`;
+                        tempElement.setAttribute(`id`, `${id}`);
+                        tempElement.classList.add(`${key}`);
+                    } else if (key[0] === `i` && key[1] === 'd') {
+                        tempElement = document.createElement('a');
+                        tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
+                        tempElement.target = `#`;
+                        tempElement.setAttribute(`id`, `${id}`);
+                        tempElement.classList.add(`${key}`);
+                    } else if (key === `ratings_average`) {
+                        tempSelection = reduceDecimal(tempSelection);
+                        console.log(tempSelection);
+                        tempElement = document.createElement('p');
+                        tempElement.setAttribute(`id`, `${id}`);
+                        tempElement.textContent = `${tempSelection}`;
+                        tempElement.classList.add(`${key}`);
+                    } 
+                    else {
+                        tempElement = document.createElement('p');
+                        tempElement.setAttribute(`id`, `${id}`);
+                        tempElement.textContent = `${tempSelection}`;
+                        tempElement.classList.add(`${key}`);
+                    }
+                    console.log(tempElement)
+                    combinedTempElements.push(tempElement) //add all elements for this iteration
+                }
+            }
+        })};
+        allElements.push(combinedTempElements) //Array with book elements seperated by each book
+    }) 
+    return allElements
+}
+
+//iterate through allElements (an array) and append them to page
+const addToPage = (...object) => {
+    removeAllClass(`bookInfo`)
+    bookNumber = 0;
+    objectCount = Object.keys(object[0].books)
+    objectCount = objectCount.length
+    for (i = 0; i < objectCount; i++) { //iterate through each book object
+        allElements = addValuesToElements(object[i], `cover_i`, `title`, `author_name`, `ratings_average`, `subject`)
+        for (const elem of allElements) {
+            bookListNumber = document.createElement(`p`)
+            bookListNumber.textContent = `${(bookNumber + 1)}`;
+            tempBookItem = document.createElement(`div`)
+            tempBookItem.classList.add('bookInfo');
+            tempBookItem.appendChild(bookListNumber)
+            for (const el of elem) {
+                console.log(el)
+                tempBookItem.appendChild(el)
+                tempBookItem.appendChild(el)
+            }
+            bookContainer.appendChild(tempBookItem);
+            toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`)
+            bookNumber++
+        }
+    }
+}
+
+let coverDiv;
+let titleAndAuthorDiv
+const appendToSearchBox = (...elements) => {
+    tempBookItem.classList.add(`searchedBookInfo`);
+    for (i = 0; i < elements[0].length; i++) {
+        tempBookItem = document.createElement('div');
+        tempBookItem.classList.add('searchedBookInfo')
+        tempElement = elements[0][i];
+        tempID = tempElement[0].getAttribute('id') //identifier of the first element in the group which points to book object
+        tempBookItem.setAttribute(`id`, `${tempID}`);
+        titleAndAuthorDiv = document.createElement('div') //container for title and author outside of loop
+        titleAndAuthorDiv.classList.add('titleAndAuthor')
+        for (j = 0; j < tempElement.length; j++) { //each element appended to div container here
+            if (tempElement[j].tagName === `IMG`) {
+                // searchedTextContent = document.createElement('div');
+                coverDiv = document.createElement('div')
+                coverDiv.classList.add('coverContainer')
+                coverDiv.appendChild(tempElement[j])
+            }
+            if (tempElement[j].tagName === `P`) {
+                // searchedTextContent = document.createElement('div');
+                titleAndAuthorDiv.appendChild(tempElement[j])
+            }
+            if (tempBookItem) tempBookItem.appendChild(coverDiv);
+            if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
+        }
+        addEventToAddToObject(tempBookItem);
+        searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
+    }
+}
+
+const bookList = {};
+bookList.books = [];
+
+bookList.toggleParameters = {
+    title: {
+        alphabeticalOrder: {
+            ascending: false}},
+    author: {
+        alphabeticalOrder: {
+            ascending: false},
+        },
+        filterAlphabetically() {
+                return bookList.books.sort((a,b) => a['cover_i'] - b['cover_i'])
+        },
+}
+
+        
+        // addToObject(bookList, tempBook) //NOT WORKING.. SOME KEYS ARE UNDEFINED
+        // addToPage(bookList)
+
+
+const addEventToAddToObject = (...element) => {
+    element[0].addEventListener('click', (e) => {
+        tempBook = pullBookFromObject(searchedBooks, e.target.id);
+        addToObject(bookList, tempBook)
+        addToPage(bookList)
+    });
+}
+
+const styleSearchBox = () => {
+    searchBox.setAttribute('id', 'toggleSearchStyle'); 
+}
+
+const addSearchBox = () => {
+    if (!searchBox) {
+        searchBox = document.createElement('div');
+        searchBox.classList.add('searchResults');
+        addLoader(searchBox);
+        bookSearchContainer.appendChild(searchBox)
+    } else {
+        bookSearchContainer.appendChild(searchBox)
+    }
+}
+
+const removeSearchBox = () => {
+    searchBox.remove(searchBox);
+}
+
+const removeAllChildren = (parent) => {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
+
+const removeAllClass = (clss) => {
+    console.log(`removing ${clss}`)
+    const boxes = document.querySelectorAll(`.${clss}`);
+    boxes.forEach(box => {
+      box.remove();
+    });
+}
+
+const toggleClasses = (element, classA, classB) => {
+    element.classList.toggle(classA);
+    setTimeout(() => {
+        element.classList.toggle(classB);
+    }, 10);
+}
+
+const pullBookFromObject = (object, id) => {
+    if (object.books[id]) {
+        selectedBookArray = []
+        selectedBookArray.push(object.books[id])
+        return selectedBookArray;
+    } else return "No Book Found"
+}
+
+const addLoader = (parent) => {
+    parent.appendChild(loader)
+}
+
+const removeLoader = (parent) => {
+    parent.removeChild(loader)
+}
+
+const removeBooks = (x) => {
+    const nodes = document.querySelectorAll(`${x}`);
+    nodes.forEach((node) => {
+        node.parentElement.removeChild(node);
+    });
+}
+
+const reduceDecimal = (x) => {
+    return Number.parseFloat(x).toFixed(2);
+  }
+
+const replaceUndefined = (...texts) => {
+    for (const text of texts) {
+        if (!text) text = `~`;
+        return text
+    }
+}
+//true makes it add pulled books to webpage
+// pullBooks(true);
+
+
+
+
+
+
+
+
 
 
 ///////////////////////////////////////////////////
@@ -49,28 +364,6 @@ bookSearch.addEventListener("keydown", () => {
 //     }
 // }
 
-
-//Fetching from Books API
-const fetchBooksAPI = (text) => {
-    return fetch(`https://openlibrary.org/search.json?q=${text}`)
-        .then((res) => {
-            return res.json();
-        })
-        .then((data) => {
-            return data;
-        });
-}
-
-async function getApiData(text) {
-    try {
-        const fetched = await fetchBooksAPI(text);
-        console.log(fetched)
-        return fetched; // Returning the specific data wanted
-    } catch (error) {
-        console.error("Error while fetching data:", error);
-        throw error;
-    }
-}
 
 ///////////////////////////////////////////////////
 // JSON Fetch Above ^
@@ -111,251 +404,3 @@ async function getApiData(text) {
 //     });
     
 // }
-
-let lastSearch;
-//Book search referencing api pull
-const searchBooks = () => {
-    let searchedList = [];
-    getApiData(bookSearch.value).then((booksSearched) => {
-        if (searching) {
-            for (i=0; i<5; i++) {
-                searchedList.push(booksSearched.docs[i])
-                title = searchedList[i].title
-                author = searchedList[i].author_name;
-                kindleUnlimited = searchedList[i]["Kindle Unlimited"]; 
-                rating = searchedList[i].ratings_average;
-                cover = `https://covers.openlibrary.org/b/id/${searchedList[i].cover_i}-M.jpg`;
-                console.log(cover)
-                link = searchedList[i]["link"];
-                //replaced undefined elements with "N/A"
-                title = replaceUndefined(title);
-                cover = replaceUndefined(cover);
-                author = replaceUndefined(author);
-                kindleUnlimited = replaceUndefined(kindleUnlimited);
-                rating = replaceUndefined(rating);
-                link = replaceUndefined(link);
-                //finals step
-                appendToSearchBox(addValuesToElements());
-                addEventListeners(tempBookItem);
-                styleSearchBox();
-            }
-            removeLoader(searchBox)
-        }
-        addToObject(searchedList) //send full searched list to function
-    })
-};
-
-
-//Object that stores book data from search
-//filter
-const searchedBooks = {}
-searchedBooks.books = {}
-const addToObject = (info) => {
-    console.log(info)
-    for (let i = 0; i < info.length; i++) {
-        const bookKeysToArray = []; // Create a new array for each book key value pair
-        bookKeysToArray.push(toArray("title", info[i].title, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("author", info[i][`author_name`], bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("yearPublished", info[i].first_publish_year, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("subject", info[i].subject, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("pages", info[i].number_of_pages_median, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("rating", info[i].ratings_average, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("ratingCount", info[i].ratings_count, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("cover", `https://covers.openlibrary.org/b/id/${info[i].cover_i}-M.jpg`, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("amazonID", info[i].id_amazon, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("goodReadsID", info[i].id_goodreads, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("wikiID", info[i].id_wikidata, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("seed", info[i].seed, bookKeysToArray, i)) // creates both key and value and pushed into array
-        bookKeysToArray.push(toArray("key", info[i].key, bookKeysToArray, i)) // creates both key and value and pushed into array
-        searchedBooks.books[i] = Object.fromEntries(bookKeysToArray);
-    }
-    
-    console.log(searchedBooks);
-};
-
-const toArray = (a, b, array, i) => {
-    array = []
-    array.push(a);
-    array.push(b);
-    return array
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const checkSearchInput = () => {
-    //do nothing if same value
-    if (lastSearch === bookSearch.value) return;
-    lastSearch = bookSearch.value;
-    //remove searchBox if no value in search
-    if (bookSearch.value.length === 0) {
-        removeSearchBox();
-        removeBooks('.searchedBookInfo');
-        removeAllChildren(searchBox)
-        searching = false;
-        return;
-    } else if (bookSearch.value.length <= 2) removeAllChildren(searchBox); //do nothing search has less than 2 characters
-    searching = true;
-}
-const addValuesToElements = () => {
-    tempBookItem = document.createElement('div');    
-    numberElement = document.createElement(`p`)
-    numberElement.classList.add('number');
-    numberElement.textContent = `${number}`;
-    
-    
-    titleElement = document.createElement('p');
-    titleElement.classList.add('title');
-    titleElement.textContent = `${title}`;
-    
-    authorElement = document.createElement('p');
-    authorElement.classList.add('author');
-    authorElement.textContent = `${author}`;
-    
-    kindleUnlimitedElement = document.createElement('p');
-    kindleUnlimitedElement.classList.add('kindleUnlimited');
-    kindleUnlimitedElement.textContent = `${kindleUnlimited}`;
-    
-    ratingElement = document.createElement('p');
-    ratingElement.classList.add('rating');
-    ratingElement.textContent = `${rating}`;
-    
-    linkElement = document.createElement('a');
-    linkElement.classList.add('link');
-    linkElement.innerHTML = `${link}`;
-    linkElement.href=`${link}`;
-    linkElement.title="book";
-
-    if (searching) {
-        coverElement = document.createElement('img');
-        coverElement.src = cover;
-        coverElement.classList.add('cover');
-
-        titleElement.textContent = `Title: ${title}`
-        authorElement.textContent = `Author: ${author}`
-        console.log(coverElement)
-    }
-}
-
-const appendToSearchBox = () => {
-    tempBookItem.classList.add('searchedBookInfo');
-    tempBookItem.appendChild(coverElement)
-    searchedTextContent = document.createElement('div');
-    searchedTextContent.appendChild(titleElement)
-    searchedTextContent.appendChild(authorElement)
-    tempBookItem.appendChild(searchedTextContent)
-    searchBox.appendChild(tempBookItem);
-}
-
-const styleSearchBox = () => {
-    searchBox.setAttribute('id', 'toggleSearchStyle'); 
-}
-
-const addSearchBox = () => {
-    if (!searchBox) {
-        searchBox = document.createElement('div');
-        searchBox.classList.add('searchResults');
-        addLoader(searchBox);
-        bookSearchContainer.appendChild(searchBox)
-    } else {
-        bookSearchContainer.appendChild(searchBox)
-    }
-}
-
-const removeSearchBox = () => {
-    searchBox.remove(searchBox);
-}
-
-const removeAllChildren = (parent) => {
-    console.log(`remomove items`)
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
-}
-
-const addToPage = (x) => {
-    addValuesToElements()
-    tempBookItem.classList.add('bookInfo');
-    tempBookItem.appendChild(numberElement)
-    tempBookItem.appendChild(titleElement)
-    tempBookItem.appendChild(authorElement)
-    tempBookItem.appendChild(kindleUnlimitedElement)
-    tempBookItem.appendChild(ratingElement)
-    tempBookItem.appendChild(linkElement)
-    bookContainer.appendChild(tempBookItem);
-}
-
-const addEventListeners = (element) => {
-    element.addEventListener('click', (e) => {
-        console.log(`clicked ${e.target.innerHTML}`);
-    });
-}
-
-const addLoader = (parent) => {
-    parent.appendChild(loader)
-}
-
-const removeLoader = (parent) => {
-    parent.removeChild(loader)
-}
-
-const toggleParameters = {
-    title: {
-        alphabeticalOrder: {
-            ascending: false
-        }
-    },
-    author: {
-        alphabeticalOrder: {
-            ascending: false
-        },
-    },
-    alphabeticalOrderCheck() {
-        if (!this.title.alphabeticalOrder.clicked) {
-        this.title.alphabeticalOrder.clicked = true;
-        removeBooks('.bookInfo');
-        pullBooks(true);
-    }
-    },
-
-}
-
-
-const filterAlphabetically = (arr) => {
-    if (!toggleParameters.title.alphabeticalOrder.ascending) {
-        newArr = arr.sort((a, b) => a["Title"] > b['Title'] ? 1 : -1);
-        toggleParameters.title.alphabeticalOrder.ascending = true;
-        toggleParameters.title.alphabeticalOrder.clicked = false;
-        return newArr
-    } else if (toggleParameters.title.alphabeticalOrder.ascending) {
-        newArr = arr.sort((a, b) => b["Title"] > a['Title'] ? 1 : -1);
-        toggleParameters.title.alphabeticalOrder.ascending = false;
-        toggleParameters.title.alphabeticalOrder.clicked = false;
-        return newArr
-    }
-
-}
-
-const removeBooks = (x) => {
-    const nodes = document.querySelectorAll(`${x}`);
-    nodes.forEach((node) => {
-        node.parentElement.removeChild(node);
-    });
-}
-
-const replaceUndefined = (text) => {
-    if (!text) text = `~`;
-    return text
-}
-//true makes it add pulled books to webpage
-pullBooks(true);
