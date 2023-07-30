@@ -1,9 +1,4 @@
 const bookContainer = document.querySelector(".books");
-const titleHeader = document.querySelector('.titleTitle').addEventListener('click', () => {
-    newList = {}
-    newList = bookList.toggleParameters.filterAlphabetically();
-    console.log(newList)
-});
 
 const bookSearchContainer = document.querySelector('.bookSearch');
 const loader = document.createElement(`div`);
@@ -30,7 +25,8 @@ bookSearch.addEventListener("keydown", () => {
 
 //Fetching from Books API
 const fetchBooksAPI = (text) => {
-    return fetch(`https://openlibrary.org/search.json?q=${text}`)
+    return fetch(`https://www.googleapis.com/books/v1/volumes?q=${text}&key=AIzaSyCRN35xl_3LT3eyELbB0_NCyK9WYlFAfKY`)
+    // return fetch(`https://openlibrary.org/search.json?q=${text}`)
         .then((res) => {
             return res.json();
         })
@@ -42,6 +38,7 @@ const fetchBooksAPI = (text) => {
 async function getApiData(text) {
     try {
         const fetched = await fetchBooksAPI(text);
+        console.log(fetched)
         return fetched; // Returning the specific data wanted
     } catch (error) {
         console.error("Error while fetching data:", error);
@@ -85,27 +82,32 @@ const searchBooks = () => {
 
 //adding book data to object of books
 const addToObject = (object, bookSelected) => {
-    if (object === searchedBooks) object.books = {};
+    if (object === searchedBooks) object.books = [];
+
     if (Array.isArray(bookSelected)) {
         for (const book of bookSelected) {
-            const bookKeysToArray = []; // Create a new array for each book key value pair
-            bookKeysToArray.push(toArray("cover_i", book.cover_i, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("title", book.title, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("author_name", book[`author_name`], bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("first_publish_year", book.first_publish_year, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("number_of_pages_median", book.number_of_pages_median, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("ratings_average", book.ratings_average, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("ratings_count", book.ratings_count, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("subject", book.subject, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("id_amazon", `${book.id_amazon}`, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("id_goodreads", book.id_goodreads, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("wikid_wikidataiID", book.id_wikidata, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("seed", book.seed, bookKeysToArray, i)) // creates both key and value and pushed into array
-            bookKeysToArray.push(toArray("key", book.key, bookKeysToArray, i)) // creates both key and value and pushed into array
-            object.books[book.key] = Object.fromEntries(bookKeysToArray);
+            const bookObject = {
+                cover_i: book.cover_i,
+                title: book.title,
+                author_name: book.author_name,
+                first_publish_year: book.first_publish_year,
+                number_of_pages_median: book.number_of_pages_median,
+                ratings_average: book.ratings_average,
+                ratings_count: book.ratings_count,
+                subject: book.subject,
+                id_amazon: `${book.id_amazon}`,
+                id_goodreads: book.id_goodreads,
+                wikid_wikidataiID: book.id_wikidata,
+                seed: book.seed,
+                key: book.key
+            };
+            object.books.push(bookObject);
         }
-    } else alert(`Could not add, invalid selection`)
+    } else {
+        alert(`Could not add, invalid selection`);
+    }
 };
+
 
 const toArray = (a, b, array, i) => {
     array = []
@@ -229,20 +231,66 @@ bookList.books = [];
 
 bookList.toggleParameters = {
     title: {
-        alphabeticalOrder: {
-            ascending: false}},
-    author: {
-        alphabeticalOrder: {
-            ascending: false},
-        },
-        filterAlphabetically() {
-                return bookList.books.sort((a,b) => a['cover_i'] - b['cover_i'])
-        },
+        alphabeticalOrder: {ascending: false}},
+    author_name: {
+        alphabeticalOrder: {ascending: false}},
+    ratings_average: {
+        alphabeticalOrder: {ascending: false}},
+    filterAlphabetically(key) {
+        if (!bookList.toggleParameters[key].ascending) {
+            bookList.toggleParameters[key].ascending = true;
+            bookList.books.sort((a,b) => {
+                fa = a[key]
+                fb = b[key]
+                if (fa < fb) return -1;
+                if (fa > fb) return 1;
+                else return 0;
+            })
+        } else if (bookList.toggleParameters[key].ascending) {
+            bookList.toggleParameters[key].ascending = false;
+            bookList.books.sort((a,b) => {
+                fa = a[key]
+                fb = b[key]
+                if (fa > fb) return -1;
+                if (fa < fb) return 1;
+                else return 0;
+            })
+        } else alert('Error: Unable to filter')
+    },
+    filterNumerically(key) {
+        if (!bookList.toggleParameters[key].ascending) {
+        bookList.toggleParameters[key].ascending = true;
+        return bookList.books.sort((a,b) => a[key] - b[key])
+        } else if (bookList.toggleParameters[key].ascending) {
+        bookList.toggleParameters[key].ascending = false;
+        return bookList.books.sort((a,b) => b[key] - a[key])
+        } else alert('Error: Unable to filter')
+    }, 
+    removeClassesAndAddToPage(element, object) {
+        removeAllClass(element)
+        addToPage(object);
+    },
 }
 
-        
-        // addToObject(bookList, tempBook) //NOT WORKING.. SOME KEYS ARE UNDEFINED
-        // addToPage(bookList)
+const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
+    bookList.toggleParameters.filterAlphabetically('title');
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+});
+
+const authorTitle = document.querySelector('.authorTitle').addEventListener('click', () => {
+    bookList.toggleParameters.filterAlphabetically('author_name');
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+});
+
+const subjectTitle = document.querySelector('.subjectTitle').addEventListener('click', () => {
+    bookList.toggleParameters.filterAlphabetically('author_name');
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+});
+
+const ratingTitle = document.querySelector('.ratingTitle').addEventListener('click', () => {
+    bookList.toggleParameters.filterNumerically('ratings_average');
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+});
 
 
 const addEventToAddToObject = (...element) => {
