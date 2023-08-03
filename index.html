@@ -19,8 +19,20 @@
     <div class="bookListContainer">
         <div class="filterBox">
             <div class="filterHeader"><p>Filters</p></div>
-            <h1>Filter</h1>
-            <h1>Placeholder</h1>
+            <div class="myBookSearch">
+                <input type="text" placeholder="Filter Your Books.." class="myBookSearchInput">
+                <!-- <div class="myBooksSearchResults"></div> -->
+            </div>
+            <div class="lineHeightContainer">
+                <p>Collapse covers:</p>
+                <label class="switch">
+                <input class='toggleLineHeight' type="checkbox">
+                <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="filterButtons">
+                <button type="button" class="ratingFilter">Top Rated</button>
+            </div>
         </div>
         <div class="books">
             <div class="bookListHeader">
@@ -28,7 +40,6 @@
                 <p class="coverTitle">Cover</p>
                 <p class="titleTitle">Title</p>
                 <p class="authorTitle">Author</p>
-                <p class="ratingTitle">Rating</p>
                 <p class="subjectTitle">Subject</p>
             </div>
         </div>

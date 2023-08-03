@@ -4,6 +4,16 @@ const bookSearchContainer = document.querySelector('.bookSearch');
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
+const tempBookList = {}
+document.addEventListener("DOMContentLoaded", function(){
+    if (localStorage.books) {
+        tempBookList.books = []
+        tempBookList.books = JSON.parse(localStorage.getItem(`books`))
+        addToObject(bookList, tempBookList.books)
+        addToPage(bookList)
+    }
+});
+
 let searchTimer;
 let searchBox;
 let searching = false;
@@ -20,6 +30,24 @@ bookSearch.addEventListener("keydown", () => {
             searchBooks();
         }
     }, 700)
+});
+
+const myBookSearch = document.querySelector(`.myBookSearchInput`);
+myBookSearch.addEventListener("keydown", (e) => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout( () => {
+        myfilteredBooks = {};
+        myfilteredBooks.books = []
+        searchFilteredBooks = bookList.books.map(book => {
+            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
+            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
+            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
+            if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
+        })
+        addToPage(myfilteredBooks)
+        //make sure to delete existing bookList elements and add these results to page
+        //when search is empty, need to delete myFilteredBooks and add bookList to page again
+    }, 200)
 });
 
 
@@ -68,16 +96,68 @@ const searchBooks = () => {
     let searchedList = [];
     getApiData(bookSearch.value).then((booksSearched) => {
         if (searching) {
-            for (i=0; i<5; i++) {
-                searchedList.push(booksSearched.docs[i])
+            for (let i=0; i<7; i++) {
+                searchedList.push(booksSearched.items[i])
             }
+            console.log(searchedList)
         }
         styleSearchBox();
         removeLoader(searchBox)
-        
-        addToObject(searchedBooks, searchedList) //send full searched list to function
-        appendToSearchBox(addValuesToElements(searchedBooks, `cover_i`, `title`, `author_name`));
+        addToObjectFromApi(searchedBooks, searchedList) //send full searched list to function
+        for (const book of searchedBooks.books) {
+                appendToSearchBox(addValuesToElements(book, `thumbnail`, `title`, `authors`, 'id'));
+            }
     })
+};
+
+//adding book data to object of books
+const addToObjectFromApi = (object, bookSelected) => {
+    if (object === searchedBooks) object.books = [];
+
+    if (Array.isArray(bookSelected)) {
+        for (const book of bookSelected) {
+            const bookObject = {};
+            console.log(book)
+            if (book.hasOwnProperty('volumeInfo')) {
+                if(book.volumeInfo.hasOwnProperty(`imageLinks`)){
+                    if (book.volumeInfo.imageLinks.hasOwnProperty(`thumbnail`)) bookObject.thumbnail = book.volumeInfo.imageLinks.thumbnail
+                }
+                if (book.volumeInfo.hasOwnProperty(`title`)) bookObject.title = book.volumeInfo.title;
+                if (book.volumeInfo.hasOwnProperty(`authors`)) bookObject.authors = book.volumeInfo.authors;
+                if (book.volumeInfo.hasOwnProperty(`averageRating`)) bookObject.averageRating = book.volumeInfo.averageRating;
+                if (book.volumeInfo.hasOwnProperty(`categories`)) bookObject.subject = book.volumeInfo.categories;
+                if (book.volumeInfo.hasOwnProperty(`publishedDate`)) bookObject.publishedDate = book.volumeInfo.publishedDate;
+                if (book.volumeInfo.hasOwnProperty(`pageCount`)) bookObject.pageCount = book.volumeInfo.pageCount;
+                if (book.volumeInfo.hasOwnProperty(`ratingsCount`)) bookObject.ratingsCount = book.volumeInfo.ratingsCount;
+                if (book.volumeInfo.hasOwnProperty(`printType`)) bookObject.printType = book.volumeInfo.printType;
+                if (book.volumeInfo.hasOwnProperty(`previewLink`)) bookObject.previewLink = book.volumeInfo.previewLink;
+                if (book.volumeInfo.hasOwnProperty(`publisher`)) bookObject.publisher = book.volumeInfo.publisher;
+                if (book.volumeInfo.hasOwnProperty(`description`)) bookObject.description = book.volumeInfo.description;
+                if (book.volumeInfo.hasOwnProperty(`industryIdentifiers`)) bookObject.industryIdentifiers = book.volumeInfo.industryIdentifiers;
+            }
+            if (book.hasOwnProperty('searchInfo')) {
+                if (book.searchInfo.hasOwnProperty(`textSnippet`)) bookObject.textSnippet = book.searchInfo.textSnippet;
+            }
+            if (book.hasOwnProperty('accessInfo')) {
+                if (book.accessInfo.hasOwnProperty(`accessViewStatus`)) bookObject.accessViewStatusEmbeddable = book.accessInfo.accessViewStatus;
+                if (book.accessInfo.hasOwnProperty(`epub`)){
+                    if (book.accessInfo.epub.hasOwnProperty(`isAvailable`)) bookObject.epubIsAvailable = book.accessInfo.epub.isAvailable;
+                    if (book.accessInfo.epub.hasOwnProperty(`acsTokenLink`)) bookObject.ePubAcsTokenLink = book.accessInfo.epub.acsTokenLink;
+                }
+                if (book.accessInfo.hasOwnProperty(`pdf`)){
+                    if (book.accessInfo.pdf.hasOwnProperty(`isAvailable`)) bookObject.pdfIsAvailable = book.accessInfo.pdf.isAvailable;
+                    if (book.accessInfo.pdf.hasOwnProperty(`acsTokenLink`)) bookObject.pdfAcsTokenLink = book.accessInfo.pdf.acsTokenLink;
+                }
+            
+            }
+            bookObject.etag = book.etag;
+            bookObject.id = book.id
+               
+            object.books.push(bookObject);
+        }
+    } else {
+        alert(`Could not add, invalid selection`);
+    }
 };
 
 //adding book data to object of books
@@ -87,27 +167,40 @@ const addToObject = (object, bookSelected) => {
     if (Array.isArray(bookSelected)) {
         for (const book of bookSelected) {
             const bookObject = {
-                cover_i: book.cover_i,
+                thumbnail: book.thumbnail,
                 title: book.title,
-                author_name: book.author_name,
-                first_publish_year: book.first_publish_year,
-                number_of_pages_median: book.number_of_pages_median,
-                ratings_average: book.ratings_average,
-                ratings_count: book.ratings_count,
+                authors: book.authors,
+                publishedDate: book.publishedDate,
+                pageCount: book.pageCount,
+                averageRating: book.averageRating,
+                ratingsCount: book.ratingsCount,
                 subject: book.subject,
-                id_amazon: `${book.id_amazon}`,
-                id_goodreads: book.id_goodreads,
-                wikid_wikidataiID: book.id_wikidata,
-                seed: book.seed,
-                key: book.key
+                printType: book.printType,
+                previewLink: book.previewLink,
+                publisher: book.publisher,
+                description: book.description,
+                textSnippet: book.textSnippet,
+                industryIdentifiers: book.industryIdentifiers,
+                accessViewStatus: book.accessViewStatus,
+                accessViewStatusEmbeddable: book.accessViewStatusEmbeddable,
+                epubIsAvailable: book.epubIsAvailable,
+                ePubAcsTokenLink: book.ePubAcsTokenLink,
+                pdfIsAvailable: book.pdfIsAvailable,
+                pdfAcsTokenLink: book.pdfAcsTokenLink,
+                etag: book.etag,
+                id: book.id
             };
             object.books.push(bookObject);
         }
     } else {
         alert(`Could not add, invalid selection`);
     }
+    if (object === bookList) {addObjectToLocalStorage(object)}
 };
 
+const addObjectToLocalStorage = (object) => {
+    localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
+}
 
 const toArray = (a, b, array, i) => {
     array = []
@@ -116,114 +209,113 @@ const toArray = (a, b, array, i) => {
     return array
 }
 
+const toString = (x) => {
+    if (Array.isArray(x)) {
+        return x.toString()
+    } else return x
+}
+
 
 const addValuesToElements = (object, ...keys) => {
-    console.log(object)
-    console.log(keys)
     tempBookItem = document.createElement('div');  
-    tempBooks = Object.keys(object.books);
+    tempBooks = Object.keys(object);
     let combinedTempElements = [];
-    let allElements = [];
-    tempBooks.forEach((id) => {
-        if (id){
-            tempBook = Object.keys(object.books[id]);
+    let tempElement = [];
+            tempBook = Object.keys(object);
             combinedTempElements = []; //resetting so each iteration is fresh to append to allElements
             tempBook.forEach((key) => {
-                for (i = 0 ; i < keys.length; i++) { //iterate through ...keys to match the key in each book entry
-                    console.log(keys[i])
+                for (let i = 0 ; i < keys.length; i++) { //iterate through ...keys to match the key in each book entry
                     if (keys[i] === key) {
-                    tempSelection = object.books[id][key] //tempSelection points to book object
-                    if (Array.isArray(tempSelection)) tempSelection = tempSelection.join()
-                    if (key === `cover_i`) {
-                        tempElement = document.createElement('img');
-                        tempElement.src = `https://covers.openlibrary.org/b/id/${tempSelection}-M.jpg`;
-                        tempElement.setAttribute(`id`, `${id}`);
-                        tempElement.classList.add(`${key}`);
-                    } else if (key[0] === `i` && key[1] === 'd') {
-                        tempElement = document.createElement('a');
-                        tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
-                        tempElement.target = `#`;
-                        tempElement.setAttribute(`id`, `${id}`);
-                        tempElement.classList.add(`${key}`);
-                    } else if (key === `ratings_average`) {
-                        tempSelection = reduceDecimal(tempSelection);
-                        console.log(tempSelection);
-                        tempElement = document.createElement('p');
-                        tempElement.setAttribute(`id`, `${id}`);
-                        tempElement.textContent = `${tempSelection}`;
-                        tempElement.classList.add(`${key}`);
-                    } 
-                    else {
-                        tempElement = document.createElement('p');
-                        tempElement.setAttribute(`id`, `${id}`);
-                        tempElement.textContent = `${tempSelection}`;
-                        tempElement.classList.add(`${key}`);
+                        tempSelection = object[key] //tempSelection points to book object value
+                        if (Array.isArray(tempSelection)) tempSelection = tempSelection.join() //*averageRating might not be passing here
+                        if (key === `thumbnail`) {
+                            tempElement = document.createElement('img');
+                            tempElement.src = tempSelection;
+                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement.classList.add(`${key}`);
+                        } else if (key[0] === `i` && key[1] === 'd') {
+                            tempElement = document.createElement('a');
+                            tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
+                            tempElement.target = `#`;
+                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement.classList.add(`${key}`);
+                        } else if (key === `averageRating`) {
+                            tempSelection = reduceDecimal(tempSelection);
+                            tempSelection = replaceUndefined(tempSelection)
+                            tempElement = document.createElement('p');
+                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement.textContent = `${tempSelection}`;
+                            tempElement.classList.add(`${key}`);
+                        } 
+                        else {
+                            tempElement = document.createElement('p');
+                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement.textContent = `${replaceUndefined(tempSelection)}`;
+                            tempElement.classList.add(`${key}`);
+                        }
+                        combinedTempElements.push(tempElement) //add all elements for this iteration
+                        return combinedTempElements
                     }
-                    console.log(tempElement)
-                    combinedTempElements.push(tempElement) //add all elements for this iteration
                 }
-            }
-        })};
-        allElements.push(combinedTempElements) //Array with book elements seperated by each book
-    }) 
-    return allElements
+            });
+    return combinedTempElements
 }
 
 //iterate through allElements (an array) and append them to page
-const addToPage = (...object) => {
-    removeAllClass(`bookInfo`)
+const addToPage = (...object) => { //using ...objects to potentially combine objects and append to page
+    removeAllClass(`bookInfo`);
     bookNumber = 0;
-    objectCount = Object.keys(object[0].books)
-    objectCount = objectCount.length
-    for (i = 0; i < objectCount; i++) { //iterate through each book object
-        allElements = addValuesToElements(object[i], `cover_i`, `title`, `author_name`, `ratings_average`, `subject`)
-        for (const elem of allElements) {
-            bookListNumber = document.createElement(`p`)
+    for (const obj of object) {
+        objectCount = Object.keys(obj.books);
+        objectCount = objectCount.length;
+        for (let i = 0; i < objectCount; i++) { //iterate through each book object
+            
+            allElements = addValuesToElements(obj.books[i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`);
+            bookListNumber = document.createElement(`p`);
             bookListNumber.textContent = `${(bookNumber + 1)}`;
-            tempBookItem = document.createElement(`div`)
+            tempBookItem = document.createElement(`div`);
             tempBookItem.classList.add('bookInfo');
-            tempBookItem.appendChild(bookListNumber)
-            for (const el of elem) {
-                console.log(el)
-                tempBookItem.appendChild(el)
-                tempBookItem.appendChild(el)
+            tempBookItem.appendChild(bookListNumber);
+            for (const el of allElements) {
+                tempBookItem.appendChild(el);
             }
             bookContainer.appendChild(tempBookItem);
-            toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`)
-            bookNumber++
-        }
+            toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
+            bookNumber++;
+            }
     }
+    if (coverToggled) toggleLineHeight();
+
 }
 
 let coverDiv;
 let titleAndAuthorDiv
 const appendToSearchBox = (...elements) => {
     tempBookItem.classList.add(`searchedBookInfo`);
-    for (i = 0; i < elements[0].length; i++) {
-        tempBookItem = document.createElement('div');
-        tempBookItem.classList.add('searchedBookInfo')
-        tempElement = elements[0][i];
-        tempID = tempElement[0].getAttribute('id') //identifier of the first element in the group which points to book object
-        tempBookItem.setAttribute(`id`, `${tempID}`);
-        titleAndAuthorDiv = document.createElement('div') //container for title and author outside of loop
-        titleAndAuthorDiv.classList.add('titleAndAuthor')
-        for (j = 0; j < tempElement.length; j++) { //each element appended to div container here
-            if (tempElement[j].tagName === `IMG`) {
-                // searchedTextContent = document.createElement('div');
-                coverDiv = document.createElement('div')
-                coverDiv.classList.add('coverContainer')
-                coverDiv.appendChild(tempElement[j])
-            }
-            if (tempElement[j].tagName === `P`) {
-                // searchedTextContent = document.createElement('div');
-                titleAndAuthorDiv.appendChild(tempElement[j])
-            }
-            if (tempBookItem) tempBookItem.appendChild(coverDiv);
-            if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
+    tempBookItem = document.createElement('div');
+    tempBookItem.classList.add('searchedBookInfo')
+    titleAndAuthorDiv = document.createElement('div') //container for title and author outside of loop
+    titleAndAuthorDiv.classList.add('titleAndAuthor')
+    for (let i = 0; i < elements[0].length; i++) { //each element appended to div container here
+        if (elements[0][i].tagName === `IMG`) {
+            // searchedTextContent = document.createElement('div');
+            coverDiv = document.createElement('div')
+            coverDiv.classList.add('coverContainer')
+            coverDiv.appendChild(elements[0][i])
         }
-        addEventToAddToObject(tempBookItem);
-        searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
+        if (elements[0][i].tagName === `P`) {
+            // searchedTextContent = document.createElement('div');
+            titleAndAuthorDiv.appendChild(elements[0][i])
+        }
+        if (elements[0][i].tagName === 'A') {
+            tempBookItem.setAttribute(`id`, `${elements[0][i].id}`);
+
+        }
     }
+    if (tempBookItem) tempBookItem.appendChild(coverDiv);
+    if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
+    addEventToAddToObject(searchedBooks, tempBookItem);
+    searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
 }
 
 const bookList = {};
@@ -232,9 +324,11 @@ bookList.books = [];
 bookList.toggleParameters = {
     title: {
         alphabeticalOrder: {ascending: false}},
-    author_name: {
+    authors: {
         alphabeticalOrder: {ascending: false}},
-    ratings_average: {
+    subject: {
+        alphabeticalOrder: {ascending: false}},
+    averageRating: {
         alphabeticalOrder: {ascending: false}},
     filterAlphabetically(key) {
         if (!bookList.toggleParameters[key].ascending) {
@@ -263,7 +357,7 @@ bookList.toggleParameters = {
         return bookList.books.sort((a,b) => a[key] - b[key])
         } else if (bookList.toggleParameters[key].ascending) {
         bookList.toggleParameters[key].ascending = false;
-        return bookList.books.sort((a,b) => b[key] - a[key])
+        return bookList.books.sort((a,b) => a[key] - b[key]) //toggles in the same way order for now. Will switch is utilized
         } else alert('Error: Unable to filter')
     }, 
     removeClassesAndAddToPage(element, object) {
@@ -278,24 +372,25 @@ const titleTitle = document.querySelector('.titleTitle').addEventListener('click
 });
 
 const authorTitle = document.querySelector('.authorTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterAlphabetically('author_name');
+    bookList.toggleParameters.filterAlphabetically('authors');
     bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
 });
 
 const subjectTitle = document.querySelector('.subjectTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterAlphabetically('author_name');
+    bookList.toggleParameters.filterAlphabetically('subject');
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+
+});
+
+const ratingTitle = document.querySelector('.ratingFilter').addEventListener('click', () => {
+    bookList.toggleParameters.filterNumerically('averageRating');
     bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
 });
 
-const ratingTitle = document.querySelector('.ratingTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterNumerically('ratings_average');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
-});
 
-
-const addEventToAddToObject = (...element) => {
+const addEventToAddToObject = (objectFrom, ...element) => {
     element[0].addEventListener('click', (e) => {
-        tempBook = pullBookFromObject(searchedBooks, e.target.id);
+        tempBook = pullBookFromObject(objectFrom, e.target.id);
         addToObject(bookList, tempBook)
         addToPage(bookList)
     });
@@ -327,7 +422,6 @@ const removeAllChildren = (parent) => {
 }
 
 const removeAllClass = (clss) => {
-    console.log(`removing ${clss}`)
     const boxes = document.querySelectorAll(`.${clss}`);
     boxes.forEach(box => {
       box.remove();
@@ -341,12 +435,35 @@ const toggleClasses = (element, classA, classB) => {
     }, 10);
 }
 
+const coverTitle = document.querySelector(`.coverTitle`);
+let coverToggled = false;
+const toggleLineHeight = () => {
+    bookLines = bookContainer.childNodes
+    for (const bookLine of bookLines) { 
+        if (typeof(bookLine.className) === 'string') {
+            if (bookLine.className.includes('bookInfo')) {
+                bookLine.classList.toggle('removeCover');
+            }
+            if (bookLine.className.includes('bookListHeader') && coverToggled === true) coverTitle.classList.add('removeCover'); 
+            else if (bookLine.className.includes('bookListHeader') && coverToggled === true) coverTitle.classList.remove('removeCover');
+        }
+    }
+}
+const toggleLineHeightButton = document.querySelector(`.toggleLineHeight`).addEventListener(`click`, () => {
+    if (!coverToggled) coverToggled = true;
+    else coverToggled = false;
+    toggleLineHeight()
+})
+
 const pullBookFromObject = (object, id) => {
-    if (object.books[id]) {
-        selectedBookArray = []
-        selectedBookArray.push(object.books[id])
-        return selectedBookArray;
-    } else return "No Book Found"
+    selectedBookArray = []
+    for (const book of object.books) {
+        if (book.id === id) {
+            selectedBookArray.push(book)
+            return selectedBookArray;
+        } 
+    }
+    
 }
 
 const addLoader = (parent) => {
@@ -368,27 +485,16 @@ const reduceDecimal = (x) => {
     return Number.parseFloat(x).toFixed(2);
   }
 
-const replaceUndefined = (...texts) => {
+  let undefinedString = "N/A";
+  const replaceUndefined = (...texts) => {
     for (const text of texts) {
-        if (!text) text = `~`;
-        return text
-    }
+        if (!text || text === `NaN`) return undefinedString
+        else return text
+    } 
 }
 //true makes it add pulled books to webpage
 // pullBooks(true);
 
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////
-// Document Selectors Above
-/////////////////////////////////////////////////
 
 // Fetching JSON file
 // const fetchJSON = () => {
@@ -416,39 +522,3 @@ const replaceUndefined = (...texts) => {
 ///////////////////////////////////////////////////
 // JSON Fetch Above ^
 /////////////////////////////////////////////////
-
-// let bookList = [];
-// //Pulls from JSON
-// const pullBooks = (toAdd) => {
-//     getJsonData().then((bookList) => {
-//         //toggling for alphabetical filter
-//         if (toggleParameters.title.alphabeticalOrder.clicked) {
-//             bookList = filterAlphabetically(bookList, title);
-//         } else if (toggleParameters.author.alphabeticalOrder.clicked) {
-//             bookList = filterAlphabetically(bookList, author);
-//         }
-//         //For adding and refreshing entire book list
-//         for (i=0; i < bookList.length; i++) {
-//             number = i + 1;
-//             title = bookList[i]["Title"];
-//             author = bookList[i]["Author "];
-//             kindleUnlimited = bookList[i]["Kindle Unlimited"]; 
-//             rating = bookList[i]["rating"]; 
-//             link = bookList[i]["Link"];
-
-//             //replaced undefined elements with "N/A"
-//             title = replaceUndefined(title);
-//             author = replaceUndefined(author);
-//             kindleUnlimited = replaceUndefined(kindleUnlimited);
-//             rating = replaceUndefined(rating);
-//             link = replaceUndefined(link);
-
-//             //toggle ading to page depending on condition
-//             if (toAdd) addToPage();
-//         }
-
-//     }).catch((error) => {
-//         console.error("Error in getJsonData:", error);
-//     });
-    
-// }
