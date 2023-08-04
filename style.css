@@ -11,29 +11,28 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     --book-border-radius: 10px;
     
 
-    /* --primary-100:#1e295a;
+    --primary-100:#1e295a;
     --primary-200:#4c5187;
-    --primary-300:#abacea;
+    --primary-300:#cbcbdd;
     --accent-100:#F18F01;
     --accent-200:#833500;
     --text-100:#353535;
     --text-200:#5f5f5f;
     --bg-100:#F5ECD7;
     --bg-200:#ebe2cd;
-    --bg-300:#c2baa6; */
+    --bg-300:#c2baa6;
 
-    /* MIDNIGHT
-    --primary-100:#FFFFFF;
-    --primary-200:#e0e0e0;
+    /* MIDNIGHT --primary-100:#cfcfcf;
+    --primary-200:#b9b9b9;
     --primary-300:#9b9b9b;
     --accent-100:#7F7F7F;
     --accent-200:#ffffff;
-    --text-100:#FFFFFF;
+    --text-100:#d8d8d8;
     --text-200:#777777;
     --bg-100:#000000;
     --bg-200:#161616;
-    --bg-300:#2c2c2c;
-       */
+    --bg-300:#2c2c2c; */
+      
       
     /* Optional
     --primary-100:#8B6B61;
@@ -60,7 +59,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     --bg-300:#bfbfbf; */
       
       /* BEST */
-    --primary-100:#BFAE9F;
+    /* --primary-100:#BFAE9F;
     --primary-200:#937962;
     --primary-300:#FFFFFF;
     --accent-100:#C9BEB9;
@@ -71,14 +70,17 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     --bg-200:#EEE3D7;
     --bg-300:#FFFFFF;
     --bg-100-darker:#f4ebe1;
-    --bg-200-darker:#eee1d2;
+    --bg-200-darker:#eee1d2; */
       
-      
-      
-      
-      
-      
+}
 
+a {
+    text-decoration: none;
+    color: var(--text-100);
+}
+
+input {
+    background-color: white;
 }
 
 body {
@@ -134,7 +136,6 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     border: 4px solid var(--text-100);
     color: var(--text-100);
     border-radius: 100% 9% 100% 9% / 8% 77% 8% 77%;
-    background: var(--bg-100);
     font-size: 1.8rem;
     width: 200px;
     padding-left: 10px;
@@ -295,7 +296,6 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     display: flex;
     border: 3px solid var(--text-100);
     color: var(--text-100);
-    background: var(--bg-100);
     font-size: 1.8rem;
     width: 100%;
     max-width: 250px;
@@ -409,6 +409,7 @@ input:checked + .slider:before {
 
 .toggleHeightNormal {
     padding-right: 0 !important;
+    margin-right: 0px !important;
     transition: .2s;
     opacity: 1;
 }
@@ -432,11 +433,11 @@ input:checked + .slider:before {
     border-radius: var(--book-border-radius-top)
 }
 
-.bookListHeader p:first-child, .bookInfo p:first-child {
+.bookListHeader p:first-child, .bookInfo div p:first-child {
     margin-left: 2vw;
 }
 
-.bookListHeader p:last-child, .bookInfo a:last-child {
+.bookListHeader p:last-child, .bookInfo div a:last-child {
     margin-right: 2vw;
 }
 
@@ -450,6 +451,22 @@ input:checked + .slider:before {
     border-bottom: 2px solid var(--primary-200);
 }
 
+.bookInfo {
+    flex-direction: column;
+    background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
+    font-size: 1.8rem;
+    transition: height opacity .3s ease-in-out;
+    color: var(--text-100);
+}
+
+.bookInfo>div {
+    width: 100%;
+}
+
+.bookListHeader, .bookInfo div {
+
+}
+
 .numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
     margin: 0 20px;
     overflow: hidden;
@@ -458,7 +475,11 @@ input:checked + .slider:before {
     transition: .3s;
 }
 
-.numberTitle, .bookInfo p:first-child {
+.bookInfo div p, .bookInfo div img, .bookInfo div a {
+    pointer-events: none;
+}
+
+.numberTitle, .bookInfo div p:first-child {
     flex: 1;
     max-width: 30px;
 }
@@ -492,13 +513,10 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
-.bookInfo {
+.bookInfo div {
     display: flex;
-    background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
-    font-size: 1.8rem;
-    color: var(--text-100);
-    margin: var(--container-margins)
-
+    margin: var(--container-margins);
+    align-items: center;
 }
 
 .bookInfo:nth-child(2n + 1) {
@@ -511,14 +529,14 @@ input:checked + .slider:before {
     color: var(--bg-100);
 }
 
-.bookInfo a {
+.bookInfo div a {
     display: flex;
     text-decoration: none;
     color: var(--text-100);
     font-style: italic;
 }
 
-.bookInfo img {
+.bookInfo div img {
     aspect-ratio: 1 / 1.5;
     height: auto;
     background: silver;
@@ -530,18 +548,45 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
+
+
 .bookListHeader .removeCover {
     max-width: 0px;
     opacity: 0;
 }
 
-.removeCover img {
+.removeCover div img {
     max-width: 0px;
     min-width: 0px;
-    transition: max-width opacity .3s ease-in;
+    transition: max-width opacity 1s ease-in;
     opacity: 0;
 }
 
 .averageRating {
     display: none;
+}
+
+.moreDetails {
+    display: flex;
+    flex-direction: row;
+    padding: 10px 40px;
+}
+
+.moreDetails p {
+    pointer-events: none;
+    flex: 1;
+    font-size: 1.5rem;
+    min-width: 100%;
+    white-space: wrap;
+    text-overflow: ellipsis;
+}
+
+.toggleHeightSmall {
+    height: 0px;
+    margin-right: 600px !important;
+}
+
+.toggleHeightNormal {
+    height: auto;
+    margin-right: 0px !important;
 }

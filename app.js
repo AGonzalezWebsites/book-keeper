@@ -1,8 +1,44 @@
 const bookContainer = document.querySelector(".books");
-
 const bookSearchContainer = document.querySelector('.bookSearch');
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
+
+document.addEventListener(`click`, (e) => {
+    if (e.target.parentElement.className.includes('bookInfo')) {
+        addMoreDetails(bookList, e.target.id, e.target.parentElement)
+    }
+})
+
+let moreDetailsExpanded = false
+const addMoreDetails = (object, id, existingElement) => {
+    newElements = []
+    if (moreDetailsExpanded === true && lastElement === existingElement) {
+        moreDetailsExpanded = false
+        lastElement.removeChild(moreDetailsContainer);
+        return
+    } else if (moreDetailsExpanded === true && lastElement !== existingElement) lastElement.removeChild(moreDetailsContainer);
+    for (const book of object.books) {
+        if (book.id === id ) {
+            
+            moreDetailsContainer = document.createElement(`div`);
+            moreDetailsContainer.classList.add(`moreDetails`);
+
+            description = document.createElement(`p`);
+            description.innerText = `${book.description}`;
+
+            moreDetailsContainer.appendChild(description)
+            console.log(moreDetailsContainer)
+            existingElement.appendChild(moreDetailsContainer)
+            description.classList.add(`toggleHeightSmall`)
+            setTimeout(() =>{
+                description.classList.remove(`toggleHeightSmall`)
+                description.classList.add(`toggleHeightNormal`)
+            }, 50)
+        }
+    }
+    lastElement = existingElement; //used to reference element to be closed even if new element is clicked
+    moreDetailsExpanded = true;
+}
 
 const tempBookList = {}
 document.addEventListener("DOMContentLoaded", function(){
@@ -105,7 +141,7 @@ const searchBooks = () => {
         removeLoader(searchBox)
         addToObjectFromApi(searchedBooks, searchedList) //send full searched list to function
         for (const book of searchedBooks.books) {
-                appendToSearchBox(addValuesToElements(book, `thumbnail`, `title`, `authors`, 'id'));
+                appendToSearchBox(addValuesToElement(book, `thumbnail`, `title`, `authors`, 'id'));
             }
     })
 };
@@ -163,7 +199,7 @@ const addToObjectFromApi = (object, bookSelected) => {
 //adding book data to object of books
 const addToObject = (object, bookSelected) => {
     if (object === searchedBooks) object.books = [];
-
+    
     if (Array.isArray(bookSelected)) {
         for (const book of bookSelected) {
             const bookObject = {
@@ -216,7 +252,7 @@ const toString = (x) => {
 }
 
 
-const addValuesToElements = (object, ...keys) => {
+const addValuesToElement = (object, ...keys) => {
     tempBookItem = document.createElement('div');  
     tempBooks = Object.keys(object);
     let combinedTempElements = [];
@@ -270,15 +306,19 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
         objectCount = objectCount.length;
         for (let i = 0; i < objectCount; i++) { //iterate through each book object
             
-            allElements = addValuesToElements(obj.books[i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`);
-            bookListNumber = document.createElement(`p`);
+            allElements = addValuesToElement(obj.books[i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`);
+            bookListNumber = document.createElement(`p`); //bookListNumber is for the visual number on the list. No additional value.
             bookListNumber.textContent = `${(bookNumber + 1)}`;
-            tempBookItem = document.createElement(`div`);
+            firstLineDiv = document.createElement(`div`);
+            tempBookItem = document.createElement(`div`); //the container div for the link item
             tempBookItem.classList.add('bookInfo');
-            tempBookItem.appendChild(bookListNumber);
+            firstLineDiv.setAttribute('id', `${obj.books[i].id}`);
+            tempBookItem.setAttribute('id', `${obj.books[i].id}`);
+            firstLineDiv.appendChild(bookListNumber);
             for (const el of allElements) {
-                tempBookItem.appendChild(el);
+                firstLineDiv.appendChild(el);
             }
+            tempBookItem.appendChild(firstLineDiv);
             bookContainer.appendChild(tempBookItem);
             toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
             bookNumber++;
@@ -364,6 +404,9 @@ bookList.toggleParameters = {
         removeAllClass(element)
         addToPage(object);
     },
+    removeBook(object) {
+        object.books.sort
+    }
 }
 
 const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
@@ -388,12 +431,26 @@ const ratingTitle = document.querySelector('.ratingFilter').addEventListener('cl
 });
 
 
-const addEventToAddToObject = (objectFrom, ...element) => {
+const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click
     element[0].addEventListener('click', (e) => {
-        tempBook = pullBookFromObject(objectFrom, e.target.id);
-        addToObject(bookList, tempBook)
+        selectedBook = pullBookFromObject(objectFrom, e.target.id);
+        result = checkForDublicates(bookList, selectedBook)
+        if (result) {
+            alert(`${selectedBook[0].title} by ${selectedBook[0].authors} is already in your collection`)
+            return
+        }
+        addToObject(bookList, selectedBook)
         addToPage(bookList)
     });
+}
+
+const checkForDublicates = (object, ...objectToAdd) => {
+    for (const book of object.books) {
+        if (book.id === objectToAdd[0][0].id) { //objectToAdd[0][0] need to iterate through this if checking multiple
+            return true
+        }
+    }
+    return false
 }
 
 const styleSearchBox = () => {
@@ -445,7 +502,7 @@ const toggleLineHeight = () => {
                 bookLine.classList.toggle('removeCover');
             }
             if (bookLine.className.includes('bookListHeader') && coverToggled === true) coverTitle.classList.add('removeCover'); 
-            else if (bookLine.className.includes('bookListHeader') && coverToggled === true) coverTitle.classList.remove('removeCover');
+            else if (bookLine.className.includes('bookListHeader') && coverToggled === false) coverTitle.classList.remove('removeCover');
         }
     }
 }
