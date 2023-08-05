@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
+    <link rel="stylesheet" href="/dist/output.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reset.css">
     <title>Document</title>
 </head>
 <body>
+    </div>
     <div class="navBar">
-        <h1><a href="" target="#">Book Keeper</a></h1>
-        <div class="bookSearch">
+        <h1><a href="" target="#">Book Saver</a></h1>
+        <div class="bookSearch items-center">
+            <button type="button" class="addBookButton py-1 px-3">Add Manually</button>
             <input type="text" placeholder="Search Books to Add.." class="bookSearchInput bookSearch">
             <!-- <div class="searchResults"></div> -->
         </div>
@@ -31,7 +34,7 @@
                 </label>
             </div>
             <div class="filterButtons">
-                <button type="button" class="ratingFilter">Top Rated</button>
+                <button type="button" class="ratingFilter py-1 px-3">Top Rated</button>
             </div>
         </div>
         <div class="books">
@@ -50,6 +53,22 @@
 
 
 
+    <div class="addBookContainer toggleHidden flex justify-center items-center fixed">
+        <div class="addBook flex items-center flex-col justify-center p-9 bg-white">
+            <h1 class="text-4xl">Add Book Info</h1>
+            
+            <form action="/action_page.php">
+                <input type="text" id="title" name="title" placeholder="Book Title.." class="flex flex-row m-9">
+                <input type="text" id="authors" name="authors" placeholder="Author.." class="flex flex-row m-9">
+                <input type="text" id="subject" name="subject" placeholder="Subject.." class="flex flex-row m-9">
+                <input type="text" id="thumbnail" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-9">
+                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-9"></textarea>
+                <button class="mx-8 mb-5 p-2 px-8">Submit</button>
+            </form> 
+            <p class="text-1xl">Submitting form will add this book to your book list</p>
+        </div>
+    </div>
+        
     <script src="app.js"></script>
 </body>
 </html>

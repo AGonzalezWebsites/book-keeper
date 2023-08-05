@@ -1,7 +1,3 @@
-/*
-Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing Script
-*/
-
 :root {
     --container-borders: 5px;
     --container-max-width: 90vw;
@@ -122,12 +118,46 @@ body {
 Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing Script
 */
 
+.addBookContainer {
+    top: 0px;
+    left: 0px;
+    background: rgba(0, 0, 0, 0.723);
+    height: 100vh;
+    width: 100vw;
+}
+
+.addBook {
+    border: 3px solid var(--text-100);
+    border-radius: 5px;
+}
+
+.addBook input, .addBook textarea, .addBook button {
+    color: var(--text-100);
+    font-size: 1.8rem;
+    border: 3px solid var(--text-100);
+    border-radius: 5px;
+    font-style: italic;
+}
+
+.addBook button {
+    background: var(--accent-100);
+}
+
 .bookSearch {
     margin: 5px 10px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-self: center;
     position: relative;
+}
+
+.bookSearch button {
+    border: 3px solid var(--text-100);
+    background-color: var(--bg-100);
+    font-size: 1.8rem;
+    color: var(--text-100);
+    border-radius: 5px;
+    width: fit-content;
 }
 
 .navBar .bookSearch input {
@@ -232,7 +262,6 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     flex: 1 1 60vw;
     height: 78vh;
     transition: .5s;
-    min-width: 700px;
     max-width: var(--container-max-width);
     margin: 2vw;
     background: var(--bg-200);
@@ -569,7 +598,7 @@ input:checked + .slider:before {
 .moreDetails {
     display: flex;
     flex-direction: row;
-    padding: 10px 40px;
+    padding: 10px 13vw 10px 5vw;
 }
 
 .moreDetails p {
@@ -589,4 +618,12 @@ input:checked + .slider:before {
 .toggleHeightNormal {
     height: auto;
     margin-right: 0px !important;
+}
+
+.toggleHidden {
+    display: none;
+}
+
+.toggleShow {
+    display: flex
 }

@@ -3,6 +3,22 @@ const bookSearchContainer = document.querySelector('.bookSearch');
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
+const addBookContainer = document.querySelector(`.addBookContainer`);
+const addBookButton = document.querySelector(`.addBookButton`);
+let addBookButtonToggled = false;
+addBookButton.addEventListener(`click`, () => {
+    if (!addBookButtonToggled) {
+        addBookContainer.classList.remove(`toggleHidden`);
+        addBookButtonToggled = true;
+        return
+    }
+    if (addBookButtonToggled) {
+        addBookContainer.classList.add(`.toggleHidden`)
+        addBookButtonToggled = false;
+        return
+    }
+})
+
 document.addEventListener(`click`, (e) => {
     if (e.target.parentElement.className.includes('bookInfo')) {
         addMoreDetails(bookList, e.target.id, e.target.parentElement)
@@ -25,7 +41,7 @@ const addMoreDetails = (object, id, existingElement) => {
 
             description = document.createElement(`p`);
             description.innerText = `${book.description}`;
-
+            
             moreDetailsContainer.appendChild(description)
             console.log(moreDetailsContainer)
             existingElement.appendChild(moreDetailsContainer)
