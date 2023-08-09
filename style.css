@@ -146,7 +146,9 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 .bookSearch {
     margin: 5px 10px;
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
+    justify-content: center;
     align-self: center;
     position: relative;
 }
@@ -158,6 +160,8 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     color: var(--text-100);
     border-radius: 5px;
     width: fit-content;
+    min-width: 130px;
+    margin: 0 5px;
 }
 
 .navBar .bookSearch input {
@@ -349,19 +353,33 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     color: var(--text-100);
     margin-right: 10px;
 }
-.ratingFilter {
+
+.filterButtons {
+    flex-wrap: wrap;
+}
+
+.ratingFilter, .deleteFilter {
     border: 3px solid var(--text-100);
     background-color: var(--primary-300);
     font-size: 1.8rem;
     color: var(--text-100);
     border-radius: 5px;
+    margin: 5px;
 }
 
-.ratingFilter:hover {
+.ratingFilter {
+    min-width: fit-content;
+}
+
+.deleteFilter {
+    min-width: fit-content;
+}
+
+.ratingFilter:hover, .deleteFilter:hover {
     cursor: pointer;
 }
 
-.ratingFilter:active {
+.ratingFilter:active, .deleteFilter:active {
     background: var(--bg-200);
 }
 
@@ -482,6 +500,7 @@ input:checked + .slider:before {
 
 .bookInfo {
     flex-direction: column;
+    position: relative;
     background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
     font-size: 1.8rem;
     transition: height opacity .3s ease-in-out;
@@ -490,10 +509,7 @@ input:checked + .slider:before {
 
 .bookInfo>div {
     width: 100%;
-}
-
-.bookListHeader, .bookInfo div {
-
+    z-index: 1;
 }
 
 .numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
@@ -537,15 +553,34 @@ input:checked + .slider:before {
 }
 
 .coverTitle {
-    max-width: 40px;
+    max-width: 50px;
     margin-right: 3vw;
     opacity: 1;
 }
 
-.bookInfo div {
+.deleteIcon {
+    position: absolute;
+    background-color: #ff4848;
+    font-size: 1.6rem;
+    top: 0px;
+    right: 0px;
+    margin: 5px;
+    padding: 3px;
+    border-radius: 5px;
+    border: 2px solid black;
+    color: black;
+    z-index: 2;
+}
+
+.bookInfo div:first-child {
     display: flex;
     margin: var(--container-margins);
     align-items: center;
+    z-index: 1;
+}
+
+.bookInfo:nth-child(2n + 2) {
+    background: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
 }
 
 .bookInfo:nth-child(2n + 1) {
@@ -577,7 +612,10 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
-
+.selectedBook {
+    background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200)) !important;
+    color: var(--bg-100) !important;
+}
 
 .bookListHeader .removeCover {
     max-width: 0px;
@@ -597,17 +635,69 @@ input:checked + .slider:before {
 
 .moreDetails {
     display: flex;
-    flex-direction: row;
-    padding: 10px 13vw 10px 5vw;
+    flex-direction: column;
+    padding: 10px 10vw 10px 10vw;
 }
 
 .moreDetails p {
-    pointer-events: none;
-    flex: 1;
+    pointer-events: all !important;
     font-size: 1.5rem;
     min-width: 100%;
+    min-height: fit-content;
     white-space: wrap;
-    text-overflow: ellipsis;
+    text-overflow: scroll;
+    margin-bottom: 10px;
+}
+
+.additionInfo {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 2px dotted var(--bg-100);
+    padding-top: 10px;
+}
+
+.additionInfo button, .additionInfo div {
+    margin-right: 10px;
+}
+
+
+.additionInfo button {
+    border: 3px solid var(--text-100);
+    background-color: var(--bg-100);
+    font-size: 1.8rem;
+    color: var(--text-100);
+    border-radius: 5px;
+    padding: 2px;
+    min-width: fit-content;
+}
+
+.additionInfo button a {
+    pointer-events: all;
+}
+
+.additionInfo div {
+    display: flex;
+    flex-direction: column;
+    min-width: fit-content;
+    white-space: nowrap;
+}
+
+.additionInfo div h2 {
+    white-space: nowrap;
+    min-width: 100%;
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.additionInfo div p {
+    white-space: nowrap;
+    margin: 0;
+}
+
+.highlightButton {
+    border: 3px solid red;
 }
 
 .toggleHeightSmall {
@@ -627,3 +717,4 @@ input:checked + .slider:before {
 .toggleShow {
     display: flex
 }
+

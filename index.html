@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="/dist/output.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reset.css">
-    <title>Document</title>
+    <script src="https://kit.fontawesome.com/1bb63f7dbd.js" crossorigin="anonymous"></script>
+    <title>Book Saver</title>
 </head>
 <body>
     </div>
@@ -15,6 +16,7 @@
         <h1><a href="" target="#">Book Saver</a></h1>
         <div class="bookSearch items-center">
             <button type="button" class="addBookButton py-1 px-3">Add Manually</button>
+            <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList.books, `my_book_list.bkls`)">Download List</button>
             <input type="text" placeholder="Search Books to Add.." class="bookSearchInput bookSearch">
             <!-- <div class="searchResults"></div> -->
         </div>
@@ -35,6 +37,7 @@
             </div>
             <div class="filterButtons">
                 <button type="button" class="ratingFilter py-1 px-3">Top Rated</button>
+                <button type="button" class="deleteFilter py-1 px-3">Delete Book</button>
             </div>
         </div>
         <div class="books">
@@ -57,13 +60,13 @@
         <div class="addBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Add Book Info</h1>
             
-            <form action="/action_page.php">
-                <input type="text" id="title" name="title" placeholder="Book Title.." class="flex flex-row m-9">
-                <input type="text" id="authors" name="authors" placeholder="Author.." class="flex flex-row m-9">
-                <input type="text" id="subject" name="subject" placeholder="Subject.." class="flex flex-row m-9">
-                <input type="text" id="thumbnail" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-9">
+            <form id="addBookForm" action="/index.html">
+                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row m-9">
+                <input type="text" name="authors" placeholder="Author.." class="flex flex-row m-9">
+                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row m-9">
+                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-9">
                 <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-9"></textarea>
-                <button class="mx-8 mb-5 p-2 px-8">Submit</button>
+                <button class="mx-8 mb-5 p-2 px-8" onclick="sumbitAddBookForm()">Submit</button>
             </form> 
             <p class="text-1xl">Submitting form will add this book to your book list</p>
         </div>

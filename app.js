@@ -1,70 +1,68 @@
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
+const deleteFilter = document.querySelector(`.deleteFilter`);
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
-const addBookContainer = document.querySelector(`.addBookContainer`);
-const addBookButton = document.querySelector(`.addBookButton`);
-let addBookButtonToggled = false;
-addBookButton.addEventListener(`click`, () => {
-    if (!addBookButtonToggled) {
-        addBookContainer.classList.remove(`toggleHidden`);
-        addBookButtonToggled = true;
-        return
-    }
-    if (addBookButtonToggled) {
-        addBookContainer.classList.add(`.toggleHidden`)
-        addBookButtonToggled = false;
-        return
-    }
-})
-
 document.addEventListener(`click`, (e) => {
-    if (e.target.parentElement.className.includes('bookInfo')) {
+    if (e.target.parentElement.className.includes('bookInfo') && e.target.tagName !== `I`) {
         addMoreDetails(bookList, e.target.id, e.target.parentElement)
     }
 })
 
-let moreDetailsExpanded = false
-const addMoreDetails = (object, id, existingElement) => {
-    newElements = []
-    if (moreDetailsExpanded === true && lastElement === existingElement) {
-        moreDetailsExpanded = false
-        lastElement.removeChild(moreDetailsContainer);
-        return
-    } else if (moreDetailsExpanded === true && lastElement !== existingElement) lastElement.removeChild(moreDetailsContainer);
-    for (const book of object.books) {
-        if (book.id === id ) {
-            
-            moreDetailsContainer = document.createElement(`div`);
-            moreDetailsContainer.classList.add(`moreDetails`);
-
-            description = document.createElement(`p`);
-            description.innerText = `${book.description}`;
-            
-            moreDetailsContainer.appendChild(description)
-            console.log(moreDetailsContainer)
-            existingElement.appendChild(moreDetailsContainer)
-            description.classList.add(`toggleHeightSmall`)
-            setTimeout(() =>{
-                description.classList.remove(`toggleHeightSmall`)
-                description.classList.add(`toggleHeightNormal`)
-            }, 50)
-        }
+sumbitAddBookForm = () => {
+    let addBookForm = document.querySelector('#addBookForm');
+    let tempFormBook = {}
+    tempFormBook.books = []
+    let bookItem = {}
+    for (let i = 0; i < addBookForm.elements.length; i++) {
+        bookItem[addBookForm.elements[i].name] = addBookForm.elements[i].value;
     }
-    lastElement = existingElement; //used to reference element to be closed even if new element is clicked
-    moreDetailsExpanded = true;
+    bookItem.id = giveBookNewID();
+    tempFormBook.books.push(bookItem);
+    addToObject(bookList, tempFormBook.books)
+    addToPage(bookList)
 }
 
-const tempBookList = {}
 document.addEventListener("DOMContentLoaded", function(){
     if (localStorage.books) {
-        tempBookList.books = []
-        tempBookList.books = JSON.parse(localStorage.getItem(`books`))
-        addToObject(bookList, tempBookList.books)
-        addToPage(bookList)
+        const tempBookList = {};
+        tempBookList.books = [];
+        tempBookList.books = JSON.parse(localStorage.getItem(`books`));
+        addToObject(bookList, tempBookList.books);
+        addToPage(bookList);
     }
+        // setTimeout(() => {
+        // toggleDeleteButton()
+        // }, 1000)
 });
+
+let deleteIconToggled = false;
+const toggleDeleteButton = (e) => {
+    if (!deleteIconToggled) {
+        addHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                deleteIcon = document.createElement(`i`) //icon for book deletion
+                deleteIcon.setAttribute(`class`, `deleteIcon fa-regular fa-trash-can`);
+                deleteIcon.setAttribute('id', `${bookContainer.children[i].id}`);
+                bookContainer.children[i].appendChild(deleteIcon);
+                deleteIcon.addEventListener(`click`, deleteBook);
+            }
+        }
+        deleteIconToggled = true;
+    } else if (deleteIconToggled) {
+        removeHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                deleteIcon = document.querySelector(`.deleteIcon`)
+                bookContainer.children[i].removeChild(deleteIcon);
+            }
+        }
+        deleteIconToggled = false;
+    }
+}
+deleteFilter.addEventListener(`click`, toggleDeleteButton);
 
 let searchTimer;
 let searchBox;
@@ -254,6 +252,17 @@ const addObjectToLocalStorage = (object) => {
     localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
 }
 
+const downloadFile = (data, filename) => {
+    const file = JSON.stringify(data)
+    const link = document.createElement('a')
+    link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file))
+    link.setAttribute('download', filename || 'data.json')
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+}
+
 const toArray = (a, b, array, i) => {
     array = []
     array.push(a);
@@ -344,6 +353,10 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
 
 }
 
+const removeElement = (element) => {
+    element.parentNode.removeChild(element)
+}
+
 let coverDiv;
 let titleAndAuthorDiv
 const appendToSearchBox = (...elements) => {
@@ -372,6 +385,92 @@ const appendToSearchBox = (...elements) => {
     if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
     addEventToAddToObject(searchedBooks, tempBookItem);
     searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
+}
+
+const addBookContainer = document.querySelector(`.addBookContainer`);
+const addBookButton = document.querySelector(`.addBookButton`);
+let addBookButtonToggled = false;
+addBookButton.addEventListener(`click`, () => {
+    if (!addBookButtonToggled) {
+        addBookContainer.classList.remove(`toggleHidden`);
+        addBookButtonToggled = true;
+        return
+    }
+    if (addBookButtonToggled) {
+        addBookContainer.classList.add(`.toggleHidden`)
+        addBookButtonToggled = false;
+        return
+    }
+})
+
+let moreDetailsExpanded = false
+const addMoreDetails = (object, id, existingElement) => {
+    newElements = []
+    if (moreDetailsExpanded === true && lastElement === existingElement) {
+        moreDetailsExpanded = false
+        lastElement.classList.remove(`selectedBook`)
+        lastElement.removeChild(moreDetailsContainer);
+        return
+    } else if (moreDetailsExpanded === true && lastElement !== existingElement) {
+        lastElement.classList.remove(`selectedBook`)
+        lastElement.removeChild(moreDetailsContainer);
+    }
+    for (const book of object.books) {
+        if (book.id === id ) {
+            moreDetailsContainer = document.createElement(`div`);
+            moreDetailsContainer.classList.add(`moreDetails`);
+
+            moreDetailsFirstItems = document.createElement(`div`);
+            moreDetailsFirstItems.classList.add(`additionInfo`);
+
+            if (book.publishedDate) {
+                publishedDate = document.createElement(`div`);
+                publishedDateTextHeader = document.createElement(`h2`);
+                publishedDateTextHeader.innerText = (`Published: `);
+                publishedDateText = document.createElement(`p`);
+                publishedDateText.innerText = (book.publishedDate);
+                publishedDate.appendChild(publishedDateTextHeader);
+                publishedDate.appendChild(publishedDateText);
+                moreDetailsFirstItems.appendChild(publishedDate);
+            }
+
+            if (book.pageCount) {
+                pageCount = document.createElement(`div`);
+                pageCountTextHeader = document.createElement(`h2`);
+                pageCountTextHeader.innerText = (`Pages: `);
+                pageCountText = document.createElement(`p`);
+                pageCountText.innerText = (book.pageCount);
+                pageCount.appendChild(pageCountTextHeader);
+                pageCount.appendChild(pageCountText);
+                moreDetailsFirstItems.appendChild(pageCount);
+            }
+
+            previewButton = document.createElement(`button`);
+            if (book.accessViewStatusEmbeddable && book.accessViewStatusEmbeddable === `SAMPLE`) {
+                previewLink = document.createElement(`a`);
+                previewLink.href = book.previewLink;
+                previewLink.target = `#`;
+                previewLink.innerText = `Preview`;
+                previewButton.appendChild(previewLink)
+            } else previewButton.innerText = `Preview Unavailable`;
+            moreDetailsFirstItems.appendChild(previewButton);
+
+            description = document.createElement(`p`);
+            description.innerText = `${book.description}`;
+            
+            moreDetailsContainer.appendChild(description)
+            moreDetailsContainer.appendChild(moreDetailsFirstItems);
+            existingElement.appendChild(moreDetailsContainer)
+            existingElement.classList.add(`selectedBook`)
+            description.classList.add(`toggleHeightSmall`)
+            setTimeout(() =>{
+                description.classList.remove(`toggleHeightSmall`)
+                description.classList.add(`toggleHeightNormal`)
+            }, 50)
+        }
+    }
+    lastElement = existingElement; //used to reference element to be closed even if new element is clicked
+    moreDetailsExpanded = true;
 }
 
 const bookList = {};
@@ -469,6 +568,20 @@ const checkForDublicates = (object, ...objectToAdd) => {
     return false
 }
 
+const addHighlightButton = (element) => {
+    element.classList.add(`highlightButton`);
+}
+
+const removeHighlightButton = (element) => {
+    element.classList.remove(`highlightButton`);
+}
+
+const deleteBook = (e) => {
+    bookList.books = bookList.books.filter(book => book.id !== e.target.id)
+    removeElement(e.target.parentNode)
+    addObjectToLocalStorage(bookList)
+}
+
 const styleSearchBox = () => {
     searchBox.setAttribute('id', 'toggleSearchStyle'); 
 }
@@ -525,26 +638,45 @@ const toggleLineHeight = () => {
 const toggleLineHeightButton = document.querySelector(`.toggleLineHeight`).addEventListener(`click`, () => {
     if (!coverToggled) coverToggled = true;
     else coverToggled = false;
-    toggleLineHeight()
+    toggleLineHeight();
 })
 
 const pullBookFromObject = (object, id) => {
     selectedBookArray = []
     for (const book of object.books) {
         if (book.id === id) {
-            selectedBookArray.push(book)
+            selectedBookArray.push(book);
             return selectedBookArray;
         } 
     }
     
 }
 
+const grabBookByID = (object, bookID) => {
+    for (const book of object.books) {
+        if (book.id === bookID) return book;
+        else return "Book not found";
+    }
+}
+
+let customBookID = `custom`;
+const giveBookNewID = () => {
+    let idValue = Math.floor(Math.random() * 10);
+    customBookID = `${customBookID}${idValue}`;
+    for (const book of bookList.books) {
+        if (book.id === customBookID) {
+            return giveBookNewID();
+        }
+    }
+    return customBookID;
+}
+
 const addLoader = (parent) => {
-    parent.appendChild(loader)
+    parent.appendChild(loader);
 }
 
 const removeLoader = (parent) => {
-    parent.removeChild(loader)
+    parent.removeChild(loader);
 }
 
 const removeBooks = (x) => {
