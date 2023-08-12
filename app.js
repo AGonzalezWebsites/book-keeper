@@ -1,6 +1,7 @@
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
 const deleteFilter = document.querySelector(`.deleteFilter`);
+const editFilter = document.querySelector(`.editFilter`);
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
@@ -10,20 +11,6 @@ document.addEventListener(`click`, (e) => {
     }
 })
 
-sumbitAddBookForm = () => {
-    let addBookForm = document.querySelector('#addBookForm');
-    let tempFormBook = {}
-    tempFormBook.books = []
-    let bookItem = {}
-    for (let i = 0; i < addBookForm.elements.length; i++) {
-        bookItem[addBookForm.elements[i].name] = addBookForm.elements[i].value;
-    }
-    bookItem.id = giveBookNewID();
-    tempFormBook.books.push(bookItem);
-    addToObject(bookList, tempFormBook.books)
-    addToPage(bookList)
-}
-
 document.addEventListener("DOMContentLoaded", function(){
     if (localStorage.books) {
         const tempBookList = {};
@@ -32,37 +19,22 @@ document.addEventListener("DOMContentLoaded", function(){
         addToObject(bookList, tempBookList.books);
         addToPage(bookList);
     }
-        // setTimeout(() => {
-        // toggleDeleteButton()
-        // }, 1000)
+    //prevents submitting both forms on enter key press
+    addBookForm.onkeypress = function(e) { 
+        var key = e.charCode || e.keyCode || 0;     
+        if (key == 13) {
+            e.preventDefault();
+        }
+    }
+    editBookForm.onkeypress = function(e) {
+        var key = e.charCode || e.keyCode || 0;     
+        if (key == 13) {
+            e.preventDefault();
+        }
+    }
 });
 
-let deleteIconToggled = false;
-const toggleDeleteButton = (e) => {
-    if (!deleteIconToggled) {
-        addHighlightButton(e.target);
-        for (i = 0; i < bookContainer.children.length; i++) {
-            if (bookContainer.children[i].className.includes(`bookInfo`)) {
-                deleteIcon = document.createElement(`i`) //icon for book deletion
-                deleteIcon.setAttribute(`class`, `deleteIcon fa-regular fa-trash-can`);
-                deleteIcon.setAttribute('id', `${bookContainer.children[i].id}`);
-                bookContainer.children[i].appendChild(deleteIcon);
-                deleteIcon.addEventListener(`click`, deleteBook);
-            }
-        }
-        deleteIconToggled = true;
-    } else if (deleteIconToggled) {
-        removeHighlightButton(e.target);
-        for (i = 0; i < bookContainer.children.length; i++) {
-            if (bookContainer.children[i].className.includes(`bookInfo`)) {
-                deleteIcon = document.querySelector(`.deleteIcon`)
-                bookContainer.children[i].removeChild(deleteIcon);
-            }
-        }
-        deleteIconToggled = false;
-    }
-}
-deleteFilter.addEventListener(`click`, toggleDeleteButton);
+
 
 let searchTimer;
 let searchBox;
@@ -100,40 +72,13 @@ myBookSearch.addEventListener("keydown", (e) => {
     }, 200)
 });
 
-
-//Fetching from Books API
-const fetchBooksAPI = (text) => {
-    return fetch(`https://www.googleapis.com/books/v1/volumes?q=${text}&key=AIzaSyCRN35xl_3LT3eyELbB0_NCyK9WYlFAfKY`)
-    // return fetch(`https://openlibrary.org/search.json?q=${text}`)
-        .then((res) => {
-            return res.json();
-        })
-        .then((data) => {
-            return data;
-        });
-}
-
-async function getApiData(text) {
-    try {
-        const fetched = await fetchBooksAPI(text);
-        console.log(fetched)
-        return fetched; // Returning the specific data wanted
-    } catch (error) {
-        console.error("Error while fetching data:", error);
-        throw error;
-    }
-}
-
 const checkSearchInput = () => {
     //do nothing if same value
     if (lastSearch === bookSearch.value) return;
     lastSearch = bookSearch.value;
     //remove searchBox if no value in search
     if (bookSearch.value.length === 0) {
-        removeSearchBox();
-        removeBooks('.searchedBookInfo');
-        removeAllChildren(searchBox)
-        searching = false;
+        stopSearching()
         return;
     } else if (bookSearch.value.length <= 2) removeAllChildren(searchBox); //do nothing search has less than 2 characters
     searching = true;
@@ -160,6 +105,38 @@ const searchBooks = () => {
     })
 };
 
+const stopSearching = () => {
+    removeSearchBox();
+    removeBooks('.searchedBookInfo');
+    removeAllChildren(searchBox)
+    searching = false;
+    if (bookSearch.value) bookSearch.value = ""
+    return;
+}
+
+//Fetching from Books API
+const fetchBooksAPI = (text) => {
+    return fetch(`https://www.googleapis.com/books/v1/volumes?q=${text}&key=AIzaSyCRN35xl_3LT3eyELbB0_NCyK9WYlFAfKY`)
+    // return fetch(`https://openlibrary.org/search.json?q=${text}`)
+    .then((res) => {
+        return res.json();
+    })
+    .then((data) => {
+        return data;
+    });
+}
+
+async function getApiData(text) {
+    try {
+        const fetched = await fetchBooksAPI(text);
+        console.log(fetched)
+        return fetched; // Returning the specific data wanted
+    } catch (error) {
+        console.error("Error while fetching data:", error);
+        throw error;
+    }
+}
+
 //adding book data to object of books
 const addToObjectFromApi = (object, bookSelected) => {
     if (object === searchedBooks) object.books = [];
@@ -184,6 +161,7 @@ const addToObjectFromApi = (object, bookSelected) => {
                 if (book.volumeInfo.hasOwnProperty(`publisher`)) bookObject.publisher = book.volumeInfo.publisher;
                 if (book.volumeInfo.hasOwnProperty(`description`)) bookObject.description = book.volumeInfo.description;
                 if (book.volumeInfo.hasOwnProperty(`industryIdentifiers`)) bookObject.industryIdentifiers = book.volumeInfo.industryIdentifiers;
+                if (book.volumeInfo.hasOwnProperty(`canonicalVolumeLink`)) bookObject.moreInfo = book.volumeInfo.canonicalVolumeLink;
             }
             if (book.hasOwnProperty('searchInfo')) {
                 if (book.searchInfo.hasOwnProperty(`textSnippet`)) bookObject.textSnippet = book.searchInfo.textSnippet;
@@ -202,6 +180,7 @@ const addToObjectFromApi = (object, bookSelected) => {
             }
             bookObject.etag = book.etag;
             bookObject.id = book.id
+            bookObject.favorite = false;
                
             object.books.push(bookObject);
         }
@@ -238,7 +217,9 @@ const addToObject = (object, bookSelected) => {
                 pdfIsAvailable: book.pdfIsAvailable,
                 pdfAcsTokenLink: book.pdfAcsTokenLink,
                 etag: book.etag,
-                id: book.id
+                id: book.id,
+                moreInfo: book.moreInfo,
+                favorite: book.favorite,
             };
             object.books.push(bookObject);
         }
@@ -249,6 +230,9 @@ const addToObject = (object, bookSelected) => {
 };
 
 const addObjectToLocalStorage = (object) => {
+    if (localStorage.books) {
+        localStorage.removeItem(`books`);
+    }
     localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
 }
 
@@ -387,22 +371,6 @@ const appendToSearchBox = (...elements) => {
     searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
 }
 
-const addBookContainer = document.querySelector(`.addBookContainer`);
-const addBookButton = document.querySelector(`.addBookButton`);
-let addBookButtonToggled = false;
-addBookButton.addEventListener(`click`, () => {
-    if (!addBookButtonToggled) {
-        addBookContainer.classList.remove(`toggleHidden`);
-        addBookButtonToggled = true;
-        return
-    }
-    if (addBookButtonToggled) {
-        addBookContainer.classList.add(`.toggleHidden`)
-        addBookButtonToggled = false;
-        return
-    }
-})
-
 let moreDetailsExpanded = false
 const addMoreDetails = (object, id, existingElement) => {
     newElements = []
@@ -422,29 +390,41 @@ const addMoreDetails = (object, id, existingElement) => {
 
             moreDetailsFirstItems = document.createElement(`div`);
             moreDetailsFirstItems.classList.add(`additionInfo`);
-
+            
             if (book.publishedDate) {
                 publishedDate = document.createElement(`div`);
                 publishedDateTextHeader = document.createElement(`h2`);
-                publishedDateTextHeader.innerText = (`Published: `);
+                publishedDateTextHeader.innerText = (`Released`);
                 publishedDateText = document.createElement(`p`);
                 publishedDateText.innerText = (book.publishedDate);
                 publishedDate.appendChild(publishedDateTextHeader);
                 publishedDate.appendChild(publishedDateText);
                 moreDetailsFirstItems.appendChild(publishedDate);
             }
-
+            
+            if (book.publisher) {
+                publisher = document.createElement(`div`);
+                publisherTextHeader = document.createElement(`h2`);
+                publisherTextHeader.innerText = (`Publisher`);
+                publisherText = document.createElement(`p`);
+                publisherText.innerText = (book.publisher);
+                publisher.appendChild(publisherTextHeader);
+                publisher.appendChild(publisherText);
+                moreDetailsFirstItems.appendChild(publisher);
+            }
+            
+            
             if (book.pageCount) {
                 pageCount = document.createElement(`div`);
                 pageCountTextHeader = document.createElement(`h2`);
-                pageCountTextHeader.innerText = (`Pages: `);
+                pageCountTextHeader.innerText = (`Page Count`);
                 pageCountText = document.createElement(`p`);
                 pageCountText.innerText = (book.pageCount);
                 pageCount.appendChild(pageCountTextHeader);
                 pageCount.appendChild(pageCountText);
                 moreDetailsFirstItems.appendChild(pageCount);
             }
-
+            
             previewButton = document.createElement(`button`);
             if (book.accessViewStatusEmbeddable && book.accessViewStatusEmbeddable === `SAMPLE`) {
                 previewLink = document.createElement(`a`);
@@ -454,7 +434,7 @@ const addMoreDetails = (object, id, existingElement) => {
                 previewButton.appendChild(previewLink)
             } else previewButton.innerText = `Preview Unavailable`;
             moreDetailsFirstItems.appendChild(previewButton);
-
+            
             description = document.createElement(`p`);
             description.innerText = `${book.description}`;
             
@@ -462,11 +442,13 @@ const addMoreDetails = (object, id, existingElement) => {
             moreDetailsContainer.appendChild(moreDetailsFirstItems);
             existingElement.appendChild(moreDetailsContainer)
             existingElement.classList.add(`selectedBook`)
-            description.classList.add(`toggleHeightSmall`)
+            moreDetailsContainer.classList.add(`toggleHeightSmall`)
             setTimeout(() =>{
-                description.classList.remove(`toggleHeightSmall`)
-                description.classList.add(`toggleHeightNormal`)
-            }, 50)
+                moreDetailsContainer.classList.remove(`toggleHeightSmall`);
+                moreDetailsContainer.classList.add(`toggleHeightNormal`);
+                moreDetailsContainer.classList.remove(`toggleHeightNormal`);
+
+            }, 10)
         }
     }
     lastElement = existingElement; //used to reference element to be closed even if new element is clicked
@@ -546,7 +528,7 @@ const ratingTitle = document.querySelector('.ratingFilter').addEventListener('cl
 });
 
 
-const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click
+const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click and close searchbox
     element[0].addEventListener('click', (e) => {
         selectedBook = pullBookFromObject(objectFrom, e.target.id);
         result = checkForDublicates(bookList, selectedBook)
@@ -556,8 +538,174 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
         }
         addToObject(bookList, selectedBook)
         addToPage(bookList)
+        stopSearching()
     });
 }
+
+submitAddBookForm = () => {
+    let addBookForm = document.querySelector('#addBookForm');
+    let tempFormBook = {}
+    tempFormBook.books = []
+    let bookItem = {}
+    for (let i = 0; i < addBookForm.elements.length; i++) {
+        bookItem[addBookForm.elements[i].name] = addBookForm.elements[i].value;
+    }
+    bookItem.id = giveBookNewID();
+    tempFormBook.books.push(bookItem);
+    tempFormBook.books[0].favorite = false;
+    addToObject(bookList, tempFormBook.books)
+    addToPage(bookList)
+}
+
+const closeAddBookForm = () => {
+    addBookContainer.classList.add(`toggleHidden`);
+}
+
+const addBookContainer = document.querySelector(`.addBookContainer`);
+const addBookButton = document.querySelector(`.addBookButton`);
+let addBookButtonToggled = false;
+addBookButton.addEventListener(`click`, () => {
+    if (!addBookButtonToggled) {
+        addBookContainer.classList.remove(`toggleHidden`);
+        addBookButtonToggled = true;
+        return
+    }
+    if (addBookButtonToggled) {
+        addBookContainer.classList.add(`.toggleHidden`)
+        addBookButtonToggled = false;
+        return
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+let deleteIconToggled = false;
+const toggleDeleteButton = (e) => {
+    if (!deleteIconToggled) {
+        addHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                deleteIcon = document.createElement(`i`) //icon for book deletion
+                deleteIcon.setAttribute(`class`, `deleteIcon fa-regular fa-trash-can`);
+                deleteIcon.setAttribute('id', `${bookContainer.children[i].id}`);
+                bookContainer.children[i].appendChild(deleteIcon);
+                deleteIcon.addEventListener(`click`, deleteBook);
+            }
+        }
+        deleteIconToggled = true;
+    } else if (deleteIconToggled) {
+        removeHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                deleteIcon = document.querySelector(`.deleteIcon`)
+                bookContainer.children[i].removeChild(deleteIcon);
+            }
+        }
+        deleteIconToggled = false;
+    }
+}
+deleteFilter.addEventListener(`click`, toggleDeleteButton);
+
+const deleteBook = (e) => {
+    bookList.books = bookList.books.filter(book => book.id !== e.target.id)
+    toggleClasses(e.target.parentNode, `toggleHeightNormal`, `toggleHeightSmall`);
+    setTimeout(() => {
+        removeElement(e.target.parentNode)
+        addObjectToLocalStorage(bookList)
+    }, 500)
+}
+
+
+let editIconToggled = false;
+const toggleEditButton = (e) => {
+    if (!editIconToggled) {
+        addHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                editIcon = document.createElement(`i`) //icon for book deletion
+                editIcon.setAttribute(`class`, `editIcon fa-regular fa-pen-to-square`);
+                editIcon.setAttribute('id', `${bookContainer.children[i].id}`);
+                bookContainer.children[i].appendChild(editIcon);
+                editIcon.addEventListener(`click`, openEditBookForm);
+            }
+        }
+        editIconToggled = true;
+    } else if (editIconToggled) {
+        removeHighlightButton(e.target);
+        for (i = 0; i < bookContainer.children.length; i++) {
+            if (bookContainer.children[i].className.includes(`bookInfo`)) {
+                editIcon = document.querySelector(`.editIcon`)
+                bookContainer.children[i].removeChild(editIcon);
+            }
+        }
+        editIconToggled = false;
+    }
+}
+editFilter.addEventListener(`click`, toggleEditButton);
+
+
+const editBookContainer = document.querySelector(`.editBookContainer`);
+let bookToEdit;
+let editBookButtonToggled = false;
+const openEditBookForm = (e) => {
+    bookToEdit = bookList.books.filter(book => book.id === e.target.id)
+    let editBookForm = document.querySelector('#editBookForm');
+    if (!editBookButtonToggled) {
+        addValuesToForm(bookToEdit, editBookForm)
+        editBookContainer.classList.remove(`toggleHidden`);
+        editBookButtonToggled = true;
+    } else if (editBookButtonToggled) {
+        editBookContainer.classList.add(`.toggleHidden`)
+        editBookButtonToggled = false;
+        return
+    }
+}
+
+const addValuesToForm = (book, form) => {
+    for (let i = 0; i < form.elements.length; i++) {
+        form.elements[i].value = replaceUndefined(book[0][form.elements[i].name]);
+    }
+}
+
+submitEditBookForm = (book, form) => {
+    for (let i = 0; i < form.elements.length; i++) {
+        book[0][form.elements[i].name] = form.elements[i].value;
+    }
+
+    for(const toReplace of bookList.books) {
+        if(toReplace.id === book[0].id) {
+            for (let i = 0; i < form.elements.length; i++) {
+                toReplace[form.elements[i].name] = form.elements[i].value;
+            }
+        }
+    }
+    addObjectToLocalStorage(bookList)
+    addToPage(bookList)
+}
+
+
+
+    // toggleClasses(e.target.parentNode, `toggleHeightNormal`, `toggleHeightSmall`);
+    // setTimeout(() => {
+    //     removeElement(e.target.parentNode)
+    //     addObjectToLocalStorage(bookList)
+    // }, 500)
+
+
+
+
+
+
+
+
 
 const checkForDublicates = (object, ...objectToAdd) => {
     for (const book of object.books) {
@@ -574,12 +722,6 @@ const addHighlightButton = (element) => {
 
 const removeHighlightButton = (element) => {
     element.classList.remove(`highlightButton`);
-}
-
-const deleteBook = (e) => {
-    bookList.books = bookList.books.filter(book => book.id !== e.target.id)
-    removeElement(e.target.parentNode)
-    addObjectToLocalStorage(bookList)
 }
 
 const styleSearchBox = () => {
@@ -615,9 +757,13 @@ const removeAllClass = (clss) => {
 }
 
 const toggleClasses = (element, classA, classB) => {
-    element.classList.toggle(classA);
+    element.classList.add(classA);
     setTimeout(() => {
-        element.classList.toggle(classB);
+        element.classList.remove(classA);
+        element.classList.add(classB);
+        setTimeout(() => {
+            element.classList.remove(classB);
+        }, 500)
     }, 10);
 }
 
@@ -690,10 +836,9 @@ const reduceDecimal = (x) => {
     return Number.parseFloat(x).toFixed(2);
   }
 
-  let undefinedString = "N/A";
   const replaceUndefined = (...texts) => {
     for (const text of texts) {
-        if (!text || text === `NaN`) return undefinedString
+        if (!text || text === `NaN`) return 'N/A'
         else return text
     } 
 }
@@ -727,3 +872,16 @@ const reduceDecimal = (x) => {
 ///////////////////////////////////////////////////
 // JSON Fetch Above ^
 /////////////////////////////////////////////////
+
+
+const input = document.querySelector(`#file-selector`)
+input.type = "file";
+input.addEventListener("change", async event => {
+    const json = JSON.parse(await input.files[0].text());
+
+    console.log(json);
+    addObjectToLocalStorage(json)
+    bookList.books = [];
+    addToObject(bookList, json.books);
+    addToPage(bookList);
+});

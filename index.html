@@ -11,25 +11,42 @@
     <title>Book Saver</title>
 </head>
 <body>
-    </div>
     <div class="navBar">
-        <h1><a href="" target="#">Book Saver</a></h1>
+        <div class="logo" onclick="location.reload()">
+            <img src="img/bookLogo.png" alt="logo">
+            <h1>Book Saver</h1>
+        </div>
+        <div class="dropdown">
+            <span>File</span>
+            <div class="dropdown-content flex items-center">
+                <input type="file" id="file-selector" accept=".bkls" style="display: none;">
+                <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList, `my_book_list.bkls`)">Download Book List</button>
+                <input type="button" value="Upload Book List" onclick="document.getElementById('file-selector').click();" />
+            </div>
+        </div>
+        <div class="dropdown">
+            <span>Options</span>
+            <div class="dropdown-content flex items-center">
+                <input type="file" id="file-selector" accept=".bkls" style="display: none;">
+                <button type="button" class="addBookButton py-1 px-3">Add Book Manually</button>
+            </div>
+        </div>
+
         <div class="bookSearch items-center">
-            <button type="button" class="addBookButton py-1 px-3">Add Manually</button>
-            <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList.books, `my_book_list.bkls`)">Download List</button>
             <input type="text" placeholder="Search Books to Add.." class="bookSearchInput bookSearch">
             <!-- <div class="searchResults"></div> -->
         </div>
+
     </div>
     <div class="bookListContainer">
         <div class="filterBox">
             <div class="filterHeader"><p>Filters</p></div>
             <div class="myBookSearch">
-                <input type="text" placeholder="Filter Your Books.." class="myBookSearchInput">
+                <input type="text" placeholder="Filter by Keyword.." class="myBookSearchInput">
                 <!-- <div class="myBooksSearchResults"></div> -->
             </div>
             <div class="lineHeightContainer">
-                <p>Collapse covers:</p>
+                <p>Collapse</p>
                 <label class="switch">
                 <input class='toggleLineHeight' type="checkbox">
                 <span class="slider round"></span>
@@ -38,6 +55,7 @@
             <div class="filterButtons">
                 <button type="button" class="ratingFilter py-1 px-3">Top Rated</button>
                 <button type="button" class="deleteFilter py-1 px-3">Delete Book</button>
+                <button type="button" class="editFilter py-1 px-3">Edit Book</button>
             </div>
         </div>
         <div class="books">
@@ -60,13 +78,49 @@
         <div class="addBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Add Book Info</h1>
             
-            <form id="addBookForm" action="/index.html">
-                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row m-9">
-                <input type="text" name="authors" placeholder="Author.." class="flex flex-row m-9">
-                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row m-9">
-                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-9">
-                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-9"></textarea>
-                <button class="mx-8 mb-5 p-2 px-8" onclick="sumbitAddBookForm()">Submit</button>
+            <form class="overflow-scroll" id="addBookForm" action="/index.html">
+                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row m-6">
+                <input type="text" name="authors" placeholder="Author.." class="flex flex-row m-6">
+                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row m-6">
+                <input type="text" name="pageCount" placeholder="Page Count" class="flex flex-row m-6">
+                <input type="text" name="publishedDate" placeholder="Publish Date" class="flex flex-row m-6">
+                <input type="text" name="publisher" placeholder="Publisher" class="flex flex-row m-6">
+                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-6">
+                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-6"></textarea>
+                <div class="addBookFormButtons">
+                <button class="cancelButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeAddBookForm()">Cancel</button>
+                <button class="submitButton  mr-6 mb-6 p-2 px-8" onclick="submitAddBookForm()">Submit</button>
+                </div>
+            </form> 
+            <p class="text-1xl">Submitting form will add this book to your book list</p>
+        </div>
+    </div>
+
+    <div class="editBookContainer toggleHidden flex justify-center items-center fixed">
+        <div class="editBook flex items-center flex-col justify-center p-9 bg-white">
+            <h1 class="text-4xl">Edit Book Info</h1>
+            
+            <form class="overflow-scroll" id="editBookForm" action="/index.html">
+                <h2 class="text-lg italic m-0 mt-6 p-0">Title</h2>
+                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Author</h2>
+                <input type="text" name="authors" placeholder="Author.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Subject</h2>
+                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row mb-6">
+                <hh2 class="text-lg italic m-0 p-0"2>Page Count</h2>
+                <input type="text" name="pageCount" placeholder="Page Count" class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Publish Date</h2>
+                <input type="text" name="publishedDate" placeholder="Publish Date" class="flex flex-row mb-6">
+                <hh2 class="text-lg italic m-0 p-0"2>Publisher</h2>
+                <input type="text" name="publisher" placeholder="Publisher" class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Cover URL</h2>
+                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Synopsis</h2>
+                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row mb-6"></textarea>
+                <div class="editBookFormButtons">
+                <button class="cancelButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeEditBookForm()">Cancel</button>
+                <button class="submitButton  mr-6 mb-6 p-2 px-8" onclick="submitEditBookForm(bookToEdit, editBookForm)">Submit</button>
+                </div>
             </form> 
             <p class="text-1xl">Submitting form will add this book to your book list</p>
         </div>

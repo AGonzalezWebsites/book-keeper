@@ -1,13 +1,15 @@
 :root {
     --container-borders: 5px;
     --container-max-width: 90vw;
+    --navBar-height: 60px;
+    --navBar-border: 15px;
     --header-font: Inspiration;
     --book-border-radius-top: 10px 10px 0 0;
     --book-border-radius-botom: 0 0 10px 10px;
     --book-border-radius: 10px;
     
 
-    --primary-100:#1e295a;
+    /* --primary-100:#1e295a;
     --primary-200:#4c5187;
     --primary-300:#cbcbdd;
     --accent-100:#F18F01;
@@ -16,9 +18,10 @@
     --text-200:#5f5f5f;
     --bg-100:#F5ECD7;
     --bg-200:#ebe2cd;
-    --bg-300:#c2baa6;
+    --bg-300:#c2baa6; */
 
-    /* MIDNIGHT --primary-100:#cfcfcf;
+    /* MIDNIGHT  */
+    /* --primary-100:#cfcfcf;
     --primary-200:#b9b9b9;
     --primary-300:#9b9b9b;
     --accent-100:#7F7F7F;
@@ -30,8 +33,8 @@
     --bg-300:#2c2c2c; */
       
       
-    /* Optional
-    --primary-100:#8B6B61;
+    /* Optional */
+    /* --primary-100:#8B6B61;
     --primary-200:#bc998e;
     --primary-300:#fffdf1;
     --accent-100:#F2A900;
@@ -55,7 +58,7 @@
     --bg-300:#bfbfbf; */
       
       /* BEST */
-    /* --primary-100:#BFAE9F;
+    --primary-100:#BFAE9F;
     --primary-200:#937962;
     --primary-300:#FFFFFF;
     --accent-100:#C9BEB9;
@@ -66,8 +69,12 @@
     --bg-200:#EEE3D7;
     --bg-300:#FFFFFF;
     --bg-100-darker:#f4ebe1;
-    --bg-200-darker:#eee1d2; */
+    --bg-200-darker:#eee1d2;
       
+}
+
+::-webkit-scrollbar {
+    width: 0px;
 }
 
 a {
@@ -86,34 +93,98 @@ body {
 
 .navBar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    height: auto;
+    height: var(--navBar-height);
     width: 100%;
     color: var(--text-100);
-    background-image: -webkit-linear-gradient(var(--primary-100), var(--primary-200));
+    background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
+    border-bottom: var(--navBar-border) solid var(--primary-200);
 }
 
-.navBar h1 {
+.navBar .logo {
     display: flex;
     align-items: center;
+    height: 80%;
     padding: 0 10px;
-    background: var(--bg-100);
-    border: 4px solid var(--text-100);
-    border-radius: 91% 9% 89% 11% / 18% 77% 23% 82%;
-    font-size: 2.6rem;
-    font-weight: 900;
-    font-family: var(--header-font);
-    letter-spacing: .6rem;
-    transform: rotate(-.5deg);
-    margin: 5px 10px;
     transition: .5s;
 }
 
-.navBar h1:hover {
-    cursor: pointer;
-    transform: rotate(5deg);
+.navBar .logo h1 {
+    display: flex;
+    align-items: center;
+    color: var(--text-100);
+    font-size: 2.5rem;
+    min-width: fit-content;
+    font-weight: 900;
+    font-family: var(--header-font);
+    letter-spacing: .6rem;
+    margin: 5px 0 5px 10px;
+    transform: rotate(-.5deg);
 }
+
+.navBar .logo:hover {
+    cursor: pointer;
+    transform: rotate(3deg);
+}
+
+.navBar .logo img {
+    height: 80%;
+    width: auto;
+}
+
+.dropdown:nth-child(1n) {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100%;
+    border-left: 1px solid var(--text-100);
+    border-right: 1px solid var(--text-100);
+}
+
+.dropdown:nth-child(2n) {
+    border-right: none;
+}
+
+.dropdown:hover {
+    cursor: pointer;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-content, .dropdown:active .dropdown-content {
+    display: flex; 
+    flex-direction: column; 
+    flex-wrap: nowrap;
+    top: calc(var(--navBar-height) - var(--navBar-border));
+}
+
+
+.dropdown button, .dropdown input {
+    border-top: 1px solid var(--text-100);
+    border-bottom: 1px solid var(--text-100);
+    background-color: var(--bg-100);
+    font-size: 1.6rem;
+    color: var(--text-100);
+    width: 100%;
+    padding: 5px;
+}
+
+.dropdown button:hover, .dropdown input:hover {
+    cursor: pointer;
+    background-color: var(--text-100);
+    color: var(--bg-300);
+}
+
 /*
 Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing Script
 */
@@ -124,6 +195,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     background: rgba(0, 0, 0, 0.723);
     height: 100vh;
     width: 100vw;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 }
 
 .addBook {
@@ -134,42 +206,65 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 .addBook input, .addBook textarea, .addBook button {
     color: var(--text-100);
     font-size: 1.8rem;
-    border: 3px solid var(--text-100);
+    border: 2px solid var(--text-100);
     border-radius: 5px;
     font-style: italic;
 }
 
-.addBook button {
-    background: var(--accent-100);
+.addBook .submitButton {
+    background: rgb(42, 170, 42);
+}
+
+.addBook .cancelButton {
+    background: rgb(231, 66, 66);
+}
+
+.editBookContainer {
+    top: 0px;
+    left: 0px;
+    background: rgba(0, 0, 0, 0.723);
+    height: 100vh;
+    width: 100vw;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.editBook {
+    border: 3px solid var(--text-100);
+    border-radius: 5px;
+}
+
+.editBook input, .editBook textarea, .editBook button {
+    color: var(--text-100);
+    font-size: 1.8rem;
+    border: 2px solid var(--text-100);
+    border-radius: 5px;
+    font-style: italic;
+}
+
+.editBook .submitButton {
+    background: rgb(42, 170, 42);
+}
+
+.editBook .cancelButton {
+    background: rgb(231, 66, 66);
 }
 
 .bookSearch {
-    margin: 5px 10px;
+    height: 100%;
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
     justify-content: center;
     align-self: center;
     position: relative;
-}
+    margin-left: auto;
 
-.bookSearch button {
-    border: 3px solid var(--text-100);
-    background-color: var(--bg-100);
-    font-size: 1.8rem;
-    color: var(--text-100);
-    border-radius: 5px;
-    width: fit-content;
-    min-width: 130px;
-    margin: 0 5px;
 }
 
 .navBar .bookSearch input {
     display: flex;
     align-items: center;
-    border: 4px solid var(--text-100);
     color: var(--text-100);
-    border-radius: 100% 9% 100% 9% / 8% 77% 8% 77%;
     font-size: 1.8rem;
     width: 200px;
     padding-left: 10px;
@@ -181,17 +276,17 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     flex: 1;
     position: absolute;
     background: var(--bg-100);
-    top: 40px;
+    top: calc(var(--navBar-height) - var(--navBar-border));
     right: 0px;
     padding: 19px;
     height: 0;
-    width: 300px;
+    width: fit-content;
     max-width: 300px;
     border-radius: 5% 5% 5% 5% / 10% 10% 53% 53%;
     z-index: 1;
     transition: .5s;
     opacity: 0;
-    border: 4px solid var(--bg-300);
+    border: 4px solid var(--primary-200);
 }
 
 .searchedBookInfo {
@@ -200,7 +295,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     justify-content: flex-start;
     align-items: flex-end;
     margin: 5px 0;
-    border-bottom: 2px solid var(--bg-300);
+    border-bottom: 2px solid var(--primary-200);
 }
 
 .loader {
@@ -263,11 +358,11 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 .books {
     overflow-y: scroll;
     overflow-x: hidden;
-    flex: 1 1 60vw;
-    height: 78vh;
+    flex: 4 1 60vw;
+    height: 100%;
     transition: .5s;
     max-width: var(--container-max-width);
-    margin: 2vw;
+    margin: 0 2vw;
     background: var(--bg-200);
     border-radius: var(--book-border-radius);
 }
@@ -278,14 +373,16 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 }
 
 .bookListContainer {
+    height: calc(100vh - var(--navBar-height) - var(--navBar-border) - 8vw);
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     position: sticky;
     top: 2vw;
     justify-content: space-evenly;
     align-items: flex-start;
-    margin: 2vw;
-    flex-wrap: wrap;
+    margin: 4vw;
+    overflow: hidden;
 }
 
 .filterBox {
@@ -293,10 +390,10 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    flex: 1 3 8vw;
-    margin: 2vw;
+    flex: 1 4 8vw;
+    margin: 0 2vw 20px 0;
     background-color: var(--bg-200);
-    min-width: 220px;
+    min-width: 190px;
     max-height: 400px;
     max-width: var(--container-max-width);
     border-radius: var(--book-border-radius);
@@ -327,7 +424,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 
 .myBookSearch input {
     display: flex;
-    border: 3px solid var(--text-100);
+    border: 2px solid var(--text-100);
     color: var(--text-100);
     font-size: 1.8rem;
     width: 100%;
@@ -358,11 +455,11 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     flex-wrap: wrap;
 }
 
-.ratingFilter, .deleteFilter {
-    border: 3px solid var(--text-100);
-    background-color: var(--primary-300);
+.ratingFilter, .deleteFilter, .editFilter {
+    border: 2px solid var(--text-100);
+    background-color: var(--primary-200);
     font-size: 1.8rem;
-    color: var(--text-100);
+    color: var(--primary-300);
     border-radius: 5px;
     margin: 5px;
 }
@@ -389,7 +486,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     display: inline-block;
     width: 40px;
     height: 23px;
-    border: 3px solid var(--text-100);
+    border: 2px solid var(--text-100);
     border-radius: 50px;
   }
   
@@ -417,7 +514,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     height: 15px;
     width: 15px;
     left: 2px;
-    bottom: 1px;
+    bottom: 2px;
     background-color: var(--primary-200);
     -webkit-transition: .4s;
     transition: .4s;
@@ -432,9 +529,9 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(15px);
-    -ms-transform: translateX(15px);
-    transform: translateX(15px);
+    -webkit-transform: translateX(16px);
+    -ms-transform: translateX(16px);
+    transform: translateX(16px);
     background-color: var(--primary-300);
   }
   
@@ -480,14 +577,6 @@ input:checked + .slider:before {
     border-radius: var(--book-border-radius-top)
 }
 
-.bookListHeader p:first-child, .bookInfo div p:first-child {
-    margin-left: 2vw;
-}
-
-.bookListHeader p:last-child, .bookInfo div a:last-child {
-    margin-right: 2vw;
-}
-
 .bookListHeader, .bookInfo {
     display: flex;
     justify-content: space-evenly;
@@ -503,7 +592,7 @@ input:checked + .slider:before {
     position: relative;
     background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
     font-size: 1.8rem;
-    transition: height opacity .3s ease-in-out;
+    transition: .5s;
     color: var(--text-100);
 }
 
@@ -561,6 +650,22 @@ input:checked + .slider:before {
 .deleteIcon {
     position: absolute;
     background-color: #ff4848;
+    box-shadow: 0 0 3px black;
+    font-size: 1.6rem;
+    top: 0px;
+    right: 0px;
+    margin: 5px;
+    padding: 3px;
+    border-radius: 5px;
+    border: 2px solid black;
+    color: black;
+    z-index: 2;
+}
+
+.editIcon {
+    position: absolute;
+    background-color: #ffff3e;
+    box-shadow: 0 0 3px black;
     font-size: 1.6rem;
     top: 0px;
     right: 0px;
@@ -636,14 +741,20 @@ input:checked + .slider:before {
 .moreDetails {
     display: flex;
     flex-direction: column;
+    height: fit-content;
+    transition: height 2s ease-in;
     padding: 10px 10vw 10px 10vw;
+    transition: .4s;
+    overflow: hidden;
 }
 
-.moreDetails p {
+.moreDetails>p {
     pointer-events: all !important;
     font-size: 1.5rem;
     min-width: 100%;
     min-height: fit-content;
+    max-height: 26vh;
+    overflow-y: scroll;
     white-space: wrap;
     text-overflow: scroll;
     margin-bottom: 10px;
@@ -653,8 +764,9 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-top: 2px dotted var(--bg-100);
+    border-top: 2px inset var(--bg-100);
     padding-top: 10px;
+
 }
 
 .additionInfo button, .additionInfo div {
@@ -663,7 +775,7 @@ input:checked + .slider:before {
 
 
 .additionInfo button {
-    border: 3px solid var(--text-100);
+    border: 2px solid var(--text-100);
     background-color: var(--bg-100);
     font-size: 1.8rem;
     color: var(--text-100);
@@ -679,13 +791,17 @@ input:checked + .slider:before {
 .additionInfo div {
     display: flex;
     flex-direction: column;
-    min-width: fit-content;
+    min-width: 75px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 .additionInfo div h2 {
     white-space: nowrap;
-    min-width: 100%;
+    text-align: center;
     margin: 0;
     font-size: 1.6rem;
     font-weight: 600;
@@ -694,20 +810,25 @@ input:checked + .slider:before {
 .additionInfo div p {
     white-space: nowrap;
     margin: 0;
+    font-size: 1.2rem;
+    text-align: center;
+    font-style: italic;
 }
 
 .highlightButton {
-    border: 3px solid red;
+    box-shadow: 0 0 5px rgb(255, 0, 0);
+    border: 2px solid rgb(255, 92, 92);
+    color: rgb(255, 222, 222);
 }
 
 .toggleHeightSmall {
-    height: 0px;
+    opacity: 0;
     margin-right: 600px !important;
 }
 
 .toggleHeightNormal {
-    height: auto;
     margin-right: 0px !important;
+    opacity: 1;
 }
 
 .toggleHidden {
@@ -718,3 +839,93 @@ input:checked + .slider:before {
     display: flex
 }
 
+@media (max-width: 600px) {
+
+.navBar .logo img {
+    height: 70%;
+    width: auto;
+}
+
+.navBar .logo h1 {
+    display: none;
+}
+
+.navBar .bookSearch input {
+    display: flex;
+    align-items: center;
+    color: var(--text-100);
+    font-size: 1.8rem;
+    width: 150px;
+    padding-left: 10px;
+}
+
+.bookInfo {
+    font-size: 1.2rem;
+}
+
+.bookListHeader, .filterHeader {
+    font-size: 1.2rem;
+}
+
+.moreDetails>p {
+    font-size: 1.2rem;
+}
+
+.additionInfo div h2 {
+    font-size: 1.2rem;
+}
+
+.additionInfo div p {
+    font-size: .8rem;
+}
+
+.additionInfo button {
+    border: 2px solid var(--text-100);
+    background-color: var(--bg-100);
+    font-size: 1.2rem;
+    color: var(--text-100);
+    border-radius: 2px;
+    padding: 2px 0px;
+    margin: 0px;
+    min-width: fit-content;
+    max-width: fit-content;
+}
+
+.bookInfo div img {
+    aspect-ratio: 1 / 1.5;
+    height: auto;
+    background: silver;
+    transition: max-width opacity .3s ease-in-out;
+    max-height: auto;
+    margin-right: 3vw;
+    opacity: 1;
+}
+
+.numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
+    margin: 0 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: .3s;
+}
+
+.numberTitle, .bookInfo div p:first-child {
+    flex: 1;
+    max-width: 30px;
+    min-height: fit-content;
+    text-wrap: wrap;
+    overflow-y: scroll;
+}
+
+.moreDetails {
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    padding: 4px;
+}
+
+.moreDetails>p {
+    min-height: 200px;
+}
+
+}
