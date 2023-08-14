@@ -34,6 +34,45 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
+const setColorScheme = (colorSchemeChosen) => {
+    let r = document.querySelector(':root');
+    var rs = getComputedStyle(r);
+
+    if (colorSchemeChosen === "Default") {
+        r.style.setProperty('--primary-100', '#BFAE9F');
+        r.style.setProperty('--primary-200', '#937962');
+        r.style.setProperty('--primary-300', '#FFFFFF');
+        r.style.setProperty('--accent-100', '#C9BEB9');
+        r.style.setProperty('--accent-200', '#978178');
+        r.style.setProperty('--text-100', '#4D4D4D');
+        r.style.setProperty('--text-200', '#9e9e9e');
+        r.style.setProperty('--bg-100', '#F5EFE8');
+        r.style.setProperty('--bg-200', '#EEE3D7');
+        r.style.setProperty('--bg-300', '#FFFFFF');
+        r.style.setProperty('--bg-100-darker', '#f4ebe1');
+        r.style.setProperty('--bg-200-darker', '#eee1d2');
+    }
+
+    if (colorSchemeChosen === "Dark") {
+        r.style.setProperty('--primary-100', '#cfcfcf');
+        r.style.setProperty('--primary-200', '#b9b9b9');
+        r.style.setProperty('--primary-300', '#5c5c5c');
+        r.style.setProperty('--accent-100', '#7F7F7F');
+        r.style.setProperty('--accent-200', '#ffffff');
+        r.style.setProperty('--text-100', '#d8d8d8');
+        r.style.setProperty('--text-200', '#777777');
+        r.style.setProperty('--bg-100', '#000000');
+        r.style.setProperty('--bg-200', '#161616');
+        r.style.setProperty('--bg-300', '#2c2c2c');
+        r.style.setProperty('--bg-100-darker', '#000000');
+        r.style.setProperty('--bg-200-darker', '##161616');
+    }
+}
+
+const defaultColor = document.querySelector(`.defaultColor`)
+const darkColor = document.querySelector(`.darkColor`)
+darkColor.addEventListener(`click`, () => setColorScheme(`Dark`))
+defaultColor.addEventListener(`click`, () => setColorScheme(`Default`))
 
 
 let searchTimer;
@@ -577,16 +616,6 @@ addBookButton.addEventListener(`click`, () => {
     }
 })
 
-
-
-
-
-
-
-
-
-
-
 let deleteIconToggled = false;
 const toggleDeleteButton = (e) => {
     if (!deleteIconToggled) {
@@ -610,13 +639,14 @@ const toggleDeleteButton = (e) => {
             }
         }
         deleteIconToggled = false;
+        addToPage(bookList)
     }
 }
 deleteFilter.addEventListener(`click`, toggleDeleteButton);
 
 const deleteBook = (e) => {
     bookList.books = bookList.books.filter(book => book.id !== e.target.id)
-    toggleClasses(e.target.parentNode, `toggleHeightNormal`, `toggleHeightSmall`);
+    toggleClasses(e.target.parentNode, `toggleSlideIn`, `toggleSlideOut`);
     setTimeout(() => {
         removeElement(e.target.parentNode)
         addObjectToLocalStorage(bookList)
@@ -639,11 +669,12 @@ const toggleEditButton = (e) => {
         }
         editIconToggled = true;
     } else if (editIconToggled) {
-        removeHighlightButton(e.target);
+        if (e.target) removeHighlightButton(e.target);
+        else removeHighlightButton(e);
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.querySelector(`.editIcon`)
-                bookContainer.children[i].removeChild(editIcon);
+                if (editIcon) bookContainer.children[i].removeChild(editIcon);
             }
         }
         editIconToggled = false;
@@ -656,14 +687,14 @@ const editBookContainer = document.querySelector(`.editBookContainer`);
 let bookToEdit;
 let editBookButtonToggled = false;
 const openEditBookForm = (e) => {
-    bookToEdit = bookList.books.filter(book => book.id === e.target.id)
+    if (e.target) bookToEdit = bookList.books.filter(book => book.id === e.target.id) //if from event listener
     let editBookForm = document.querySelector('#editBookForm');
     if (!editBookButtonToggled) {
         addValuesToForm(bookToEdit, editBookForm)
         editBookContainer.classList.remove(`toggleHidden`);
         editBookButtonToggled = true;
     } else if (editBookButtonToggled) {
-        editBookContainer.classList.add(`.toggleHidden`)
+        editBookContainer.classList.add(`toggleHidden`)
         editBookButtonToggled = false;
         return
     }
@@ -687,25 +718,16 @@ submitEditBookForm = (book, form) => {
             }
         }
     }
-    addObjectToLocalStorage(bookList)
-    addToPage(bookList)
-}
+    addObjectToLocalStorage(bookList);
+    addToPage(bookList);
+    toggleEditButton(editFilter)
+    openEditBookForm(editBookContainer)
+};
 
-
-
-    // toggleClasses(e.target.parentNode, `toggleHeightNormal`, `toggleHeightSmall`);
-    // setTimeout(() => {
-    //     removeElement(e.target.parentNode)
-    //     addObjectToLocalStorage(bookList)
-    // }, 500)
-
-
-
-
-
-
-
-
+submitEditBookButton = document.querySelector(`.submitEditBookButton`);
+submitEditBookButton.addEventListener(`click`, () => {
+    submitEditBookForm(bookToEdit, editBookForm);
+})
 
 const checkForDublicates = (object, ...objectToAdd) => {
     for (const book of object.books) {
@@ -721,7 +743,7 @@ const addHighlightButton = (element) => {
 }
 
 const removeHighlightButton = (element) => {
-    element.classList.remove(`highlightButton`);
+    if (element) element.classList.remove(`highlightButton`);
 }
 
 const styleSearchBox = () => {

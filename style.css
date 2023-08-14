@@ -1,9 +1,14 @@
+/*
+Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing Script
+*/
+
 :root {
     --container-borders: 5px;
     --container-max-width: 90vw;
-    --navBar-height: 60px;
+    --navBar-height: 50px;
     --navBar-border: 15px;
-    --header-font: Inspiration;
+    --header-font: Roboto;
+    --header-fontB: Tangerine;
     --book-border-radius-top: 10px 10px 0 0;
     --book-border-radius-botom: 0 0 10px 10px;
     --book-border-radius: 10px;
@@ -23,14 +28,16 @@
     /* MIDNIGHT  */
     /* --primary-100:#cfcfcf;
     --primary-200:#b9b9b9;
-    --primary-300:#9b9b9b;
+    --primary-300:#5c5c5c;
     --accent-100:#7F7F7F;
     --accent-200:#ffffff;
     --text-100:#d8d8d8;
     --text-200:#777777;
     --bg-100:#000000;
     --bg-200:#161616;
-    --bg-300:#2c2c2c; */
+    --bg-300:#2c2c2c;
+    --bg-100-Darker:#000000;
+    --bg-200-Darker:#161616; */
       
       
     /* Optional */
@@ -107,25 +114,40 @@ body {
     align-items: center;
     height: 80%;
     padding: 0 10px;
-    transition: .5s;
 }
 
 .navBar .logo h1 {
     display: flex;
     align-items: center;
     color: var(--text-100);
-    font-size: 2.5rem;
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--primary-200);
     min-width: fit-content;
-    font-weight: 900;
     font-family: var(--header-font);
+    font-style: italic;
     letter-spacing: .6rem;
-    margin: 5px 0 5px 10px;
+    margin: 5px 0 5px 0px;
     transform: rotate(-.5deg);
+    position: relative;
+    top: 1px;
 }
 
-.navBar .logo:hover {
+.navBar .logo h1:nth-child(2) {
+    color: var(--text-100);
+    font-family: var(--header-font);
+    font-size: 2.4rem;
+    font-weight: 900;
+    margin-left: 10px;
+    font-style: normal;
+    position: relative;
+    top: 0px;
+}
+
+.navBar .logo img:hover {
     cursor: pointer;
-    transform: rotate(3deg);
+    transform: rotate(6deg);
+    transition: 1s;
 }
 
 .navBar .logo img {
@@ -138,15 +160,22 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100px;
+    min-width: fit-content;
+    padding: 0 20px;
     height: 100%;
+}
+
+.dropdown:nth-child(2) {
     border-left: 1px solid var(--text-100);
+    border-right: 1px solid var(--text-100);
+    
+}
+
+.dropdown:nth-child(1n + 3) {
     border-right: 1px solid var(--text-100);
 }
 
-.dropdown:nth-child(2n) {
-    border-right: none;
-}
+
 
 .dropdown:hover {
     cursor: pointer;
@@ -168,6 +197,11 @@ body {
     top: calc(var(--navBar-height) - var(--navBar-border));
 }
 
+.dropdown button:hover, .dropdown input:hover {
+    cursor: pointer;
+    background-color: var(--text-100);
+    color: var(--bg-300);
+}
 
 .dropdown button, .dropdown input {
     border-top: 1px solid var(--text-100);
@@ -179,15 +213,7 @@ body {
     padding: 5px;
 }
 
-.dropdown button:hover, .dropdown input:hover {
-    cursor: pointer;
-    background-color: var(--text-100);
-    color: var(--bg-300);
-}
 
-/*
-Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing Script
-*/
 
 .addBookContainer {
     top: 0px;
@@ -204,7 +230,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
 }
 
 .addBook input, .addBook textarea, .addBook button {
-    color: var(--text-100);
+    color: rgb(17, 17, 17);
     font-size: 1.8rem;
     border: 2px solid var(--text-100);
     border-radius: 5px;
@@ -742,9 +768,8 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     height: fit-content;
-    transition: height 2s ease-in;
+    transition: .1s ease-in;
     padding: 10px 10vw 10px 10vw;
-    transition: .4s;
     overflow: hidden;
 }
 
@@ -823,10 +848,25 @@ input:checked + .slider:before {
 
 .toggleHeightSmall {
     opacity: 0;
+    height: 0;
+    max-height: 0px;
     margin-right: 600px !important;
 }
 
 .toggleHeightNormal {
+    margin-right: 0px !important;
+    height: auto;
+    max-height: 200px;
+    opacity: 1;
+}
+
+
+.toggleSlideOut {
+    opacity: 0;
+    margin-right: 600px !important;
+}
+
+.toggleSlideIn {
     margin-right: 0px !important;
     opacity: 1;
 }
@@ -895,7 +935,6 @@ input:checked + .slider:before {
     aspect-ratio: 1 / 1.5;
     height: auto;
     background: silver;
-    transition: max-width opacity .3s ease-in-out;
     max-height: auto;
     margin-right: 3vw;
     opacity: 1;
@@ -906,7 +945,6 @@ input:checked + .slider:before {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    transition: .3s;
 }
 
 .numberTitle, .bookInfo div p:first-child {

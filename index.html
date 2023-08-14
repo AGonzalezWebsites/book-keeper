@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto:wght@400;900&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
     <link rel="stylesheet" href="/dist/output.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reset.css">
@@ -14,7 +14,8 @@
     <div class="navBar">
         <div class="logo" onclick="location.reload()">
             <img src="img/bookLogo.png" alt="logo">
-            <h1>Book Saver</h1>
+            <h1>Book</h1>
+            <h1>Saver</h1>
         </div>
         <div class="dropdown">
             <span>File</span>
@@ -27,10 +28,19 @@
         <div class="dropdown">
             <span>Options</span>
             <div class="dropdown-content flex items-center">
-                <input type="file" id="file-selector" accept=".bkls" style="display: none;">
                 <button type="button" class="addBookButton py-1 px-3">Add Book Manually</button>
             </div>
         </div>
+
+        <div class="dropdown">
+            <span>Color</span>
+            <div class="dropdown-content flex items-center">
+                <button type="button" class="defaultColor py-1 px-3" style="background-color: #937962; color: #FFFFFF;">Default</button>
+                <button type="button" class="darkColor py-1 px-3" style="background-color: #5c5c5c;; color: #cfcfcf;">Dark</button>
+            </div>
+        </div>
+            
+
 
         <div class="bookSearch items-center">
             <input type="text" placeholder="Search Books to Add.." class="bookSearchInput bookSearch">
@@ -100,7 +110,7 @@
         <div class="editBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Edit Book Info</h1>
             
-            <form class="overflow-scroll" id="editBookForm" action="/index.html">
+            <form class="overflow-scroll" id="editBookForm" action="/index.html" onsubmit="return false">
                 <h2 class="text-lg italic m-0 mt-6 p-0">Title</h2>
                 <input type="text" name="title" placeholder="Book Title.." class="flex flex-row mb-6">
                 <h2 class="text-lg italic m-0 p-0">Author</h2>
@@ -118,8 +128,8 @@
                 <h2 class="text-lg italic m-0 p-0">Synopsis</h2>
                 <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row mb-6"></textarea>
                 <div class="editBookFormButtons">
-                <button class="cancelButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeEditBookForm()">Cancel</button>
-                <button class="submitButton  mr-6 mb-6 p-2 px-8" onclick="submitEditBookForm(bookToEdit, editBookForm)">Submit</button>
+                <button class="cancelButton cancelEditBookButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeEditBookForm()">Cancel</button>
+                <button class="submitButton submitEditBookButton mr-6 mb-6 p-2 px-8">Submit</button>
                 </div>
             </form> 
             <p class="text-1xl">Submitting form will add this book to your book list</p>
