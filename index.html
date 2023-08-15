@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto:wght@400;900&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
     <link rel="stylesheet" href="/dist/output.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style/style.css">
+    <link rel="stylesheet" href="/style/queries.css">
     <link rel="stylesheet" href="reset.css">
     <script src="https://kit.fontawesome.com/1bb63f7dbd.js" crossorigin="anonymous"></script>
     <title>Book Saver</title>
@@ -29,14 +30,16 @@
             <span>Options</span>
             <div class="dropdown-content flex items-center">
                 <button type="button" class="addBookButton py-1 px-3">Add Book Manually</button>
-            </div>
-        </div>
-
-        <div class="dropdown">
-            <span>Color</span>
-            <div class="dropdown-content flex items-center">
-                <button type="button" class="defaultColor py-1 px-3" style="background-color: #937962; color: #FFFFFF;">Default</button>
-                <button type="button" class="darkColor py-1 px-3" style="background-color: #5c5c5c;; color: #cfcfcf;">Dark</button>
+                <div class="sideMenu flex items-center justify-center">
+                    <h1>Color Scheme</h1>
+                    <div class="sideMenuContent">
+                        <button type="button" class="hazenutColor py-1 px-3" style="background-color: #937962; color: #FFFFFF;">Hazlenut</button>
+                        <button type="button" class="darkColor py-1 px-3" style="background-color: #5c5c5c;; color: #cfcfcf;">Dark</button>
+                        <button type="button" class="blueSteelColor py-1 px-3" style="background-color: #b4c7dd;; color: #2C3E50;">Blue Steel</button>
+                        <button type="button" class="peachIvory py-1 px-3" style="background-color: #fffdf1;; color: #8B6B61;">Peach Ivory</button>
+                        <button type="button" class="cobaltBeige py-1 px-3" style="background-color: #cbcbdd;; color: #1e295a;">Cobalt Beige</button>
+                    </div>
+                </div>
             </div>
         </div>
             
@@ -128,7 +131,7 @@
                 <h2 class="text-lg italic m-0 p-0">Synopsis</h2>
                 <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row mb-6"></textarea>
                 <div class="editBookFormButtons">
-                <button class="cancelButton cancelEditBookButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeEditBookForm()">Cancel</button>
+                <button class="cancelButton cancelEditBookButton ml-6 mr-6 mb-5 p-2 px-8">Cancel</button>
                 <button class="submitButton submitEditBookButton mr-6 mb-6 p-2 px-8">Submit</button>
                 </div>
             </form> 
@@ -136,6 +139,7 @@
         </div>
     </div>
         
-    <script src="app.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/colorScheme.js"></script>
 </body>
 </html>

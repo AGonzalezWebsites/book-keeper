@@ -16,8 +16,10 @@ document.addEventListener("DOMContentLoaded", function(){
         const tempBookList = {};
         tempBookList.books = [];
         tempBookList.books = JSON.parse(localStorage.getItem(`books`));
-        addToObject(bookList, tempBookList.books);
+        tempBookList.userSettings = JSON.parse(localStorage.getItem(`userSettings`));
+        addToObject(bookList, tempBookList.books, tempBookList.userSettings);
         addToPage(bookList);
+        setColorScheme(bookList.userSettings.colorScheme)
     }
     //prevents submitting both forms on enter key press
     addBookForm.onkeypress = function(e) { 
@@ -33,46 +35,6 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     }
 });
-
-const setColorScheme = (colorSchemeChosen) => {
-    let r = document.querySelector(':root');
-    var rs = getComputedStyle(r);
-
-    if (colorSchemeChosen === "Default") {
-        r.style.setProperty('--primary-100', '#BFAE9F');
-        r.style.setProperty('--primary-200', '#937962');
-        r.style.setProperty('--primary-300', '#FFFFFF');
-        r.style.setProperty('--accent-100', '#C9BEB9');
-        r.style.setProperty('--accent-200', '#978178');
-        r.style.setProperty('--text-100', '#4D4D4D');
-        r.style.setProperty('--text-200', '#9e9e9e');
-        r.style.setProperty('--bg-100', '#F5EFE8');
-        r.style.setProperty('--bg-200', '#EEE3D7');
-        r.style.setProperty('--bg-300', '#FFFFFF');
-        r.style.setProperty('--bg-100-darker', '#f4ebe1');
-        r.style.setProperty('--bg-200-darker', '#eee1d2');
-    }
-
-    if (colorSchemeChosen === "Dark") {
-        r.style.setProperty('--primary-100', '#cfcfcf');
-        r.style.setProperty('--primary-200', '#b9b9b9');
-        r.style.setProperty('--primary-300', '#5c5c5c');
-        r.style.setProperty('--accent-100', '#7F7F7F');
-        r.style.setProperty('--accent-200', '#ffffff');
-        r.style.setProperty('--text-100', '#d8d8d8');
-        r.style.setProperty('--text-200', '#777777');
-        r.style.setProperty('--bg-100', '#000000');
-        r.style.setProperty('--bg-200', '#161616');
-        r.style.setProperty('--bg-300', '#2c2c2c');
-        r.style.setProperty('--bg-100-darker', '#000000');
-        r.style.setProperty('--bg-200-darker', '##161616');
-    }
-}
-
-const defaultColor = document.querySelector(`.defaultColor`)
-const darkColor = document.querySelector(`.darkColor`)
-darkColor.addEventListener(`click`, () => setColorScheme(`Dark`))
-defaultColor.addEventListener(`click`, () => setColorScheme(`Default`))
 
 
 let searchTimer;
@@ -229,9 +191,11 @@ const addToObjectFromApi = (object, bookSelected) => {
 };
 
 //adding book data to object of books
-const addToObject = (object, bookSelected) => {
+const addToObject = (object, bookSelected, userSettings) => {
     if (object === searchedBooks) object.books = [];
     
+    if (object === bookList) object.userSettings = userSettings;
+
     if (Array.isArray(bookSelected)) {
         for (const book of bookSelected) {
             const bookObject = {
@@ -269,10 +233,11 @@ const addToObject = (object, bookSelected) => {
 };
 
 const addObjectToLocalStorage = (object) => {
-    if (localStorage.books) {
+    if (localStorage) {
         localStorage.removeItem(`books`);
     }
-    localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
+    if (object.books) localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
+    if (object.userSettings) localStorage.setItem(`userSettings`, `${JSON.stringify(object.userSettings)}`)
 }
 
 const downloadFile = (data, filename) => {
@@ -474,9 +439,13 @@ const addMoreDetails = (object, id, existingElement) => {
             } else previewButton.innerText = `Preview Unavailable`;
             moreDetailsFirstItems.appendChild(previewButton);
             
+            descriptionTitle = document.createElement(`p`);
+            descriptionTitle.classList.add(`descriptionTitle`)
+            descriptionTitle.innerText = `Description`;
             description = document.createElement(`p`);
             description.innerText = `${book.description}`;
             
+            moreDetailsContainer.appendChild(descriptionTitle)
             moreDetailsContainer.appendChild(description)
             moreDetailsContainer.appendChild(moreDetailsFirstItems);
             existingElement.appendChild(moreDetailsContainer)
@@ -496,7 +465,9 @@ const addMoreDetails = (object, id, existingElement) => {
 
 const bookList = {};
 bookList.books = [];
-
+bookList.userSettings = {
+    colorScheme: `hazlenut`
+}
 bookList.toggleParameters = {
     title: {
         alphabeticalOrder: {ascending: false}},
@@ -729,6 +700,16 @@ submitEditBookButton.addEventListener(`click`, () => {
     submitEditBookForm(bookToEdit, editBookForm);
 })
 
+const cancelEditBookForm = () => {
+    toggleEditButton(editFilter)
+    openEditBookForm(editBookContainer);
+}
+
+cancelEditBookButton = document.querySelector(`.cancelEditBookButton`);
+cancelEditBookButton.addEventListener(`click`, () => {
+    cancelEditBookForm(editBookForm);
+})
+
 const checkForDublicates = (object, ...objectToAdd) => {
     for (const book of object.books) {
         if (book.id === objectToAdd[0][0].id) { //objectToAdd[0][0] need to iterate through this if checking multiple
@@ -864,35 +845,9 @@ const reduceDecimal = (x) => {
         else return text
     } 
 }
-//true makes it add pulled books to webpage
-// pullBooks(true);
-
-
-// Fetching JSON file
-// const fetchJSON = () => {
-//     return fetch("./reading-list-testing.json")
-//         .then((res) => {
-//             return res.json();
-//         })
-//         .then((data) => {
-//             return data;
-//         });
-// }
-
-// async function getJsonData() {
-//     try {
-//         const fetched = await fetchJSON();
-//         const bookList = fetched["Books interested in Reading "];
-//         return bookList; // Returning the specific data wanted
-//     } catch (error) {
-//         console.error("Error while fetching data:", error);
-//         throw error;
-//     }
-// }
-
 
 ///////////////////////////////////////////////////
-// JSON Fetch Above ^
+// uploading JSON below
 /////////////////////////////////////////////////
 
 
@@ -904,6 +859,7 @@ input.addEventListener("change", async event => {
     console.log(json);
     addObjectToLocalStorage(json)
     bookList.books = [];
-    addToObject(bookList, json.books);
+    addToObject(bookList, json.books, json.userSettings);
+    location.reload();
     addToPage(bookList);
 });

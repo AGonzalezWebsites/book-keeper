@@ -1,0 +1,178 @@
+@media (max-width: 600px) {
+
+    .navBar .logo {
+        max-width: 10px;
+        overflow: hidden;
+        flex-direction: column;
+    }
+    
+    .navBar .logo img {
+        max-width: 35px;
+        min-width: 10;
+    }
+    
+    .navBar .logo h1 {
+        display: none;
+    }
+    
+    .dropdown:nth-child(1n) {
+        padding: 0 10px;
+    }
+    
+    .sideMenu:hover .sideMenuContent, .sideMenu:active .sideMenuContent {
+        display: flex;
+        top: 35px;
+        left: 0;
+    }
+    
+    
+    
+    
+    
+    .navBar .bookSearch input {
+        display: flex;
+        align-items: center;
+        color: var(--text-100);
+        font-size: 1.8rem;
+        width: 150px;
+        padding-left: 10px;
+    }
+    
+    .bookListContainer {
+            overflow: visible;
+            margin: 2vw;
+    
+    }
+    
+    .filterBox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        flex: 1 4 8vw;
+        margin: 0 0 2vh 0;
+        background-color: var(--bg-200);
+        min-width: 190px;
+        height: auto;
+        max-height: auto;
+        border-radius: var(--book-border-radius);
+    }
+    
+    .books {
+        overflow-y: scroll;
+        overflow-x: hidden;
+        flex: 4 1 60vw;
+        transition: .5s;
+        max-width: 100%;
+        height: auto;
+        max-height: auto;
+        margin: 0 2vw;
+    }
+    
+    .ratingFilter, .deleteFilter, .editFilter {
+        border: 2px solid var(--text-100);
+        background-color: var(--primary-200);
+        font-size: 1.4rem;
+        color: var(--primary-300);
+        border-radius: 5px;
+        margin: 2.5px;
+    }
+    
+    .bookInfo {
+        font-size: 1.2rem;
+    }
+    
+    .bookListHeader, .filterHeader {
+        font-size: 1.2rem;
+        height: 25px;
+    }
+    
+    .moreDetails {
+        min-height: fit-content;
+        flex-wrap: wrap;
+    }
+    
+    .moreDetails>p {
+        font-size: 1.2rem;
+        min-height: fit-content;
+        flex-wrap: wrap;
+    }
+    
+    .additionInfo div h2 {
+        font-size: 1.2rem;
+    }
+    
+    .additionInfo div p {
+        font-size: .8rem;
+    }
+    
+    .additionInfo button {
+        border: 2px solid var(--text-100);
+        background-color: var(--bg-100);
+        font-size: 1.2rem;
+        color: var(--text-100);
+        border-radius: 2px;
+        padding: 2px 0px;
+        margin: 0px;
+        min-width: fit-content;
+        max-width: fit-content;
+    }
+    
+    .bookInfo div img {
+        aspect-ratio: 1 / 1.5;
+        height: auto;
+        background: silver;
+        max-height: auto;
+        margin-right: 3vw;
+        opacity: 1;
+    }
+    
+    .numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
+        margin: 0 4px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    
+    .numberTitle, .bookInfo div p:first-child {
+        flex: 1;
+        max-width: 30px;
+        min-height: fit-content;
+        text-wrap: wrap;
+        overflow-y: scroll;
+    }
+    
+    .moreDetails {
+        display: flex;
+        flex-direction: column;
+        height: fit-content;
+        padding: 4px;
+    }
+    
+    .moreDetails>p {
+        min-height: 200px;
+    }
+    
+    }
+
+@media (max-width: 900px) {
+    .bookListContainer {
+        margin: 3vh;
+        overflow-y: scroll;
+        align-content: flex-start;
+        position: relative;
+    }
+
+    .books {
+        min-width: 100%;
+        height: auto;
+        flex: 1 4 auto;
+        max-height: min-content;
+    }
+
+    .filterBox {
+        min-width: 100%;
+        flex: 4 1 auto;
+        margin: 0 0 3vh 0;
+    }
+}
