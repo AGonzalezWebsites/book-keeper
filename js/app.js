@@ -1,6 +1,7 @@
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
 const deleteFilter = document.querySelector(`.deleteFilter`);
+const favoriteFilter = document.querySelector(`.favoriteFilter`);
 const editFilter = document.querySelector(`.editFilter`);
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
@@ -18,8 +19,8 @@ document.addEventListener("DOMContentLoaded", function(){
         tempBookList.books = JSON.parse(localStorage.getItem(`books`));
         tempBookList.userSettings = JSON.parse(localStorage.getItem(`userSettings`));
         addToObject(bookList, tempBookList.books, tempBookList.userSettings);
-        addToPage(bookList);
         setColorScheme(bookList.userSettings.colorScheme)
+        addToPage(bookList);
     }
     //prevents submitting both forms on enter key press
     addBookForm.onkeypress = function(e) { 
@@ -240,6 +241,68 @@ const addObjectToLocalStorage = (object) => {
     if (object.userSettings) localStorage.setItem(`userSettings`, `${JSON.stringify(object.userSettings)}`)
 }
 
+const bookList = {};
+bookList.books = [];
+bookList.userSettings = {
+    colorScheme: `hazlenut`
+}
+bookList.toggleParameters = {
+    title: {
+        alphabeticalOrder: {ascending: false}},
+    authors: {
+        alphabeticalOrder: {ascending: false}},
+    subject: {
+        alphabeticalOrder: {ascending: false}},
+    averageRating: {
+        alphabeticalOrder: {ascending: false}},
+    favorites: false,
+    filterAlphabetically(key) {
+        if (!bookList.toggleParameters[key].ascending) {
+            bookList.toggleParameters[key].ascending = true;
+            bookList.books.sort((a,b) => {
+                fa = a[key]
+                fb = b[key]
+                if (fa < fb) return -1;
+                if (fa > fb) return 1;
+                else return 0;
+            })
+        } else if (bookList.toggleParameters[key].ascending) {
+            bookList.toggleParameters[key].ascending = false;
+            bookList.books.sort((a,b) => {
+                fa = a[key]
+                fb = b[key]
+                if (fa > fb) return -1;
+                if (fa < fb) return 1;
+                else return 0;
+            })
+        } else alert('Error: Unable to filter')
+    },
+    filterNumerically(key) {
+        if (!bookList.toggleParameters[key].ascending) {
+        bookList.toggleParameters[key].ascending = true;
+        return bookList.books.sort((a,b) => a[key] - b[key])
+        } else if (bookList.toggleParameters[key].ascending) {
+        bookList.toggleParameters[key].ascending = false;
+        return bookList.books.sort((a,b) => a[key] - b[key]) //toggles in the same way order for now. Will switch is utilized
+        } else alert('Error: Unable to filter')
+    }, 
+    toggleFilterByFavorite() {
+        if (!bookList.toggleParameters.favorites) {
+            favoriteBooks = {};
+            favoriteBooks.books = bookList.books.filter(element => (element.favorite));
+            addToPage(favoriteBooks);
+            bookList.toggleParameters.favorites = true;
+        } else if (bookList.toggleParameters.favorites) {
+            addToPage(bookList);
+            bookList.toggleParameters.favorites = false;
+        }
+    },
+    removeClassesAndAddToPage(element, object) {
+        removeAllClass(element)
+        addToPage(object);
+    }
+}
+
 const downloadFile = (data, filename) => {
     const file = JSON.stringify(data)
     const link = document.createElement('a')
@@ -429,6 +492,22 @@ const addMoreDetails = (object, id, existingElement) => {
                 moreDetailsFirstItems.appendChild(pageCount);
             }
             
+            if (!book.favorite) book.favorite = false;
+
+            favorite = document.createElement(`div`);
+            favoriteHeader = document.createElement(`h2`);
+            favoriteHeader.classList.add(`favoriteHeader`)
+            favoriteHeader.innerText = `Favorite?`;
+            icon = document.createElement(`i`);
+            icon.classList.add(`fa-solid`)
+            icon.classList.add(`fa-star`)
+            icon.setAttribute('id', `${book.id}`); 
+            addEventToAddToFavorite(icon)
+            if (book.favorite) icon.classList.add(`favorite`)
+            favorite.appendChild(favoriteHeader)
+            favorite.appendChild(icon)
+            moreDetailsFirstItems.appendChild(favorite);
+
             previewButton = document.createElement(`button`);
             if (book.accessViewStatusEmbeddable && book.accessViewStatusEmbeddable === `SAMPLE`) {
                 previewLink = document.createElement(`a`);
@@ -463,59 +542,6 @@ const addMoreDetails = (object, id, existingElement) => {
     moreDetailsExpanded = true;
 }
 
-const bookList = {};
-bookList.books = [];
-bookList.userSettings = {
-    colorScheme: `hazlenut`
-}
-bookList.toggleParameters = {
-    title: {
-        alphabeticalOrder: {ascending: false}},
-    authors: {
-        alphabeticalOrder: {ascending: false}},
-    subject: {
-        alphabeticalOrder: {ascending: false}},
-    averageRating: {
-        alphabeticalOrder: {ascending: false}},
-    filterAlphabetically(key) {
-        if (!bookList.toggleParameters[key].ascending) {
-            bookList.toggleParameters[key].ascending = true;
-            bookList.books.sort((a,b) => {
-                fa = a[key]
-                fb = b[key]
-                if (fa < fb) return -1;
-                if (fa > fb) return 1;
-                else return 0;
-            })
-        } else if (bookList.toggleParameters[key].ascending) {
-            bookList.toggleParameters[key].ascending = false;
-            bookList.books.sort((a,b) => {
-                fa = a[key]
-                fb = b[key]
-                if (fa > fb) return -1;
-                if (fa < fb) return 1;
-                else return 0;
-            })
-        } else alert('Error: Unable to filter')
-    },
-    filterNumerically(key) {
-        if (!bookList.toggleParameters[key].ascending) {
-        bookList.toggleParameters[key].ascending = true;
-        return bookList.books.sort((a,b) => a[key] - b[key])
-        } else if (bookList.toggleParameters[key].ascending) {
-        bookList.toggleParameters[key].ascending = false;
-        return bookList.books.sort((a,b) => a[key] - b[key]) //toggles in the same way order for now. Will switch is utilized
-        } else alert('Error: Unable to filter')
-    }, 
-    removeClassesAndAddToPage(element, object) {
-        removeAllClass(element)
-        addToPage(object);
-    },
-    removeBook(object) {
-        object.books.sort
-    }
-}
-
 const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
     bookList.toggleParameters.filterAlphabetically('title');
     bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
@@ -532,11 +558,6 @@ const subjectTitle = document.querySelector('.subjectTitle').addEventListener('c
 
 });
 
-const ratingTitle = document.querySelector('.ratingFilter').addEventListener('click', () => {
-    bookList.toggleParameters.filterNumerically('averageRating');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
-});
-
 
 const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click and close searchbox
     element[0].addEventListener('click', (e) => {
@@ -550,6 +571,22 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
         addToPage(bookList)
         stopSearching()
     });
+}
+
+const addEventToAddToFavorite = (icon) => {
+    icon.addEventListener(`click`, (e) => {
+        for (const book of bookList.books)
+            if (book.id === e.target.id) {
+                if (!book.favorite) {
+                    book.favorite = true;
+                    icon.classList.add(`favorite`);
+                } else if (book.favorite) {
+                    book.favorite = false;
+                    icon.classList.remove(`favorite`);
+                }
+                addObjectToLocalStorage(bookList)
+            }
+    })
 }
 
 submitAddBookForm = () => {
@@ -587,6 +624,22 @@ addBookButton.addEventListener(`click`, () => {
     }
 })
 
+let favoriteIconToggled = false;
+const toggleFavoriteButton = (e) => {
+
+    if (!favoriteIconToggled) {
+        addHighlightButton(e.target);
+        bookList.toggleParameters.toggleFilterByFavorite()
+        favoriteIconToggled = true;
+    } else if (favoriteIconToggled) {
+        removeHighlightButton(e.target);
+        bookList.toggleParameters.toggleFilterByFavorite()
+        favoriteIconToggled = false;
+    }
+
+}
+favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
+
 let deleteIconToggled = false;
 const toggleDeleteButton = (e) => {
     if (!deleteIconToggled) {
@@ -606,7 +659,7 @@ const toggleDeleteButton = (e) => {
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 deleteIcon = document.querySelector(`.deleteIcon`)
-                bookContainer.children[i].removeChild(deleteIcon);
+                if (bookContainer.children[i].deleteIcon) bookContainer.children[i].removeChild(deleteIcon);
             }
         }
         deleteIconToggled = false;

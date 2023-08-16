@@ -454,7 +454,7 @@ body {
     flex-wrap: wrap;
 }
 
-.ratingFilter, .deleteFilter, .editFilter {
+.favoriteFilter, .deleteFilter, .editFilter {
     border: 2px solid var(--text-100);
     background-color: var(--primary-200);
     font-size: 1.8rem;
@@ -471,11 +471,11 @@ body {
     min-width: fit-content;
 }
 
-.ratingFilter:hover, .deleteFilter:hover {
+.favoriteFilter:hover, .deleteFilter:hover {
     cursor: pointer;
 }
 
-.ratingFilter:active, .deleteFilter:active {
+.favoriteFilter:active, .deleteFilter:active, .editFilter:active {
     background: var(--bg-200);
 }
 
@@ -820,6 +820,16 @@ input:checked + .slider:before {
     font-size: 1.2rem;
     text-align: center;
     font-style: italic;
+}
+
+.additionInfo i {
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--bg-100);
+}
+
+.favorite {
+    color: gold !important;
 }
 
 .highlightButton {

@@ -48,7 +48,7 @@ const setColorScheme = (colorSchemeChosen) => {
 
     }
 
-    if (colorSchemeChosen === "peachIvory") {
+    if (colorSchemeChosen === "ivoryPeach") {
         r.style.setProperty('--primary-100', '#8B6B61');
         r.style.setProperty('--primary-200', '#bc998e');
         r.style.setProperty('--primary-300', '#fffdf1');
@@ -85,10 +85,10 @@ const setColorScheme = (colorSchemeChosen) => {
 const hazenutColor = document.querySelector(`.hazenutColor`)
 const darkColor = document.querySelector(`.darkColor`)
 const blueSteelColor = document.querySelector(`.blueSteelColor`)
-const peachIvoryColor = document.querySelector(`.peachIvory`)
+const ivoryPeachColor = document.querySelector(`.ivoryPeach`)
 const cobaltBeigeColor = document.querySelector(`.cobaltBeige`)
 darkColor.addEventListener(`click`, () => setColorScheme(`midnight`))
 hazenutColor.addEventListener(`click`, () => setColorScheme(`hazlenut`))
 blueSteelColor.addEventListener(`click`, () => setColorScheme(`blueSteel`))
-peachIvoryColor.addEventListener(`click`, () => setColorScheme(`peachIvory`))
+ivoryPeachColor.addEventListener(`click`, () => setColorScheme(`ivoryPeach`))
 cobaltBeigeColor.addEventListener(`click`, () => setColorScheme(`cobaltBeige`))

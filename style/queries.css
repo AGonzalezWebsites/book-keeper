@@ -69,7 +69,7 @@
         margin: 0 2vw;
     }
     
-    .ratingFilter, .deleteFilter, .editFilter {
+    .favoriteFilter, .deleteFilter, .editFilter {
         border: 2px solid var(--text-100);
         background-color: var(--primary-200);
         font-size: 1.4rem;
