@@ -25,10 +25,6 @@
         left: 0;
     }
     
-    
-    
-    
-    
     .navBar .bookSearch input {
         display: flex;
         align-items: center;
@@ -138,19 +134,19 @@
         flex: 1;
         max-width: 30px;
         min-height: fit-content;
-        text-wrap: wrap;
-        overflow-y: scroll;
     }
     
     .moreDetails {
         display: flex;
         flex-direction: column;
         height: fit-content;
-        padding: 4px;
+        padding: 10px;
     }
     
-    .moreDetails>p {
-        min-height: 200px;
+    .moreDetails>p:nth-child(2) {
+        min-height: fit-content;
+        text-wrap: wrap;
+        overflow-y: scroll;
     }
     
     }

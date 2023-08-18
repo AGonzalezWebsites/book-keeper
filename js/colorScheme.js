@@ -2,6 +2,8 @@ const setColorScheme = (colorSchemeChosen) => {
     let r = document.querySelector(':root');
     var rs = getComputedStyle(r);
 
+    
+
     if (colorSchemeChosen === "hazlenut") {
         r.style.setProperty('--primary-100', '#BFAE9F');
         r.style.setProperty('--primary-200', '#937962');

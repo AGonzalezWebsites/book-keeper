@@ -73,7 +73,6 @@
         </div>
         <div class="books">
             <div class="bookListHeader">
-                <p class="numberTitle">#</p>
                 <p class="coverTitle">Cover</p>
                 <p class="titleTitle">Title</p>
                 <p class="authorTitle">Author</p>
@@ -91,7 +90,7 @@
         <div class="addBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Add Book Info</h1>
             
-            <form class="overflow-scroll" id="addBookForm" action="/index.html">
+            <form class="overflow-scroll" id="addBookForm" action="/index.html" onsubmit="return false">
                 <input type="text" name="title" placeholder="Book Title.." class="flex flex-row m-6">
                 <input type="text" name="authors" placeholder="Author.." class="flex flex-row m-6">
                 <input type="text" name="subject" placeholder="Subject.." class="flex flex-row m-6">
@@ -101,8 +100,8 @@
                 <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-6">
                 <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-6"></textarea>
                 <div class="addBookFormButtons">
-                <button class="cancelButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeAddBookForm()">Cancel</button>
-                <button class="submitButton  mr-6 mb-6 p-2 px-8" onclick="submitAddBookForm()">Submit</button>
+                <button class="cancelButton cancelAddBookButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeAddBookForm()">Cancel</button>
+                <button class="submitButton submitAddBookButton  mr-6 mb-6 p-2 px-8">Submit</button>
                 </div>
             </form> 
             <p class="text-1xl">Submitting form will add this book to your book list</p>
@@ -138,6 +137,8 @@
             <p class="text-1xl">Submitting form will add this book to your book list</p>
         </div>
     </div>
+
+    <div class="alertBox toggleHidden"></div>
         
     <script src="/js/app.js"></script>
     <script src="/js/colorScheme.js"></script>

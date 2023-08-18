@@ -1,3 +1,4 @@
+const alertBox = document.querySelector(`.alertBox`)
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
 const deleteFilter = document.querySelector(`.deleteFilter`);
@@ -6,11 +7,25 @@ const editFilter = document.querySelector(`.editFilter`);
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
-document.addEventListener(`click`, (e) => {
-    if (e.target.parentElement.className.includes('bookInfo') && e.target.tagName !== `I`) {
-        addMoreDetails(bookList, e.target.id, e.target.parentElement)
-    }
-})
+let timeoutId;
+const notification = (message) => {
+    if (!alertBox.classList[1]) clearNotification()
+    textElement = document.createElement(`p`);
+    textElement.innerText = `${message}`;
+    alertBox.appendChild(textElement);
+    alertBox.classList.remove(`toggleHidden`)
+    if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    timeoutId = setTimeout(() => {
+        if (!alertBox.classList[1]) clearNotification()
+    }, 3000)
+}
+
+const clearNotification = () => {
+    alertBox.removeChild(textElement);
+    alertBox.classList.add(`toggleHidden`)
+}
 
 document.addEventListener("DOMContentLoaded", function(){
     if (localStorage.books) {
@@ -19,8 +34,12 @@ document.addEventListener("DOMContentLoaded", function(){
         tempBookList.books = JSON.parse(localStorage.getItem(`books`));
         tempBookList.userSettings = JSON.parse(localStorage.getItem(`userSettings`));
         addToObject(bookList, tempBookList.books, tempBookList.userSettings);
+        if (!bookList.userSettings) {
+            bookList.userSettings = {}
+            bookList.userSettings.colorScheme = "hazlenut"
+        }
         setColorScheme(bookList.userSettings.colorScheme)
-        addToPage(bookList);
+        addToPage(bookList.books);
     }
     //prevents submitting both forms on enter key press
     addBookForm.onkeypress = function(e) { 
@@ -37,6 +56,14 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
+//***to fix: removing favorites by clicking star on bookInfo returns an error - click needs to be ignored***
+const addMoreDetailsEvent = (element) => {
+    element.addEventListener(`click`, (e) => {
+        if (e.target.parentElement.className.includes('bookInfo') && e.target.tagName !== `I`) {
+            addMoreDetails(bookList, e.target.id, e.target.parentElement)
+        }
+    })
+}
 
 let searchTimer;
 let searchBox;
@@ -68,7 +95,7 @@ myBookSearch.addEventListener("keydown", (e) => {
             subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
             if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
         })
-        addToPage(myfilteredBooks)
+        addToPage(myfilteredBooks.books)
         //make sure to delete existing bookList elements and add these results to page
         //when search is empty, need to delete myFilteredBooks and add bookList to page again
     }, 200)
@@ -290,16 +317,16 @@ bookList.toggleParameters = {
         if (!bookList.toggleParameters.favorites) {
             favoriteBooks = {};
             favoriteBooks.books = bookList.books.filter(element => (element.favorite));
-            addToPage(favoriteBooks);
+            addToPage(favoriteBooks.books);
             bookList.toggleParameters.favorites = true;
         } else if (bookList.toggleParameters.favorites) {
-            addToPage(bookList);
+            addToPage(bookList.books);
             bookList.toggleParameters.favorites = false;
         }
     },
     removeClassesAndAddToPage(element, object) {
         removeAllClass(element)
-        addToPage(object);
+        addToPage(object.books);
     }
 }
 
@@ -342,8 +369,8 @@ const addValuesToElement = (object, ...keys) => {
                         if (Array.isArray(tempSelection)) tempSelection = tempSelection.join() //*averageRating might not be passing here
                         if (key === `thumbnail`) {
                             tempElement = document.createElement('img');
-                            tempElement.src = tempSelection;
                             tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement.src = tempSelection;
                             tempElement.classList.add(`${key}`);
                         } else if (key[0] === `i` && key[1] === 'd') {
                             tempElement = document.createElement('a');
@@ -358,8 +385,15 @@ const addValuesToElement = (object, ...keys) => {
                             tempElement.setAttribute(`id`, `${object.id}`);
                             tempElement.textContent = `${tempSelection}`;
                             tempElement.classList.add(`${key}`);
-                        } 
-                        else {
+                        } else if (key === 'favorite') {
+                            tempElement = document.createElement(`i`);
+                            tempElement.classList.add(`fa-solid`)
+                            tempElement.classList.add(`fa-star`)
+                            tempElement.setAttribute('id', `${object.id}`); 
+                            addEventToAddToFavorite(tempElement)
+                            if (object.favorite) tempElement.classList.add(`favorite`)
+                            if (!object.favorite) tempElement.classList.add(`toggleHidden`)
+                        } else {
                             tempElement = document.createElement('p');
                             tempElement.setAttribute(`id`, `${object.id}`);
                             tempElement.textContent = `${replaceUndefined(tempSelection)}`;
@@ -373,35 +407,60 @@ const addValuesToElement = (object, ...keys) => {
     return combinedTempElements
 }
 
+// CURRENT: if only adding 1 element to page, do not iterate through bookList. Add individual item
+
 //iterate through allElements (an array) and append them to page
 const addToPage = (...object) => { //using ...objects to potentially combine objects and append to page
     removeAllClass(`bookInfo`);
-    bookNumber = 0;
-    for (const obj of object) {
-        objectCount = Object.keys(obj.books);
-        objectCount = objectCount.length;
-        for (let i = 0; i < objectCount; i++) { //iterate through each book object
-            
-            allElements = addValuesToElement(obj.books[i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`);
-            bookListNumber = document.createElement(`p`); //bookListNumber is for the visual number on the list. No additional value.
-            bookListNumber.textContent = `${(bookNumber + 1)}`;
-            firstLineDiv = document.createElement(`div`);
-            tempBookItem = document.createElement(`div`); //the container div for the link item
-            tempBookItem.classList.add('bookInfo');
-            firstLineDiv.setAttribute('id', `${obj.books[i].id}`);
-            tempBookItem.setAttribute('id', `${obj.books[i].id}`);
-            firstLineDiv.appendChild(bookListNumber);
-            for (const el of allElements) {
-                firstLineDiv.appendChild(el);
-            }
-            tempBookItem.appendChild(firstLineDiv);
-            bookContainer.appendChild(tempBookItem);
-            toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
-            bookNumber++;
-            }
-    }
+    console.log(object[0])
+    let objectCount = Object.keys(object[0]).length;
+    for (let i = 0; i < objectCount; i++) { //iterate through each book object
+        let currentCount = i;
+        allElements = addValuesToElement(object[0][i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`, 'favorite');
+        firstLineDiv = createBookInfo(object[0], currentCount)
+        tempBookItem = document.createElement(`div`); 
+        tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
+        tempBookItem.setAttribute('id', `${object[0][i].id}`);
+        tempBookItem.appendChild(firstLineDiv); // apending div with all elements
+        addMoreDetailsEvent(tempBookItem) //add event for more details
+        bookContainer.appendChild(tempBookItem);
+        toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
+        }
     if (coverToggled) toggleLineHeight();
 
+}
+
+const addSingleBookToPage = (...object) => {
+    allElements = addValuesToElement(object[0][0], `thumbnail`, `title`, `authors`, `averageRating`, `subject`, 'favorite');
+    firstLineDiv = createBookInfo(object[0], 0, Object.keys(bookList.books).length)
+    tempBookItem = document.createElement(`div`); 
+    tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
+    tempBookItem.setAttribute('id', `${object[0][0].id}`);
+    tempBookItem.appendChild(firstLineDiv); // apending div with all elements
+    addMoreDetailsEvent(tempBookItem) //add event for more details
+    bookContainer.appendChild(tempBookItem);
+    toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
+}
+
+//Creates div that holds line item to be appended to .bookInfo div
+const createBookInfo = (object, iteration, newBookNumber) => { 
+    bookListNumber = createElementWithClassOrID(`p`, `class`, `lineNumber`) //bookListNumber is for the visual number on the list. No additional value.
+    if (newBookNumber) bookListNumber.textContent = `${newBookNumber}`;
+    else bookListNumber.textContent = `${(iteration + 1)}`;
+
+    firstLineDiv = createElementWithClassOrID(`div`, `id`, `${object[iteration].id}`) //div all elements will be appended to
+    firstLineDiv.appendChild(bookListNumber);
+    
+    for (const el of allElements) {
+        firstLineDiv.appendChild(el);
+    }
+    return firstLineDiv
+}
+
+const createElementWithClassOrID = (element, idOrClass, idOrClassName) => {
+    let tempElement = document.createElement(`${element}`)
+    tempElement.setAttribute(`${idOrClass}`, `${idOrClassName}`)
+    return tempElement
 }
 
 const removeElement = (element) => {
@@ -441,13 +500,19 @@ const appendToSearchBox = (...elements) => {
 let moreDetailsExpanded = false
 const addMoreDetails = (object, id, existingElement) => {
     newElements = []
+    let iconGrabbed = grabChildNodeByClass(existingElement.firstChild, `fa-star`); // grabs correct from icon
     if (moreDetailsExpanded === true && lastElement === existingElement) {
         moreDetailsExpanded = false
         lastElement.classList.remove(`selectedBook`)
+        favoriteSelected = grabChildNodeByClass(existingElement.firstChild, `favorite`); //checking if favorite was selected
+        if (!favoriteSelected) iconGrabbed.classList.add(`toggleHidden`) //hide favorite icon if not selected
         lastElement.removeChild(moreDetailsContainer);
         return
     } else if (moreDetailsExpanded === true && lastElement !== existingElement) {
         lastElement.classList.remove(`selectedBook`)
+        let iconGrabbed = grabChildNodeByClass(lastElement.firstChild, `fa-star`); // grabs correct icon from previous element
+        favoriteSelected = grabChildNodeByClass(lastElement.firstChild, `favorite`); //checking if favorite was selected
+        if (!favoriteSelected) iconGrabbed.classList.add(`toggleHidden`) //hide favorite icon if not selected
         lastElement.removeChild(moreDetailsContainer);
     }
     for (const book of object.books) {
@@ -491,22 +556,6 @@ const addMoreDetails = (object, id, existingElement) => {
                 pageCount.appendChild(pageCountText);
                 moreDetailsFirstItems.appendChild(pageCount);
             }
-            
-            if (!book.favorite) book.favorite = false;
-
-            favorite = document.createElement(`div`);
-            favoriteHeader = document.createElement(`h2`);
-            favoriteHeader.classList.add(`favoriteHeader`)
-            favoriteHeader.innerText = `Favorite?`;
-            icon = document.createElement(`i`);
-            icon.classList.add(`fa-solid`)
-            icon.classList.add(`fa-star`)
-            icon.setAttribute('id', `${book.id}`); 
-            addEventToAddToFavorite(icon)
-            if (book.favorite) icon.classList.add(`favorite`)
-            favorite.appendChild(favoriteHeader)
-            favorite.appendChild(icon)
-            moreDetailsFirstItems.appendChild(favorite);
 
             previewButton = document.createElement(`button`);
             if (book.accessViewStatusEmbeddable && book.accessViewStatusEmbeddable === `SAMPLE`) {
@@ -527,6 +576,9 @@ const addMoreDetails = (object, id, existingElement) => {
             moreDetailsContainer.appendChild(descriptionTitle)
             moreDetailsContainer.appendChild(description)
             moreDetailsContainer.appendChild(moreDetailsFirstItems);
+
+            iconGrabbed.classList.remove(`toggleHidden`)
+
             existingElement.appendChild(moreDetailsContainer)
             existingElement.classList.add(`selectedBook`)
             moreDetailsContainer.classList.add(`toggleHeightSmall`)
@@ -564,11 +616,12 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
         selectedBook = pullBookFromObject(objectFrom, e.target.id);
         result = checkForDublicates(bookList, selectedBook)
         if (result) {
-            alert(`${selectedBook[0].title} by ${selectedBook[0].authors} is already in your collection`)
+            notification(`${selectedBook[0].title} by ${selectedBook[0].authors} is already in your collection`)
             return
         }
+        notification(`Added ${selectedBook[0].title} by ${selectedBook[0].authors}!`)
         addToObject(bookList, selectedBook)
-        addToPage(bookList)
+        addSingleBookToPage(selectedBook)
         stopSearching()
     });
 }
@@ -577,19 +630,27 @@ const addEventToAddToFavorite = (icon) => {
     icon.addEventListener(`click`, (e) => {
         for (const book of bookList.books)
             if (book.id === e.target.id) {
-                if (!book.favorite) {
+                if (!book.favorite) { // toggle false favorite to true on click
                     book.favorite = true;
                     icon.classList.add(`favorite`);
-                } else if (book.favorite) {
+                    icon.classList.remove(`toggleHidden`);
+                    notification(`Added To Favorites!`);
+                    addObjectToLocalStorage(bookList)
+                } else if (book.favorite) { // toggle true favorite to false on click
                     book.favorite = false;
                     icon.classList.remove(`favorite`);
+                    if (icon.parentNode.nextSibling) {
+                        if (icon.parentNode.nextSibling.classList[0] === "moreDetails") icon.classList.remove(`favorite`);
+                    }
+                    else icon.classList.add(`toggleHidden`);
+                    notification(`Removed From Favorites`);
+                    addObjectToLocalStorage(bookList)
                 }
-                addObjectToLocalStorage(bookList)
             }
     })
 }
 
-submitAddBookForm = () => {
+const submitAddBookForm = () => {
     let addBookForm = document.querySelector('#addBookForm');
     let tempFormBook = {}
     tempFormBook.books = []
@@ -601,32 +662,39 @@ submitAddBookForm = () => {
     tempFormBook.books.push(bookItem);
     tempFormBook.books[0].favorite = false;
     addToObject(bookList, tempFormBook.books)
-    addToPage(bookList)
+    addToPage(bookList.books)
+    notification(`Added ${tempFormBook.books[0].title}!`)
+    toggleAddBookContainer();
 }
+
+const submitAddBookButton = document.querySelector(`.submitAddBookButton`)
+submitAddBookButton.addEventListener(`click`, submitAddBookForm)
 
 const closeAddBookForm = () => {
     addBookContainer.classList.add(`toggleHidden`);
+    notification(`Operation Cancelled`)
 }
 
-const addBookContainer = document.querySelector(`.addBookContainer`);
-const addBookButton = document.querySelector(`.addBookButton`);
-let addBookButtonToggled = false;
-addBookButton.addEventListener(`click`, () => {
+const toggleAddBookContainer = () => {
     if (!addBookButtonToggled) {
         addBookContainer.classList.remove(`toggleHidden`);
         addBookButtonToggled = true;
         return
     }
     if (addBookButtonToggled) {
-        addBookContainer.classList.add(`.toggleHidden`)
+        addBookContainer.classList.add(`toggleHidden`)
         addBookButtonToggled = false;
         return
     }
-})
+}
+
+const addBookContainer = document.querySelector(`.addBookContainer`);
+const addBookButton = document.querySelector(`.addBookButton`);
+let addBookButtonToggled = false;
+addBookButton.addEventListener(`click`, toggleAddBookContainer)
 
 let favoriteIconToggled = false;
 const toggleFavoriteButton = (e) => {
-
     if (!favoriteIconToggled) {
         addHighlightButton(e.target);
         bookList.toggleParameters.toggleFilterByFavorite()
@@ -636,7 +704,6 @@ const toggleFavoriteButton = (e) => {
         bookList.toggleParameters.toggleFilterByFavorite()
         favoriteIconToggled = false;
     }
-
 }
 favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
 
@@ -663,7 +730,7 @@ const toggleDeleteButton = (e) => {
             }
         }
         deleteIconToggled = false;
-        addToPage(bookList)
+        addToPage(bookList.books)
     }
 }
 deleteFilter.addEventListener(`click`, toggleDeleteButton);
@@ -671,12 +738,42 @@ deleteFilter.addEventListener(`click`, toggleDeleteButton);
 const deleteBook = (e) => {
     bookList.books = bookList.books.filter(book => book.id !== e.target.id)
     toggleClasses(e.target.parentNode, `toggleSlideIn`, `toggleSlideOut`);
+    let tempTitle = grabChildNodeByClass(e.target.parentNode.firstChild, `title`) //to provide inner text to notification
+    notification(`${tempTitle.innerText} Deleted`);
     setTimeout(() => {
         removeElement(e.target.parentNode)
         addObjectToLocalStorage(bookList)
     }, 500)
 }
 
+
+
+// all grab functions compare a parent element with a node provided to see if parent has a child with that node
+const grabIfExactChild = (parentEl, childNd) => {
+    let result = false;
+    for (let i = 0; i < parentEl.childNodes.length; i++) {
+        if (parentEl.childNodes[i] === childNd) result === childNd;
+    }
+    return result;
+}
+
+const grabIfExactChildElement = (parentEl, childNd) => {
+    let result = false;
+    for (let i = 0; i < parentEl.childNodes.length; i++) {
+        if (parentEl.childNodes[i].outerHTML[1] === childNd.outerHTML[1] && parentEl.childNodes[i].outerHTML[2] === childNd.outerHTML[2]) result = parentEl.childNodes[i]; //checks element type - if (outerHTML[1] & [2] is i" or p" or h2)
+    }
+    return result;
+}
+
+const grabChildNodeByClass = (parentEl, className) => {
+    let result = false;
+    for (let i = 0; i < parentEl.childNodes.length; i++) {
+        if (parentEl.childNodes[i].classList) parentEl.childNodes[i].classList.forEach(classPulled => {
+            if (classPulled === className) result = parentEl.childNodes[i]
+        })
+    }
+    return result;
+}
 
 let editIconToggled = false;
 const toggleEditButton = (e) => {
@@ -743,7 +840,8 @@ submitEditBookForm = (book, form) => {
         }
     }
     addObjectToLocalStorage(bookList);
-    addToPage(bookList);
+    addToPage(bookList.books);
+    notification(`Saved changes to ${book[0].title}!`)
     toggleEditButton(editFilter)
     openEditBookForm(editBookContainer)
 };
@@ -829,11 +927,16 @@ const toggleLineHeight = () => {
     bookLines = bookContainer.childNodes
     for (const bookLine of bookLines) { 
         if (typeof(bookLine.className) === 'string') {
-            if (bookLine.className.includes('bookInfo')) {
-                bookLine.classList.toggle('removeCover');
-            }
             if (bookLine.className.includes('bookListHeader') && coverToggled === true) coverTitle.classList.add('removeCover'); 
             else if (bookLine.className.includes('bookListHeader') && coverToggled === false) coverTitle.classList.remove('removeCover');
+            if (bookLine.className.includes('bookInfo')) {
+                if (coverToggled) {
+                    if (!bookLine.className.includes('removeCover')) bookLine.classList.add('removeCover');
+                }
+                if (!coverToggled) {
+                    if (bookLine.className.includes('removeCover')) bookLine.classList.remove('removeCover');
+                }
+            }
         }
     }
 }
@@ -914,5 +1017,5 @@ input.addEventListener("change", async event => {
     bookList.books = [];
     addToObject(bookList, json.books, json.userSettings);
     location.reload();
-    addToPage(bookList);
+    addToPage(bookList.books);
 });
