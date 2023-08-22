@@ -35,7 +35,7 @@
     }
     
     .bookListContainer {
-            overflow: visible;
+            overflow: hidden;
             margin: 2vw;
     
     }
@@ -65,7 +65,7 @@
         margin: 0 2vw;
     }
     
-    .favoriteFilter, .deleteFilter, .editFilter {
+    .favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
         border: 2px solid var(--text-100);
         background-color: var(--primary-200);
         font-size: 1.4rem;
@@ -115,15 +115,14 @@
     }
     
     .bookInfo div img {
-        aspect-ratio: 1 / 1.5;
-        height: auto;
-        background: silver;
-        max-height: auto;
-        margin-right: 3vw;
-        opacity: 1;
+        max-width: 30px;
+    }
+
+    .coverTitle {
+        max-width: 30px;
     }
     
-    .numberTitle, .coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
+    .numberTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
         margin: 0 4px;
         overflow: hidden;
         white-space: nowrap;
@@ -149,9 +148,91 @@
         overflow-y: scroll;
     }
     
+    .previewContainer {
+        max-width: 90vw;
+        min-width: 90vw;
+        max-height: 90vh;
+        min-height: fit-content;
+        padding: 5px;
+    }
+
+    .previewContainer h1 {
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .previewContainer p {
+        font-size: 1.2rem;
+    }
+
+    .previewSubjectDatePublisher div {
+        max-width: 20%;
+        min-width: 14%;
+    }
+
+    .previewDescription {
+        max-height: 150px;
+        min-height: 150px;
+    }
+
+    .addBookContainer {
+        width: 100%;
+    }
+
+    .addBook input, .addBook textarea, .addBook button {
+        font-size: 1.0rem;
+    }
+
+    .mb-6 {
+        margin-bottom: .5rem;
+    }
+
+    .p-9 {
+        padding: 1rem;
+    }
+    
+    .editBookContainer {
+        width: 100%;
+    }
+
+    .editBook input, .editBook textarea, .editBook button {
+        font-size: 1.0rem;
+    }
+
+    .editBook textarea {
+        max-width: 80vw;
+        margin-bottom: 1.25rem;
+    }
+
+    .mb-6 {
+        margin-bottom: .5rem;
+    }
+
+    .p-9 {
+        padding: 1rem;
+    }
+
     }
 
 @media (max-width: 900px) {
+
+    .navBar .logo {
+        max-width: 20px;
+        padding: 0;
+        margin: 3px 4px 1px 4px;
+        overflow: hidden;
+        flex-direction: column;
+    }
+    
+    .navBar .logo img {
+        max-width: 50px;
+        min-width: 20px;
+    }
+
+    .navBar .logo h1 {
+        display: none;
+    }
+
     .bookListContainer {
         margin: 3vh;
         overflow-y: scroll;

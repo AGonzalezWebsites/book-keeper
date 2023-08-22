@@ -53,6 +53,11 @@ body {
     height: 100vh;
 }
 
+.promptContainer {
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.695);
+}
+
 .alertBox {
     display: flex;
     position: fixed;
@@ -170,6 +175,13 @@ body {
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 99;
+}
+
+.dropdown span:hover + .dropdown-content, .dropdown span:active + .dropdown-content {
+    display: flex; 
+    flex-direction: column; 
+    flex-wrap: nowrap;
+    top: var(--navBar-height);
 }
 
 .dropdown:hover .dropdown-content, .dropdown:active .dropdown-content {
@@ -397,7 +409,7 @@ body {
     align-items: center;
     color: rgb(15, 15, 15);
     font-size: 1.8rem;
-    width: 200px;
+    width: 250px;
     padding-left: 10px;
 }
 
@@ -413,8 +425,8 @@ body {
     height: 0;
     max-height: 60vh;
     overflow-y: scroll;
-    width: fit-content;
-    max-width: 275px;
+    min-width: 250px;
+    max-width: 250px;
     border-radius: 0% 0% 5% 5% / 0% 0% 20% 20%;
     z-index: 98;
     transition: .5s;
@@ -745,10 +757,10 @@ body {
     flex-wrap: wrap;
 }
 
-.favoriteFilter, .deleteFilter, .editFilter {
+.favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
     border: 2px solid var(--text-100);
     background-color: var(--primary-200);
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     color: var(--primary-300);
     border-radius: var(--border-radius);
     margin: 5px;
@@ -760,6 +772,10 @@ body {
 
 .deleteFilter {
     min-width: fit-content;
+}
+
+.favoriteFilter i {
+    pointer-events: none;
 }
 
 .favoriteFilter:hover, .deleteFilter:hover {
@@ -839,11 +855,11 @@ cursor: pointer;
     padding: 2px 3px;
     margin: 3px;
     border-radius: 25px;
+    z-index: 2;
 }
 
 .tagButton:hover i {
     display: flex;
-    z-index: 99;
 }
 
 .readTag {
@@ -1008,6 +1024,10 @@ input:checked + .slider:before {
     transition: .3s;
 }
 
+.coverTitle {
+    min-width: 40px;
+}
+
 .bookInfo div p, .bookInfo div img, .bookInfo div a {
     pointer-events: none;
 }
@@ -1045,7 +1065,7 @@ input:checked + .slider:before {
 }
 
 .coverTitle {
-    max-width: 50px;
+    max-width: 40px;
     margin: 0 3vw 0 4vw;
     opacity: 1;
 }

@@ -19,7 +19,7 @@
             <h1>Book</h1>
             <h1>Saver</h1>
         </div>
-        <div class="dropdown">
+        <div onclick="void(0)" class="dropdown">
             <span>File</span>
             <div class="dropdown-content flex items-center">
                 <input type="file" id="file-selector" accept=".bkls, .books" style="display: none;">
@@ -27,7 +27,16 @@
                 <input type="button" value="Upload Book List" onclick="document.getElementById('file-selector').click();" />
             </div>
         </div>
-        <div class="dropdown">
+
+        <div onclick="void(0)" class="dropdown">
+            <span>Edit</span>
+            <div class="dropdown-content flex items-center">
+                <button type="button" class="editFilter py-1 px-3">Edit Book</button>
+                <button type="button" class="deleteFilter py-1 px-3">Delete Book</button>
+            </div>
+        </div>
+
+        <div onclick="void(0)" class="dropdown">
             <span>Options</span>
             <div class="dropdown-content flex items-center">
                 <button type="button" class="addBookButton py-1 px-3">Add Book Manually</button>
@@ -72,9 +81,7 @@
                 </label>
             </div>
             <div class="filterButtons">
-                <button type="button" class="favoriteFilter py-1 px-3">Favorites</button>
-                <button type="button" class="deleteFilter py-1 px-3">Delete Book</button>
-                <button type="button" class="editFilter py-1 px-3">Edit Book</button>
+                <button type="button" class="favoriteFilter py-1 px-3"><i id="nxGuDwAAQBAJ" class="fa-solid fa-star"></i> Favorites</button>
             </div>
             <div class="tagButtons flex">
                 <button type="button" class="tagButton newTag py-1 px-3">Add New</button>
@@ -95,7 +102,7 @@
 
         <div class="books">
             <div class="bookListHeader">
-                <p class="coverTitle">Cover</p>
+                <p class="coverTitle"></p>
                 <p class="titleTitle">Title</p>
                 <p class="authorTitle">Author</p>
                 <p class="subjectTitle">Subject</p>
@@ -164,8 +171,19 @@
     </div>
 
     <div class="alertBox toggleHidden"></div>
+
+    <div class="promptContainer min-w-full min-h-full fixed flex justify-center items-center toggleHidden">
+        <div class="max-w-lg max-h-lg p-9 rounded-lg bg-white flex flex-col justify-center items-center">
+            <p class="promptText text-center mb-6 text-l">Are you sure?</p>
+            <div class="flex flex-row">
+                <button class="cancelPromptButton ml-6 mr-6 p-2 w-36 rounded-lg bg-red-700">No</button>
+                <button class="submitPromptButton mr-6 p-2 w-36 rounded-lg bg-green-700">Yes</button>
+            </div>
+        </div>
+    </div>
         
     <script src="/js/app.js"></script>
+    <script src="/js/abstraction.js"></script>
     <script src="/js/colorScheme.js"></script>
 </body>
 </html>

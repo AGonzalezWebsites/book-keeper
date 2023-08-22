@@ -1,4 +1,5 @@
 const alertBox = document.querySelector(`.alertBox`)
+const bookListContainer = document.querySelector(".bookListContainer");
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
 const spotlightContainer = document.querySelector(`.spotlightContainer`)
@@ -60,6 +61,26 @@ document.addEventListener("DOMContentLoaded", function(){
 
 //*******/ INITIALIZATION ABOVE /*******//
 
+window.addEventListener(`click`, (e) => {
+    console.log(e.target)
+    if (searching) { // to close search box on click away
+        if (!bookSearchContainer.contains(e.target)) {
+            if (typeof(previewContainer) === `object` && document.contains(previewContainer)) return
+            if (e.target.classList.contains(`submitPreviewButton`)) return
+            else stopSearching()
+        }
+    }
+
+    if (deleteIconToggled) {
+        if (!bookContainer.contains(e.target) && !e.target.classList.contains(`deleteFilter`)) toggleDeleteButton(deleteFilter)
+    }
+
+    if (editIconToggled) {
+        if (!bookContainer.contains(e.target) && !e.target.classList.contains(`editFilter`)) toggleEditButton(editFilter)
+    }
+
+})
+
 const openNewTagForm = () => {
     if (addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.remove(`toggleHidden`);
 }
@@ -75,10 +96,15 @@ cancelTagButton.addEventListener(`click`, closeNewTagForm)
 const createNewTag = (e) => {
     let tagName = document.querySelector(".tagName");
     let tagColor = document.querySelector(".tagColor");
+    for (const tag of bookList.userSettings.allTags) {
+        if (tagName.value === tag[0]) {
+            notification(`Unable to use duplicate tag name`)
+            return
+        }
+    }
     tagArr = [`${tagName.value}`, `${tagColor.value}`];
     bookList.userSettings.allTags.push(tagArr);
     addTagToPage(tagName.value, tagColor.value);
-
 }
 
 const removeTag = (books, tagName) => {
@@ -86,8 +112,9 @@ const removeTag = (books, tagName) => {
     for (const book of books) {
         if (book.tag === `${tagName}`) book.tag = "none";
     }
-    removeAllTagsFromPage()
-    addAllTagsToPage()
+    removeAllTagsFromPage(); 
+    addAllTagsToPage(); // removing and adding all tags to not display recently deleted tag
+    addToPage(bookList.books); // adds elements back to page to filter out tag that was deleted
 }
 
 const removeAllTagsFromPage = () => { //this removes every tag so the tags minus the deleted tag are added with addAllTagsToPage()
@@ -113,6 +140,10 @@ const addTagToPage = (tagName, tagColor) => {
 
     closeTag = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
     closeTag.addEventListener(`click`, (e) => {
+        if (!confirm(`Are you sure you want to remove tag?`)) {
+            addToPage(bookList.books); //refreshes book list after tag deletion
+            return
+        }
         removeTag(bookList.books, e.target.parentNode.innerText)
     })
     tempTag.appendChild(closeTag)
@@ -126,24 +157,17 @@ addTagForm.addEventListener("submit", (e) => {
     closeNewTagForm();
 });
 
-
-
-
-
-
-
-
-
 let lastElement;
 const addEventToFilterByTag = (...element) => {
     for (const el of element) el.addEventListener(`click`, () => {
-        if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
-            if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
-        }
-        console.log(el.innerText);
-        bookList.toggleParameters.toggleFilterByTag(el.innerText);
-        lastElement = el;
-    })
+            if (el.parentNode !== tagButtons) return // stops execustion if this tag was deleted (clicking to remove also clicks tag)
+            if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
+                if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
+            }
+            console.log(el.innerText);
+            bookList.toggleParameters.toggleFilterByTag(el.innerText);
+            lastElement = el;
+        })
 }
 
 const toggleTag = (e) => {
@@ -276,7 +300,7 @@ const notification = (message) => {
       }
     timeoutId = setTimeout(() => {
         if (!alertBox.classList[1]) clearNotification()
-    }, 3000)
+    }, 4000)
 }
 
 const clearNotification = () => {
@@ -327,10 +351,6 @@ const checkSearchInput = (e) => {
     searching = true;
 }
 
-const removeLoader = (parent) => {
-    parent.removeChild(loader);
-}
-
 const removeBooks = (x) => {
     const nodes = document.querySelectorAll(`${x}`);
     nodes.forEach((node) => {
@@ -366,7 +386,7 @@ const searchBooks = () => {
             console.log(searchedList)
         }
         styleSearchBox();
-        removeLoader(searchBox)
+        removeElement(loader)
         addToObjectFromApi(searchedBooks, searchedList) //send full searched list to function
 
         for (const book of searchedBooks.books) {
@@ -441,7 +461,7 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
         addToObject(bookList, selectedBook)
         addSingleBookToPage(selectedBook)
         // stopSearching() //add back if I want to stop searching after adding a book
-        if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
+        if (typeof(previewContainerHolder) === `object`) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
     });
 }
 
@@ -573,12 +593,11 @@ const addEventToAddToPreview = (obj, element, cycle) => {
                 catch(err) {
                     if (cycle === 'last') notification(`Reached beginning of list`);
                     if (cycle === 'next') notification(`Reached end of list`);
-                }
-                    
-                }
+                }   
             }
-        });
-    }
+        }
+    });
+}
     
     //Fetching from Books API
     const fetchBooksAPI = (text) => {
@@ -790,9 +809,9 @@ myBookSearch.addEventListener("keydown", (e) => {
         myfilteredBooks = {};
         myfilteredBooks.books = []
         searchFilteredBooks = bookList.books.map(book => {
-            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
-            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
-            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
+            titleMatch = toStringIfArray(replaceUndefined(book.title)).toLowerCase().includes(e.target.value.toLowerCase())
+            authorMatch = toStringIfArray(replaceUndefined(book.authors)).toLowerCase().includes(e.target.value.toLowerCase())
+            subjectMatch = toStringIfArray(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
             if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
         })
         addToPage(myfilteredBooks.books)
@@ -801,19 +820,6 @@ myBookSearch.addEventListener("keydown", (e) => {
         //when search is empty, need to delete myFilteredBooks and add bookList to page again
     }, 200)
 });
-
-const toArray = (a, b, array, i) => {
-    array = []
-    array.push(a);
-    array.push(b);
-    return array
-}
-
-const toString = (x) => {
-    if (Array.isArray(x)) {
-        return x.toString()
-    } else return x
-}
 
 //adds value to element for a single book object - need to iterate for each call
 const addValuesToElement = (object, ...keys) => {
@@ -843,7 +849,7 @@ const addValuesToElement = (object, ...keys) => {
                             tempElement.target = `#`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === `averageRating`) {
-                            tempSelection = reduceDecimal(tempSelection);
+                            tempSelection = reduceDecimal(tempSelection, 2);
                             tempSelection = replaceUndefined(tempSelection)
                             tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`)
                             tempElement.textContent = `${tempSelection}`;
@@ -868,8 +874,6 @@ const addValuesToElement = (object, ...keys) => {
     return combinedTempElements
 }
 
-// CURRENT: if only adding 1 element to page, do not iterate through bookList. Add individual item
-
 //iterate through allElements (an array) and append them to page
 const addToPage = (...object) => { //using ...objects to potentially combine objects and append to page
     removeAllClass(`bookInfo`);
@@ -888,7 +892,6 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
         toggleClasses(tempBookItem, `toggleHeightSmall`, `toggleHeightNormal`);
         }
     if (coverToggled) toggleLineHeight();
-
 }
 
 const addSingleBookToPage = (...object) => {
@@ -917,25 +920,6 @@ const createBookInfo = (object, iteration, newBookNumber) => {
         firstLineDiv.appendChild(el);
     }
     return firstLineDiv
-}
-
-const createElementWithClassOrID = (element, idOrClass, idOrClassName) => {
-    let tempElement = document.createElement(`${element}`)
-    tempElement.setAttribute(`${idOrClass}`, `${idOrClassName}`)
-    return tempElement
-}
-
-const createElementWithInnerText = (element, text) => {
-    let tempElement = document.createElement(`${element}`)
-    tempElement.innerText = `${text}`
-    return tempElement
-}
-
-const removeElement = (element) => {
-    if (element) {
-        element.parentNode.removeChild(element)
-    }
-    else notification(`Unable to delete one or all items`)
 }
 
 let moreDetailsExpanded = false
@@ -1142,7 +1126,7 @@ favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
 let deleteIconToggled = false;
 const toggleDeleteButton = (e) => {
     if (!deleteIconToggled) {
-        addHighlightButton(e.target, `highlightButtonRed`);
+        notification(`Delete mode activate`)
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 deleteIcon = document.createElement(`i`) //icon for book deletion
@@ -1154,7 +1138,7 @@ const toggleDeleteButton = (e) => {
         }
         deleteIconToggled = true;
     } else if (deleteIconToggled) {
-        removeHighlightButton(e.target, `highlightButtonRed`);
+        notification(`Delete mode inactive`)
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 deleteIcon = document.querySelector(`.deleteIcon`)
@@ -1178,40 +1162,11 @@ const deleteBook = (e) => {
     }, 500)
 }
 
-
-
-// all grab functions compare a parent element with a node provided to see if parent has a child with that node
-const grabIfExactChild = (parentEl, childNd) => {
-    let result = false;
-    for (let i = 0; i < parentEl.childNodes.length; i++) {
-        if (parentEl.childNodes[i] === childNd) result === childNd;
-    }
-    return result;
-}
-
-const grabIfExactChildElement = (parentEl, childNd) => {
-    let result = false;
-    for (let i = 0; i < parentEl.childNodes.length; i++) {
-        if (parentEl.childNodes[i].outerHTML[1] === childNd.outerHTML[1] && parentEl.childNodes[i].outerHTML[2] === childNd.outerHTML[2]) result = parentEl.childNodes[i]; //checks element type - if (outerHTML[1] & [2] is i" or p" or h2)
-    }
-    return result;
-}
-
-const grabChildNodeByClass = (parentEl, className) => {
-    let result = false;
-    for (let i = 0; i < parentEl.childNodes.length; i++) {
-        if (parentEl.childNodes[i].classList) parentEl.childNodes[i].classList.forEach(classPulled => {
-            if (classPulled === className) result = parentEl.childNodes[i]
-        })
-    }
-    return result;
-}
-
 let editIconToggled = false;
 const toggleEditButton = (e) => {
     if (!editIconToggled) {
-        addHighlightButton(e.target, `highlightButtonRed`);
-    for (i = 0; i < bookContainer.children.length; i++) {
+        notification(`Edit mode activate`)
+        for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.createElement(`i`) //icon for book deletion
                 editIcon.setAttribute(`class`, `editIcon fa-regular fa-pen-to-square`);
@@ -1222,8 +1177,7 @@ const toggleEditButton = (e) => {
         }
         editIconToggled = true;
     } else if (editIconToggled) {
-        if (e.target) removeHighlightButton(e.target, `highlightButtonRed`);
-        else removeHighlightButton(e, `highlightButtonRed`);
+        notification(`Edit mode inactive`)
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.querySelector(`.editIcon`)
@@ -1294,51 +1248,6 @@ cancelEditBookButton.addEventListener(`click`, () => {
     cancelEditBookForm(editBookForm);
 })
 
-const checkForDublicates = (object, ...objectToAdd) => {
-    for (const book of object.books) {
-        if (book.id === objectToAdd[0][0].id) { //objectToAdd[0][0] need to iterate through this if checking multiple
-            return true
-        }
-    }
-    return false
-}
-
-const addHighlightButton = (element, color) => {
-    element.classList.add(`${color}`);
-}
-
-const removeHighlightButton = (element, color) => {
-    if (element) element.classList.remove(`${color}`);
-}
-
-const removeSearchBox = () => {
-    searchBox.remove(searchBox);
-}
-
-const removeAllChildren = (parent) => {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
-}
-
-const removeAllClass = (clss) => {
-    const boxes = document.querySelectorAll(`.${clss}`);
-    boxes.forEach(box => {
-      box.remove();
-    });
-}
-
-const toggleClasses = (element, classA, classB) => {
-    element.classList.add(classA);
-    setTimeout(() => {
-        element.classList.remove(classA);
-        element.classList.add(classB);
-        setTimeout(() => {
-            element.classList.remove(classB);
-        }, 500)
-    }, 10);
-}
-
 const coverTitle = document.querySelector(`.coverTitle`);
 let coverToggled = false;
 const toggleLineHeight = () => {
@@ -1364,23 +1273,6 @@ const toggleLineHeightButton = document.querySelector(`.toggleLineHeight`).addEv
     toggleLineHeight();
 })
 
-const pullBookFromObject = (object, id) => {
-    selectedBookArray = []
-    for (const book of object.books) {
-        if (book.id === id) {
-            selectedBookArray.push(book);
-            return selectedBookArray;
-        } 
-    }
-}
-
-const grabBookByID = (object, bookID) => {
-    for (const book of object.books) {
-        if (book.id === bookID) return book;
-    }
-    return "Book not found";
-}
-
 let customBookID = `custom`;
 const giveBookNewID = () => {
     let idValue = Math.floor(Math.random() * 10);
@@ -1397,21 +1289,10 @@ const addLoader = (parent) => {
     parent.appendChild(loader);
 }
 
-const reduceDecimal = (x) => {
-    return Number.parseFloat(x).toFixed(2);
-  }
-
-  const replaceUndefined = (...texts) => {
-    for (const text of texts) {
-        if (!text || text === `NaN`) return 'N/A'
-        else return text
-    } 
-}
-
-
 ///////////////////////////////////////////////////
-// uploading JSON below
+// download and upload JSON below
 /////////////////////////////////////////////////
+
 const downloadFile = (data, filename) => {
     const file = JSON.stringify(data)
     const link = document.createElement('a')
@@ -1435,3 +1316,24 @@ input.addEventListener("change", async event => {
     location.reload();
     addToPage(bookList.books);
 });
+
+
+
+// TEST FEATURE TO REPLACE CONFIRM() - UNFINISHED
+
+// const promptContainer = document.querySelector(`.promptContainer`);
+// const cancelPromptButton = document.querySelector(`.cancelPromptButton`);
+// const submitPromptButton = document.querySelector(`.submitPromptButton`);
+// const promptText = document.querySelector(`.promptText`);
+
+// const openPrompt = (message = `Are you Sure`) => {
+//     promptText.innerText = `${message}`
+//     promptContainer.classList.remove(`toggleHidden`);
+//     //need to wait for user reponse (yes or no)
+// }
+
+// const closePrompt = () => {
+//     promptText.innerText = ``
+//     promptContainer.classList.add(`toggleHidden`);
+//     //need to wait for user reponse (yes or no)
+// }
