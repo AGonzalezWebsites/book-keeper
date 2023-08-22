@@ -1,10 +1,265 @@
 const alertBox = document.querySelector(`.alertBox`)
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
+const spotlightContainer = document.querySelector(`.spotlightContainer`)
+const toggleSpotlightIcon = document.querySelector(`.toggleSpotlightIcon`)
 const deleteFilter = document.querySelector(`.deleteFilter`);
 const favoriteFilter = document.querySelector(`.favoriteFilter`);
 const editFilter = document.querySelector(`.editFilter`);
-const spotlightContainer = document.querySelector(`spotlightContainer`)
+const tagButtons = document.querySelector(`.tagButtons`)
+const readTag = document.querySelector(`.readTag`)
+const readingTag = document.querySelector(`.readingTag`)
+const notReadTag = document.querySelector(`.notReadTag`)
+const newTag = document.querySelector(`.newTag`)
+const addTagContainer = document.querySelector(`.addTagContainer`)
+const addTagForm = document.querySelector(`#addTagForm`)
+const cancelTagButton = document.querySelector(`.cancelTagButton`)
+
+document.addEventListener("DOMContentLoaded", function(){
+    if (localStorage.books) {
+        const tempBookList = {};
+        tempBookList.books = [];
+        tempBookList.books = JSON.parse(localStorage.getItem(`books`));
+        tempBookList.userSettings = JSON.parse(localStorage.getItem(`userSettings`));
+        addToObject(bookList, tempBookList.books, tempBookList.userSettings);
+        if (!bookList.userSettings) {
+            bookList.userSettings = {}
+            if (!bookList.userSettings.colorScheme) bookList.userSettings.colorScheme = "hazlenut"
+        }
+        if (!bookList.userSettings.allTags) bookList.userSettings.allTags = [[`none`, `var(--bg-100)`], [`read`, `#890000`], [`reading`, `#009016`], [`readnext`, `#b3aa00`]]
+        initializeTags()
+        console.log(bookList.books[0])
+        addObjectToLocalStorage(bookList)
+        setColorScheme(bookList.userSettings.colorScheme)
+        addToPage(bookList.books);
+        addAllTagsToPage()
+    }
+
+    for (const book of bookList.books) if (!book.tag) book.tag = `none`;
+    //prevents submitting both forms on enter key press
+    addBookForm.onkeypress = function(e) { 
+        var key = e.charCode || e.keyCode || 0;     
+        if (key == 13) {
+            e.preventDefault();
+        }
+    }
+    editBookForm.onkeypress = function(e) {
+        var key = e.charCode || e.keyCode || 0;     
+        if (key == 13) {
+            e.preventDefault();
+        }
+    }
+
+    toggleSpotlightIcon.addEventListener(`click`, () => {
+        if (bookList.toggleParameters.favorites) toggleSpotlight(favoriteBooks)   
+        else if (bookList.toggleParameters.tag) toggleSpotlight(tagBooks)   
+        else if (filteringByKeyword) toggleSpotlight(myfilteredBooks)   
+        else toggleSpotlight(bookList);
+    })
+});
+
+//*******/ INITIALIZATION ABOVE /*******//
+
+const openNewTagForm = () => {
+    if (addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.remove(`toggleHidden`);
+}
+newTag.addEventListener(`click`, openNewTagForm)
+
+const closeNewTagForm = () => {
+    if (!addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.add(`toggleHidden`);
+    let tagName = document.querySelector(".tagName");
+    tagName.value = "";
+}
+cancelTagButton.addEventListener(`click`, closeNewTagForm)
+
+const createNewTag = (e) => {
+    let tagName = document.querySelector(".tagName");
+    let tagColor = document.querySelector(".tagColor");
+    tagArr = [`${tagName.value}`, `${tagColor.value}`];
+    bookList.userSettings.allTags.push(tagArr);
+    addTagToPage(tagName.value, tagColor.value);
+
+}
+
+const removeTag = (books, tagName) => {
+    bookList.userSettings.allTags = bookList.userSettings.allTags.filter(element => element[0] !== tagName)
+    for (const book of books) {
+        if (book.tag === `${tagName}`) book.tag = "none";
+    }
+    removeAllTagsFromPage()
+    addAllTagsToPage()
+}
+
+const removeAllTagsFromPage = () => { //this removes every tag so the tags minus the deleted tag are added with addAllTagsToPage()
+    let nodeLength = tagButtons.children.length
+    for (let i = 0; i < nodeLength; i++) {
+        let tempNode = tagButtons.children[0]
+        if (tempNode.innerText === `Add New`) tempNode = tagButtons.children[1]
+        if (tempNode) removeElement(tempNode)
+    }
+}
+
+const addAllTagsToPage = () => {
+    bookList.userSettings.allTags.forEach(element => {
+        if (element[0] !== `none`) addTagToPage(element[0], element[1])
+    })
+}
+
+const addTagToPage = (tagName, tagColor) => {
+    let tempTag = createElementWithClassOrID(`button`, `class`, `tagButton ${tagName}Tag py-1 px-3`);
+    tempTag.innerText = `${tagName}`;
+    tempTag.style.setProperty('background', `${tagColor}`);
+    addEventToFilterByTag(tempTag);
+
+    closeTag = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
+    closeTag.addEventListener(`click`, (e) => {
+        removeTag(bookList.books, e.target.parentNode.innerText)
+    })
+    tempTag.appendChild(closeTag)
+    tagButtons.appendChild(tempTag);
+    addObjectToLocalStorage(bookList)
+}
+
+addTagForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    createNewTag(e);
+    closeNewTagForm();
+});
+
+
+
+
+
+
+
+
+
+let lastElement;
+const addEventToFilterByTag = (...element) => {
+    for (const el of element) el.addEventListener(`click`, () => {
+        if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
+            if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
+        }
+        console.log(el.innerText);
+        bookList.toggleParameters.toggleFilterByTag(el.innerText);
+        lastElement = el;
+    })
+}
+
+const toggleTag = (e) => {
+    let allTags = bookList.userSettings.allTags;
+    let bookGrabbed = grabBookByID(bookList, e.target.id)
+    for (let i = 0; i < allTags.length; i++) {
+        if (bookGrabbed.tag === allTags[i][0]) {
+
+            if (allTags[i + 1]) {
+                bookGrabbed.tag = allTags[i + 1][0]
+                e.target.style.setProperty('background', `${allTags[i + 1][1]}`);
+            }
+            else {
+                bookGrabbed.tag = allTags[0][0]
+                e.target.style.setProperty('background', `${allTags[0][1]}`);
+            }
+            if (bookGrabbed.tag === allTags[0][0]) notification(`Removed tags`)
+            else notification(`Added to #${bookGrabbed.tag}`)
+            addObjectToLocalStorage(bookList)
+            return
+        }
+    }
+    console.log(bookGrabbed.tag)
+}
+
+const setTag = (el) => {
+    let allTags = bookList.userSettings.allTags;
+    let bookGrabbed = grabBookByID(bookList, el.id)
+    if (bookGrabbed.id === el.id) {
+        for (let i = 0; i < allTags.length; i++) {
+            if (bookGrabbed.tag === allTags[i][0]) {
+                el.style.setProperty('background', `${allTags[i][1]}`);
+            }
+        }
+    }
+}
+
+const initializeTags = () => { //for users that didn't have tag update
+    for (const book of bookList.books) {
+        if (!book.tag) book.tag = `none`;
+    }
+    addObjectToLocalStorage(bookList);
+}
+
+const closeSpotlight = () => {
+    spotlightContainer.removeChild(scrollLeft)
+    spotlightContainer.removeChild(scrollRight)
+    spotlightContainer.removeChild(spotlightBooks)
+    spotlightContainer.classList.add(`closeSpotlight`)
+} 
+
+const closeAndOpenSpotlight = (obj) => {
+    if (spotlightOpen){
+        toggleSpotlight(obj);
+        toggleSpotlight(obj);
+    }
+}
+
+let spotlightBooks;
+let spotlightOpen = false;
+const toggleSpotlight = (obj) => {
+    if (spotlightOpen) {
+        toggleSpotlightIcon.classList.remove(`rotate180`)
+        closeSpotlight()
+        spotlightOpen = false;
+        return
+    } else if (!spotlightOpen) {
+        spotlightBooks = createElementWithClassOrID(`div`, `class`, `spotlightBooks`)
+
+        scrollLeft = createElementWithClassOrID(`div`, `class`, `scrollLeft flex justify-center items-center`)
+        scrollLeftIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollLeftIcon`)
+        scrollLeft.appendChild(scrollLeftIcon)
+        scrollLeft.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `left`))
+        
+        scrollRight = createElementWithClassOrID(`div`, `class`, `scrollRight flex justify-center items-center`)
+        scrollRightIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollRightIcon`)
+        scrollRight.appendChild(scrollRightIcon)
+        
+        scrollRight.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `right`))
+        for (const book of obj.books) {
+            let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
+            let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+            if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+            addEventToAddToPreview(bookList, spotlightBookItem);
+            spotlightBooks.appendChild(spotlightBookItem)
+        }
+        spotlightContainer.classList.remove(`closeSpotlight`)
+        spotlightOpen = true;
+        toggleSpotlightIcon.classList.add(`rotate180`)
+        spotlightContainer.appendChild(scrollLeft)
+        spotlightContainer.appendChild(scrollRight)
+        spotlightContainer.appendChild(spotlightBooks)
+        setTimeout(() => {
+            scrollLeft.classList.add(`toggleShow`)
+            scrollRight.classList.add(`toggleShow`)
+            spotlightBooks.classList.add(`toggleShow`)
+        }, 500)
+    }
+}
+
+const spotlightScroll = (element, direction) => {
+    let scrollPosition = element.scrollLeft;
+    let deviceWidth = document.defaultView.window.innerWidth;
+    if (direction === `left`) element.scrollTo((scrollPosition - deviceWidth), 0);
+    if (direction === `right`) element.scrollTo((scrollPosition + deviceWidth), 0);
+
+};
+
+const addSingleBookToSpotLight = (obj) => {
+    let tempObj = obj[0][0];
+    let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
+    let combinedElements = addValuesToElement(tempObj, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+    if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+    addEventToAddToPreview(bookList, spotlightBookItem);
+    spotlightBooks.appendChild(spotlightBookItem)
+}
 
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
@@ -28,35 +283,6 @@ const clearNotification = () => {
     alertBox.removeChild(textElement);
     alertBox.classList.add(`toggleHidden`)
 }
-
-document.addEventListener("DOMContentLoaded", function(){
-    if (localStorage.books) {
-        const tempBookList = {};
-        tempBookList.books = [];
-        tempBookList.books = JSON.parse(localStorage.getItem(`books`));
-        tempBookList.userSettings = JSON.parse(localStorage.getItem(`userSettings`));
-        addToObject(bookList, tempBookList.books, tempBookList.userSettings);
-        if (!bookList.userSettings) {
-            bookList.userSettings = {}
-            bookList.userSettings.colorScheme = "hazlenut"
-        }
-        setColorScheme(bookList.userSettings.colorScheme)
-        addToPage(bookList.books);
-    }
-    //prevents submitting both forms on enter key press
-    addBookForm.onkeypress = function(e) { 
-        var key = e.charCode || e.keyCode || 0;     
-        if (key == 13) {
-            e.preventDefault();
-        }
-    }
-    editBookForm.onkeypress = function(e) {
-        var key = e.charCode || e.keyCode || 0;     
-        if (key == 13) {
-            e.preventDefault();
-        }
-    }
-});
 
 const addMoreDetailsEvent = (element) => {
     element.addEventListener(`click`, (e) => {
@@ -214,7 +440,7 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
         notification(`Added ${selectedBook[0].title} by ${selectedBook[0].authors}!`)
         addToObject(bookList, selectedBook)
         addSingleBookToPage(selectedBook)
-        stopSearching()
+        // stopSearching() //add back if I want to stop searching after adding a book
         if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
     });
 }
@@ -462,6 +688,7 @@ const addToObject = (object, bookSelected, userSettings) => {
                 id: book.id,
                 moreInfo: book.moreInfo,
                 favorite: book.favorite,
+                tag: book.tag,
             };
             object.books.push(bookObject);
         }
@@ -492,6 +719,7 @@ bookList.toggleParameters = {
     averageRating: {
         alphabeticalOrder: {ascending: false}},
     favorites: false,
+    tag: false,
     filterAlphabetically(key) {
         if (!bookList.toggleParameters[key].ascending) {
             bookList.toggleParameters[key].ascending = true;
@@ -527,10 +755,25 @@ bookList.toggleParameters = {
             favoriteBooks = {};
             favoriteBooks.books = bookList.books.filter(element => (element.favorite));
             addToPage(favoriteBooks.books);
+            closeAndOpenSpotlight(favoriteBooks);
             bookList.toggleParameters.favorites = true;
         } else if (bookList.toggleParameters.favorites) {
             addToPage(bookList.books);
+            closeAndOpenSpotlight(bookList);
             bookList.toggleParameters.favorites = false;
+        }
+    },
+    toggleFilterByTag(tagGiven) {
+        if (!bookList.toggleParameters.tag) {
+            tagBooks = {};
+            tagBooks.books = bookList.books.filter(element => (element.tag === tagGiven));
+            addToPage(tagBooks.books);
+            closeAndOpenSpotlight(tagBooks)
+            bookList.toggleParameters.tag = true;
+        } else if (bookList.toggleParameters.tag) {
+            addToPage(bookList.books);
+            closeAndOpenSpotlight(bookList)
+            bookList.toggleParameters.tag = false;
         }
     },
     removeClassesAndAddToPage(element, object) {
@@ -538,6 +781,26 @@ bookList.toggleParameters = {
         addToPage(object.books);
     }
 }
+
+let filteringByKeyword = false;
+const myBookSearch = document.querySelector(`.myBookSearchInput`);
+myBookSearch.addEventListener("keydown", (e) => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout( () => {
+        myfilteredBooks = {};
+        myfilteredBooks.books = []
+        searchFilteredBooks = bookList.books.map(book => {
+            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
+            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
+            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
+            if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
+        })
+        addToPage(myfilteredBooks.books)
+        closeAndOpenSpotlight(myfilteredBooks)
+        //make sure to delete existing bookList elements and add these results to page
+        //when search is empty, need to delete myFilteredBooks and add bookList to page again
+    }, 200)
+});
 
 const toArray = (a, b, array, i) => {
     array = []
@@ -552,7 +815,7 @@ const toString = (x) => {
     } else return x
 }
 
-
+//adds value to element for a single book object - need to iterate for each call
 const addValuesToElement = (object, ...keys) => {
     tempBookItem = document.createElement('div');  
     tempBooks = Object.keys(object);
@@ -565,7 +828,12 @@ const addValuesToElement = (object, ...keys) => {
                     if (keys[i] === key) {
                         tempSelection = object[key] //tempSelection points to book object value
                         if (Array.isArray(tempSelection)) tempSelection = tempSelection.join() //*averageRating might not be passing here
-                        if (key === `thumbnail`) {
+                        if (key === `tag`) {
+                            tempElement = createElementWithClassOrID(`button`, `id`, `${object.id}`)
+                            tempElement.classList.add(`${key}`);
+                            tempElement.addEventListener(`click`, toggleTag)
+                            setTag(tempElement)
+                        } else if (key === `thumbnail`) {
                             tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`)
                             tempElement.src = tempSelection;
                             tempElement.classList.add(`${key}`);
@@ -609,7 +877,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
     let objectCount = Object.keys(object[0]).length;
     for (let i = 0; i < objectCount; i++) { //iterate through each book object
         let currentCount = i;
-        allElements = addValuesToElement(object[0][i], `thumbnail`, `title`, `authors`, `subject`, 'favorite');
+        allElements = addValuesToElement(object[0][i],`tag`, `thumbnail`, `title`, `authors`, `subject`, 'favorite');
         firstLineDiv = createBookInfo(object[0], currentCount)
         tempBookItem = document.createElement(`div`); 
         tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
@@ -624,6 +892,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
 }
 
 const addSingleBookToPage = (...object) => {
+    if (spotlightOpen) addSingleBookToSpotLight(object);
     allElements = addValuesToElement(object[0][0], `thumbnail`, `title`, `authors`, `subject`, 'favorite');
     firstLineDiv = createBookInfo(object[0], 0, Object.keys(bookList.books).length)
     tempBookItem = document.createElement(`div`); 
@@ -663,7 +932,10 @@ const createElementWithInnerText = (element, text) => {
 }
 
 const removeElement = (element) => {
-    element.parentNode.removeChild(element)
+    if (element) {
+        element.parentNode.removeChild(element)
+    }
+    else notification(`Unable to delete one or all items`)
 }
 
 let moreDetailsExpanded = false
@@ -770,18 +1042,20 @@ const addMoreDetails = (object, id, existingElement) => {
 
 const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
     bookList.toggleParameters.filterAlphabetically('title');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    closeAndOpenSpotlight(bookList);
 });
 
 const authorTitle = document.querySelector('.authorTitle').addEventListener('click', () => {
     bookList.toggleParameters.filterAlphabetically('authors');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    closeAndOpenSpotlight(bookList);
 });
 
 const subjectTitle = document.querySelector('.subjectTitle').addEventListener('click', () => {
     bookList.toggleParameters.filterAlphabetically('subject');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
-
+    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    closeAndOpenSpotlight(bookList);
 });
 
 const addEventToAddToFavorite = (icon) => {
@@ -854,11 +1128,11 @@ addBookButton.addEventListener(`click`, toggleAddBookContainer)
 let favoriteIconToggled = false;
 const toggleFavoriteButton = (e) => {
     if (!favoriteIconToggled) {
-        addHighlightButton(e.target);
+        addHighlightButton(e.target, `highlightButtonGold`);
         bookList.toggleParameters.toggleFilterByFavorite()
         favoriteIconToggled = true;
     } else if (favoriteIconToggled) {
-        removeHighlightButton(e.target);
+        removeHighlightButton(e.target, `highlightButtonGold`);
         bookList.toggleParameters.toggleFilterByFavorite()
         favoriteIconToggled = false;
     }
@@ -868,7 +1142,7 @@ favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
 let deleteIconToggled = false;
 const toggleDeleteButton = (e) => {
     if (!deleteIconToggled) {
-        addHighlightButton(e.target);
+        addHighlightButton(e.target, `highlightButtonRed`);
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 deleteIcon = document.createElement(`i`) //icon for book deletion
@@ -880,15 +1154,14 @@ const toggleDeleteButton = (e) => {
         }
         deleteIconToggled = true;
     } else if (deleteIconToggled) {
-        removeHighlightButton(e.target);
+        removeHighlightButton(e.target, `highlightButtonRed`);
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 deleteIcon = document.querySelector(`.deleteIcon`)
-                if (bookContainer.children[i].deleteIcon) bookContainer.children[i].removeChild(deleteIcon);
+                if (bookContainer.children[i]) bookContainer.children[i].removeChild(deleteIcon);
             }
         }
         deleteIconToggled = false;
-        addToPage(bookList.books)
     }
 }
 deleteFilter.addEventListener(`click`, toggleDeleteButton);
@@ -901,6 +1174,7 @@ const deleteBook = (e) => {
     setTimeout(() => {
         removeElement(e.target.parentNode)
         addObjectToLocalStorage(bookList)
+        closeAndOpenSpotlight(bookList)
     }, 500)
 }
 
@@ -933,28 +1207,10 @@ const grabChildNodeByClass = (parentEl, className) => {
     return result;
 }
 
-const myBookSearch = document.querySelector(`.myBookSearchInput`);
-myBookSearch.addEventListener("keydown", (e) => {
-    clearTimeout(searchTimer)
-    searchTimer = setTimeout( () => {
-        myfilteredBooks = {};
-        myfilteredBooks.books = []
-        searchFilteredBooks = bookList.books.map(book => {
-            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
-            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
-            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
-            if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
-        })
-        addToPage(myfilteredBooks.books)
-        //make sure to delete existing bookList elements and add these results to page
-        //when search is empty, need to delete myFilteredBooks and add bookList to page again
-    }, 200)
-});
-
 let editIconToggled = false;
 const toggleEditButton = (e) => {
     if (!editIconToggled) {
-        addHighlightButton(e.target);
+        addHighlightButton(e.target, `highlightButtonRed`);
     for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.createElement(`i`) //icon for book deletion
@@ -966,8 +1222,8 @@ const toggleEditButton = (e) => {
         }
         editIconToggled = true;
     } else if (editIconToggled) {
-        if (e.target) removeHighlightButton(e.target);
-        else removeHighlightButton(e);
+        if (e.target) removeHighlightButton(e.target, `highlightButtonRed`);
+        else removeHighlightButton(e, `highlightButtonRed`);
         for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.querySelector(`.editIcon`)
@@ -1017,6 +1273,7 @@ submitEditBookForm = (book, form) => {
     }
     addObjectToLocalStorage(bookList);
     addToPage(bookList.books);
+    closeAndOpenSpotlight(bookList)
     notification(`Saved changes to ${book[0].title}!`)
     toggleEditButton(editFilter)
     openEditBookForm(bookList, editBookContainer)
@@ -1046,12 +1303,12 @@ const checkForDublicates = (object, ...objectToAdd) => {
     return false
 }
 
-const addHighlightButton = (element) => {
-    element.classList.add(`highlightButton`);
+const addHighlightButton = (element, color) => {
+    element.classList.add(`${color}`);
 }
 
-const removeHighlightButton = (element) => {
-    if (element) element.classList.remove(`highlightButton`);
+const removeHighlightButton = (element, color) => {
+    if (element) element.classList.remove(`${color}`);
 }
 
 const removeSearchBox = () => {
@@ -1120,8 +1377,8 @@ const pullBookFromObject = (object, id) => {
 const grabBookByID = (object, bookID) => {
     for (const book of object.books) {
         if (book.id === bookID) return book;
-        else return "Book not found";
     }
+    return "Book not found";
 }
 
 let customBookID = `custom`;
