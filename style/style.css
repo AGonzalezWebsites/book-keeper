@@ -13,6 +13,8 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     --book-border-radius-top: 10px 10px 0 0;
     --book-border-radius-botom: 0 0 10px 10px;
     --book-border-radius: 10px;
+    --border-radius: 5px;
+    --border-radius-round: 25px;
     
       /* hazelnut */
     --primary-100:#BFAE9F;
@@ -64,7 +66,7 @@ body {
     margin: 1vh;
     background-color: white;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     box-shadow: 0 0 10px black;
     font-size: 1.6rem;
     z-index: 99;
@@ -212,6 +214,110 @@ body {
     left: var(--menu-width);
 }
 
+.previewContainerHolder {
+    position: fixed;
+    min-width: 100%;
+    min-height: 100%;
+    background: rgba(0, 0, 0, 0.858);
+    justify-content: center;
+    z-index: 98;
+}
+
+.previewContainer {
+    position: relative;
+    background: rgb(255, 255, 255);
+    justify-content: center;
+    align-items: center;
+    max-width: 550px;
+    min-width: 500px;
+    max-height: 500px;
+    min-height: 500px;
+    padding: 10px;
+    margin: 5px;
+    border-radius: var(--border-radius);
+    transition: .3s;
+}
+
+.previewBoxTitle {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    font-size: 2.4rem;
+    margin: 10px;
+    font-style: italic;
+}
+
+.previewContainer div {
+    margin: 5px;
+}
+
+.previewContainer h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.previewContainer p {
+    font-size: 1.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.previewContainer img {
+    aspect-ratio: 1 / 1.5;
+    max-width: 100px;
+}
+
+.previewCoverAuthorTitle {
+    align-items: end;
+    align-self: flex-start;
+}
+
+.previewCoverAuthorTitle .authorAndTitle {
+    max-width: 400px;
+    margin-bottom: 0;
+}
+
+.previewSubjectDatePublisher {
+    width: 100%;
+    justify-content: space-around;
+}
+
+.previewSubjectDatePublisher div {
+    max-width: 100px;
+    min-width: 100px;
+}
+
+.previewDescription {
+    max-width: 100%;
+    min-width: 100%;
+    max-height: 200px;
+    min-height: 200px;
+    font-size: 1.4rem;
+    overflow-y: scroll;
+    padding: 10px;
+    background: rgb(240, 240, 240);
+    border-radius: 3px;
+    border: 1px inset;
+}
+
+.previewDescription p {
+    text-overflow: ellipsis;
+    white-space: wrap;
+    overflow: show;
+}
+
+.previewButtons {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    font-size: 2.0rem;
+}
+
+.previewButtons button {
+    margin: 0 5px;
+}
+
 .addBookContainer {
     top: 0px;
     left: 0px;
@@ -223,14 +329,14 @@ body {
 
 .addBook {
     border: 3px solid var(--text-100);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
 }
 
 .addBook input, .addBook textarea, .addBook button {
     color: rgb(17, 17, 17);
     font-size: 1.8rem;
     border: 2px solid var(--text-100);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     font-style: italic;
 }
 
@@ -253,14 +359,14 @@ body {
 
 .editBook {
     border: 3px solid var(--text-100);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
 }
 
 .editBook input, .editBook textarea, .editBook button {
     color: rgb(17, 17, 17);
     font-size: 1.8rem;
     border: 2px solid var(--text-100);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     font-style: italic;
 }
 
@@ -287,7 +393,7 @@ body {
 .navBar .bookSearch input {
     display: flex;
     align-items: center;
-    color: var(--text-100);
+    color: rgb(15, 15, 15);
     font-size: 1.8rem;
     width: 200px;
     padding-left: 10px;
@@ -301,11 +407,13 @@ body {
     background: var(--bg-100);
     top: calc(var(--navBar-height) - var(--navBar-border));
     right: 0px;
-    padding: 19px;
+    padding: 10px;
     height: 0;
+    max-height: 60vh;
+    overflow-y: scroll;
     width: fit-content;
-    max-width: 300px;
-    border-radius: 5% 5% 5% 5% / 10% 10% 53% 53%;
+    max-width: 275px;
+    border-radius: 0% 0% 5% 5% / 0% 0% 20% 20%;
     z-index: 1;
     transition: .5s;
     opacity: 0;
@@ -320,21 +428,19 @@ body {
     margin: 5px 0;
     border-bottom: 2px solid var(--primary-200);
 }
-
-.loader {
-    align-self: center;
-    border: 5px solid var(--bg-100); /* Light grey */
-    border-top: 5px solid var(--bg-300); /* Blue */
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin .5s linear infinite;
+.searchedBookButtons {
+    margin-left: auto;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    border-radius: var(--border-radius);
+    background-color: var(--primary-200);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+.addFromSearchButton {
+    color: var(--primary-300);
+    padding: 0 5px;
+    font-size: 1.4rem;
+}
 
 .searchedBookInfo:hover {
     cursor: pointer;
@@ -344,8 +450,8 @@ body {
 
 .searchedBookInfo .coverContainer {
     aspect-ratio: 1 / 1.5;
-    width: 42px;
-    min-width: 42px;
+    width: 38px;
+    min-width: 38px;
 }
 
 .searchedBookInfo img {
@@ -365,9 +471,11 @@ body {
 }
 
 .searchedBookInfo p {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: var(--text-100);
-
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 #toggleSearchStyle {
@@ -376,7 +484,61 @@ body {
     top: 50px;
 }
 
+.fa-x {
+    font-size: 0;
+}
+
+.fa-x:nth-child(2) {
+    position: absolute;
+    font-size: 2.0rem;
+    top: 0;
+    right: 5px;
+    padding: 5px 2px;
+    z-index: 2;
+}
+
+.fa-x:hover {
+    cursor: pointer;
+}
+
+.cantFindBook {
+    font-size: 0;
+}
+
+.cantFindBook:last-child {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    font-style: italic;
+    text-align: center;
+}
+
+.cantFindBook:last-child:hover {
+    cursor: pointer;
+}
+
+.loader {
+    align-self: center;
+    border: 5px solid var(--bg-100); /* Light grey */
+    border-top: 5px solid var(--bg-300); /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin .5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
 /* NAVBAR AND SEARCH DONE */
+
+.spotlightContainer {
+    height: auto;
+    min-height: 200px;
+    width: 100%;
+    background-color: var(--primary-200);
+}
 
 .bookListContainer {
     height: calc(100vh - var(--navBar-height) - var(--navBar-border) - 8vw);
@@ -447,12 +609,12 @@ body {
 .myBookSearch input {
     display: flex;
     border: 2px solid var(--text-100);
-    color: var(--text-100);
+    color: rgb(15, 15, 15);
     font-size: 1.8rem;
     width: 100%;
     max-width: 250px;
     padding-left: 10px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
 }
 
 .filterBox div:first-child {
@@ -482,7 +644,7 @@ body {
     background-color: var(--primary-200);
     font-size: 1.8rem;
     color: var(--primary-300);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     margin: 5px;
 }
 
@@ -709,7 +871,7 @@ input:checked + .slider:before {
     right: 0px;
     margin: 5px;
     padding: 3px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     border: 2px solid black;
     color: black;
     z-index: 2;
@@ -772,10 +934,6 @@ input:checked + .slider:before {
     opacity: 0;
 }
 
-.averageRating {
-    display: none;
-}
-
 .moreDetails {
     display: flex;
     flex-direction: column;
@@ -783,6 +941,9 @@ input:checked + .slider:before {
     transition: .1s ease-in;
     padding: 10px 10vw 10px 10vw;
     overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+    transition: .7s;
 }
 
 .moreDetails .descriptionTitle {
@@ -825,7 +986,7 @@ input:checked + .slider:before {
     background-color: var(--bg-100);
     font-size: 1.8rem;
     color: var(--text-100);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     padding: 2px;
     min-width: fit-content;
 }
@@ -867,6 +1028,10 @@ input:checked + .slider:before {
     color: var(--bg-100);
 }
 
+.additionInfo .fa-eye {
+    right: 25px;
+}
+
 .favorite {
     color: gold !important;
     z-index: 1;
@@ -894,8 +1059,8 @@ input:checked + .slider:before {
 
 
 .toggleSlideOut {
-    opacity: 0;
     margin-right: 600px !important;
+    opacity: 0;
 }
 
 .toggleSlideIn {
@@ -903,15 +1068,28 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
+.toggleSlideOutRight {
+    margin-left: 600px !important;
+    opacity: 0;
+}
+
+.toggleSlideInRight {
+    margin-left: 0px !important;
+    opacity: 1;
+}
+
 .toggleHidden {
     display: none !important;
     opacity: 0;
-    transition: 1s;
 }
 
 .toggleShow {
     display: flex;
-    transition: 1s;
     opacity: 1;
+}
+
+.removeHeight {
+    max-height: 0px;
+    opacity: 0;
 }
 

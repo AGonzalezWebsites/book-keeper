@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/img/bookLogoFavicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto:wght@400;900&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
     <link rel="stylesheet" href="/dist/output.css">
     <link rel="stylesheet" href="/style/style.css">
@@ -21,8 +22,8 @@
         <div class="dropdown">
             <span>File</span>
             <div class="dropdown-content flex items-center">
-                <input type="file" id="file-selector" accept=".bkls" style="display: none;">
-                <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList, `my_book_list.bkls`)">Download Book List</button>
+                <input type="file" id="file-selector" accept=".bkls, .books" style="display: none;">
+                <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList, `MyBookList.books`)">Download Book List</button>
                 <input type="button" value="Upload Book List" onclick="document.getElementById('file-selector').click();" />
             </div>
         </div>
@@ -51,6 +52,7 @@
         </div>
 
     </div>
+
     <div class="bookListContainer">
         <div class="filterBox">
             <div class="filterHeader"><p>Filters</p></div>
@@ -91,14 +93,22 @@
             <h1 class="text-4xl">Add Book Info</h1>
             
             <form class="overflow-scroll" id="addBookForm" action="/index.html" onsubmit="return false">
-                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row m-6">
-                <input type="text" name="authors" placeholder="Author.." class="flex flex-row m-6">
-                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row m-6">
-                <input type="text" name="pageCount" placeholder="Page Count" class="flex flex-row m-6">
-                <input type="text" name="publishedDate" placeholder="Publish Date" class="flex flex-row m-6">
-                <input type="text" name="publisher" placeholder="Publisher" class="flex flex-row m-6">
-                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row m-6">
-                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row m-6"></textarea>
+                <h2 class="text-lg italic m-0 mt-6 p-0">Title</h2>
+                <input type="text" name="title" placeholder="Book Title.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Author</h2>
+                <input type="text" name="authors" placeholder="Author.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Subject</h2>
+                <input type="text" name="subject" placeholder="Subject.." class="flex flex-row mb-6">
+                <hh2 class="text-lg italic m-0 p-0"2>Page Count</h2>
+                <input type="text" name="pageCount" placeholder="Page Count" class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Publish Date</h2>
+                <input type="text" name="publishedDate" placeholder="Publish Date" class="flex flex-row mb-6">
+                <hh2 class="text-lg italic m-0 p-0"2>Publisher</h2>
+                <input type="text" name="publisher" placeholder="Publisher" class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Cover URL</h2>
+                <input type="text" name="thumbnail" placeholder="Cover URL.." class="flex flex-row mb-6">
+                <h2 class="text-lg italic m-0 p-0">Synopsis</h2>
+                <textarea type="text" id="description" name="description" cols="40" rows="3" placeholder="Synopsis/Description.." class="flex flex-row mb-6"></textarea>
                 <div class="addBookFormButtons">
                 <button class="cancelButton cancelAddBookButton ml-6 mr-6 mb-5 p-2 px-8" onclick="closeAddBookForm()">Cancel</button>
                 <button class="submitButton submitAddBookButton  mr-6 mb-6 p-2 px-8">Submit</button>
@@ -111,7 +121,6 @@
     <div class="editBookContainer toggleHidden flex justify-center items-center fixed">
         <div class="editBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Edit Book Info</h1>
-            
             <form class="overflow-scroll" id="editBookForm" action="/index.html" onsubmit="return false">
                 <h2 class="text-lg italic m-0 mt-6 p-0">Title</h2>
                 <input type="text" name="title" placeholder="Book Title.." class="flex flex-row mb-6">

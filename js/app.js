@@ -4,6 +4,8 @@ const bookSearchContainer = document.querySelector('.bookSearch');
 const deleteFilter = document.querySelector(`.deleteFilter`);
 const favoriteFilter = document.querySelector(`.favoriteFilter`);
 const editFilter = document.querySelector(`.editFilter`);
+const spotlightContainer = document.querySelector(`spotlightContainer`)
+
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
@@ -56,7 +58,6 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
-//***to fix: removing favorites by clicking star on bookInfo returns an error - click needs to be ignored***
 const addMoreDetailsEvent = (element) => {
     element.addEventListener(`click`, (e) => {
         if (e.target.parentElement.className.includes('bookInfo') && e.target.tagName !== `I`) {
@@ -69,11 +70,13 @@ let searchTimer;
 let searchBox;
 let searching = false;
 const bookSearch = document.querySelector(`.bookSearchInput`);
-bookSearch.addEventListener("keydown", () => {
+bookSearch.addEventListener("keydown", (e) => {
     clearTimeout(searchTimer)
     searchTimer = setTimeout( () => {
+        let cancelCurrentSearch = false;
+        cancelCurrentSearch = checkSearchInput(e)
+        if (cancelCurrentSearch) return
         if (bookSearch.nextElementSibling) removeAllChildren(searchBox);
-        checkSearchInput()
         removeBooks('.searchedBookInfo');//remove from previous search
         if (searchBox) addLoader(searchBox);
         if (searching) {
@@ -83,27 +86,12 @@ bookSearch.addEventListener("keydown", () => {
     }, 700)
 });
 
-const myBookSearch = document.querySelector(`.myBookSearchInput`);
-myBookSearch.addEventListener("keydown", (e) => {
-    clearTimeout(searchTimer)
-    searchTimer = setTimeout( () => {
-        myfilteredBooks = {};
-        myfilteredBooks.books = []
-        searchFilteredBooks = bookList.books.map(book => {
-            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
-            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
-            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
-            if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
-        })
-        addToPage(myfilteredBooks.books)
-        //make sure to delete existing bookList elements and add these results to page
-        //when search is empty, need to delete myFilteredBooks and add bookList to page again
-    }, 200)
-});
-
-const checkSearchInput = () => {
+const checkSearchInput = (e) => {
     //do nothing if same value
-    if (lastSearch === bookSearch.value) return;
+    if ((e.keyCode === 32 || e.keyCode === 8 && lastSearch === bookSearch.value)) {
+        cancelCurrentSearch = true
+        return cancelCurrentSearch
+    } else cancelCurrentSearch = false
     lastSearch = bookSearch.value;
     //remove searchBox if no value in search
     if (bookSearch.value.length === 0) {
@@ -113,6 +101,32 @@ const checkSearchInput = () => {
     searching = true;
 }
 
+const removeLoader = (parent) => {
+    parent.removeChild(loader);
+}
+
+const removeBooks = (x) => {
+    const nodes = document.querySelectorAll(`${x}`);
+    nodes.forEach((node) => {
+        node.parentElement.removeChild(node);
+    });
+}
+
+const addSearchBox = () => {
+    if (!searchBox) {
+        searchBox = document.createElement('div');
+        searchBox.classList.add('searchResults');
+        addLoader(searchBox);
+        bookSearchContainer.appendChild(searchBox)
+    } else {
+        bookSearchContainer.appendChild(searchBox)
+    }
+}
+
+const styleSearchBox = () => {
+    searchBox.setAttribute('id', 'toggleSearchStyle'); 
+}
+
 let lastSearch;
 //Book search referencing api pull
 const searchedBooks = {};
@@ -120,7 +134,7 @@ const searchBooks = () => {
     let searchedList = [];
     getApiData(bookSearch.value).then((booksSearched) => {
         if (searching) {
-            for (let i=0; i<7; i++) {
+            for (let i=0; i<10; i++) {
                 searchedList.push(booksSearched.items[i])
             }
             console.log(searchedList)
@@ -128,6 +142,7 @@ const searchBooks = () => {
         styleSearchBox();
         removeLoader(searchBox)
         addToObjectFromApi(searchedBooks, searchedList) //send full searched list to function
+
         for (const book of searchedBooks.books) {
                 appendToSearchBox(addValuesToElement(book, `thumbnail`, `title`, `authors`, 'id'));
             }
@@ -143,8 +158,204 @@ const stopSearching = () => {
     return;
 }
 
-//Fetching from Books API
-const fetchBooksAPI = (text) => {
+let coverDiv;
+let titleAndAuthorDiv
+const appendToSearchBox = (...elements) => {
+    tempBookItem = createElementWithClassOrID(`div`, `class`, `searchedBookInfo`)
+    titleAndAuthorDiv = createElementWithClassOrID(`div`, `class`, `titleAndAuthor`) //container for title and author outside of loop
+    
+    searchedBookButtons = createElementWithClassOrID(`div`, `class`, `searchedBookButtons`) //container for title and author outside of loop
+    addFromSearchButton = document.createElement(`button`)
+    addFromSearchButton.classList.add(`addFromSearchButton`)
+    addFromSearchButton.innerText = `Add`;
+    searchedBookButtons.appendChild(addFromSearchButton)
+
+
+    for (let i = 0; i < elements[0].length; i++) { //each element appended to div container here
+        if (elements[0][i].tagName === `IMG`) {
+            coverDiv = createElementWithClassOrID(`div`, `class`, `coverContainer`)
+            coverDiv.appendChild(elements[0][i])
+        }
+        if (elements[0][i].tagName === `P`) {
+            titleAndAuthorDiv.appendChild(elements[0][i])
+        }
+        if (elements[0][i].tagName === 'A') {
+            tempBookItem.setAttribute(`id`, `${elements[0][i].id}`);
+        }
+    }
+    if (tempBookItem) tempBookItem.appendChild(coverDiv);
+    if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
+    if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
+    if (searchedBookButtons) tempBookItem.appendChild(searchedBookButtons)
+    addEventToAddToObject(searchedBooks, searchedBookButtons);
+    addEventToAddToPreview(searchedBooks, tempBookItem);
+    searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
+    
+    let cantFindBook = createElementWithClassOrID(`p`, `class`, `cantFindBook`)
+    cantFindBook.innerText = `Can't find book? Add manually here`
+    cantFindBook.addEventListener(`click`, submitAddBookForm)
+
+    closeSearch = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
+    closeSearch.addEventListener(`click`, stopSearching)
+
+    searchBox.appendChild(closeSearch);
+    searchBox.appendChild(cantFindBook);
+    
+}
+
+const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click and close searchbox
+    element[0].addEventListener('click', (e) => {
+        selectedBook = pullBookFromObject(objectFrom, e.target.parentElement.parentElement.id);
+        result = checkForDublicates(bookList, selectedBook)
+        if (result) {
+            notification(`${selectedBook[0].title} by ${selectedBook[0].authors} is already in your collection`)
+            return
+        }
+        notification(`Added ${selectedBook[0].title} by ${selectedBook[0].authors}!`)
+        addToObject(bookList, selectedBook)
+        addSingleBookToPage(selectedBook)
+        stopSearching()
+        if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
+    });
+}
+
+let previewIterationModifier;
+const addEventToAddToPreview = (obj, element, cycle) => {
+    element.addEventListener(`click`, (e) => {
+        if (e.target.className === `addFromSearchButton`) return
+        if (!cycle) previewIterationModifier = 0
+        if (cycle) {
+            if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
+            if (cycle === 'last') previewIterationModifier = -1;
+            if (cycle === 'next') previewIterationModifier = 1;
+        }
+        for (let i = 0; i < obj.books.length; i++) {
+            if(obj.books[i].id === element.id) {
+                try {
+                newIteration = i + previewIterationModifier;
+                let h1;
+                    let combinedElements = addValuesToElement(obj.books[newIteration], `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+                    
+                    previewContainerHolder = createElementWithClassOrID(`div`, `class`, `previewContainerHolder flex justify-center items-center align-center fixed top-0 min-h-max min-w-max`)
+                    previewContainer = createElementWithClassOrID(`div`, `class`, `previewContainer flex flex-col h-auto w-auto`)
+                    previewContainer.setAttribute('id', `${obj.books[newIteration].id}`);
+                    previewContainerHolder.appendChild(previewContainer)
+                    
+                    if (combinedElements.some(element => element.className === `thumbnail`)) {
+                        previewCoverAuthorTitle = createElementWithClassOrID(`div`, `class`, `previewCoverAuthorTitle flex flex-row`)
+                        previewCoverAuthorTitle.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+                    }
+                    
+                    
+                    previewauthorAndTitle = createElementWithClassOrID(`div`, `class`, `authorAndTitle`);
+                    h1 = createElementWithInnerText(`h1`, `Title`);
+                    previewauthorAndTitle.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `title`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `title`))
+
+                    h1 = createElementWithInnerText(`h1`, `Author`);
+                    previewauthorAndTitle.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `authors`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `authors`))
+                    previewCoverAuthorTitle.appendChild(previewauthorAndTitle)
+                    
+                    previewSubjectDatePublisher = createElementWithClassOrID(`div`, `class`, `previewSubjectDatePublisher flex flex-row`)
+
+                    h1 = createElementWithInnerText(`h1`, `Subject`);
+                    previewSubject = createElementWithClassOrID(`div`, `class`, `previewSubject`)
+                    previewSubject.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `subject`)) previewSubject.appendChild(combinedElements.find(element => element.className === `subject`))
+                    
+                    h1 = createElementWithInnerText(`h1`, `Published`);
+                    previewPublishedDate = createElementWithClassOrID(`div`, `class`, `previewPublishedDate`)
+                    previewPublishedDate.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `publishedDate`)) previewPublishedDate.appendChild(combinedElements.find(element => element.className === `publishedDate`))
+                    
+                    h1 = createElementWithInnerText(`h1`, `Publisher`);
+                    previewPublisher = createElementWithClassOrID(`div`, `class`, `previewPublisher`)
+                    previewPublisher.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `publisher`)) previewPublisher.appendChild(combinedElements.find(element => element.className === `publisher`))
+
+                    h1 = createElementWithInnerText(`h1`, `Rating`);
+                    previewAverageRating = createElementWithClassOrID(`div`, `class`, `previewRating`)
+                    previewAverageRating.appendChild(h1)
+                    if (combinedElements.some(element => element.className === `averageRating`)) {
+                        averageRating = combinedElements.find(element => element.className === `averageRating`)
+                        totalRatings = combinedElements.find(element => element.className === `ratingsCount`);
+                        if (averageRating.innerText !== "N/A") {
+                            averageRating.innerText = `${averageRating.innerText}/5 (${totalRatings.innerText})`
+                        } else {
+                            averageRating.innerText = `N/A`
+                        }
+                        previewAverageRating.appendChild(averageRating)
+                    }
+                    
+                    previewSubjectDatePublisher.appendChild(previewSubject)
+                    previewSubjectDatePublisher.appendChild(previewPublishedDate)
+                    previewSubjectDatePublisher.appendChild(previewPublisher)
+                    previewSubjectDatePublisher.appendChild(previewAverageRating)
+                    
+                    previewDescription = createElementWithClassOrID(`div`, `class`, `previewDescription`)
+                    if (combinedElements.some(element => element.className === `description`)) {
+                        previewDescription.appendChild(combinedElements.find(element => element.className === `description`))
+                    }
+
+                    let allElements = [previewCoverAuthorTitle, previewSubjectDatePublisher, previewDescription]
+                    allElements.forEach(element => previewContainer.appendChild(element))
+                    
+                    previewButtons = createElementWithClassOrID(`div`, `class`, `previewButtons`);
+                    cancelPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`);
+                    cancelPreviewButton.innerText = "Close";
+                    cancelPreviewButton.addEventListener(`click`, () => {if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);})
+                    previewButtons.appendChild(cancelPreviewButton);
+                    
+                    lastPreviewButton = createElementWithClassOrID(`button`, `class`, `lastPreviewButton`);
+                    lastPreviewButton.innerText = "Last";
+                    lastPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
+                    addEventToAddToPreview(obj, lastPreviewButton, `last`);
+                    previewButtons.appendChild(lastPreviewButton)
+                    
+                    nextPreviewButton = createElementWithClassOrID(`button`, `class`, `nextPreviewButton`)
+                    nextPreviewButton.innerText = "Next";
+                    nextPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
+                    addEventToAddToPreview(obj, nextPreviewButton, `next`);
+                    previewButtons.appendChild(nextPreviewButton)
+                    
+                    
+                    previewBoxTitle = createElementWithClassOrID(`p`, `class`, `previewBoxTitle`)
+                    if (searchedBooks) {
+                        if (obj === searchedBooks) {
+                            submitPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`)
+                            submitPreviewButton.innerText = "Add";
+                            addEventToAddToObject(obj, submitPreviewButton);                
+                            previewButtons.appendChild(submitPreviewButton)
+                            previewBoxTitle.innerText = `Searched Books`;
+                        } 
+                    }
+                    if (obj === bookList) previewBoxTitle.innerText = `All My Books`;
+
+                    previewContainer.appendChild(previewBoxTitle)
+                    previewContainer.appendChild(previewButtons)
+                    
+                    document.body.appendChild(previewContainerHolder)
+                    if (cycle === 'last') previewContainer.classList.add(`toggleSlideOut`)
+                    if (cycle === 'next') previewContainer.classList.add(`toggleSlideOutRight`)
+                    
+                    setTimeout(() => {
+                        if (cycle === 'next') previewContainer.classList.remove(`toggleSlideOutRight`);
+                        if (cycle === 'last') previewContainer.classList.remove(`toggleSlideOut`);
+                    }, 100)
+                } 
+                catch(err) {
+                    if (cycle === 'last') notification(`Reached beginning of list`);
+                    if (cycle === 'next') notification(`Reached end of list`);
+                }
+                    
+                }
+            }
+        });
+    }
+    
+    //Fetching from Books API
+    const fetchBooksAPI = (text) => {
     return fetch(`https://www.googleapis.com/books/v1/volumes?q=${text}&key=AIzaSyCRN35xl_3LT3eyELbB0_NCyK9WYlFAfKY`)
     // return fetch(`https://openlibrary.org/search.json?q=${text}`)
     .then((res) => {
@@ -177,7 +388,7 @@ const addToObjectFromApi = (object, bookSelected) => {
             if (book.hasOwnProperty('volumeInfo')) {
                 if(book.volumeInfo.hasOwnProperty(`imageLinks`)){
                     if (book.volumeInfo.imageLinks.hasOwnProperty(`thumbnail`)) bookObject.thumbnail = book.volumeInfo.imageLinks.thumbnail
-                }
+                } else bookObject.thumbnail = `img/noCover.jpeg`
                 if (book.volumeInfo.hasOwnProperty(`title`)) bookObject.title = book.volumeInfo.title;
                 if (book.volumeInfo.hasOwnProperty(`authors`)) bookObject.authors = book.volumeInfo.authors;
                 if (book.volumeInfo.hasOwnProperty(`averageRating`)) bookObject.averageRating = book.volumeInfo.averageRating;
@@ -261,9 +472,7 @@ const addToObject = (object, bookSelected, userSettings) => {
 };
 
 const addObjectToLocalStorage = (object) => {
-    if (localStorage) {
-        localStorage.removeItem(`books`);
-    }
+    if (localStorage) localStorage.removeItem(`books`);
     if (object.books) localStorage.setItem(`books`, `${JSON.stringify(object.books)}`)
     if (object.userSettings) localStorage.setItem(`userSettings`, `${JSON.stringify(object.userSettings)}`)
 }
@@ -330,17 +539,6 @@ bookList.toggleParameters = {
     }
 }
 
-const downloadFile = (data, filename) => {
-    const file = JSON.stringify(data)
-    const link = document.createElement('a')
-    link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file))
-    link.setAttribute('download', filename || 'data.json')
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
 const toArray = (a, b, array, i) => {
     array = []
     array.push(a);
@@ -368,34 +566,29 @@ const addValuesToElement = (object, ...keys) => {
                         tempSelection = object[key] //tempSelection points to book object value
                         if (Array.isArray(tempSelection)) tempSelection = tempSelection.join() //*averageRating might not be passing here
                         if (key === `thumbnail`) {
-                            tempElement = document.createElement('img');
-                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`)
                             tempElement.src = tempSelection;
                             tempElement.classList.add(`${key}`);
                         } else if (key[0] === `i` && key[1] === 'd') {
-                            tempElement = document.createElement('a');
+                            tempElement = createElementWithClassOrID(`a`, `id`, `${object.id}`)
                             tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
                             tempElement.target = `#`;
-                            tempElement.setAttribute(`id`, `${object.id}`);
                             tempElement.classList.add(`${key}`);
                         } else if (key === `averageRating`) {
                             tempSelection = reduceDecimal(tempSelection);
                             tempSelection = replaceUndefined(tempSelection)
-                            tempElement = document.createElement('p');
-                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`)
                             tempElement.textContent = `${tempSelection}`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === 'favorite') {
-                            tempElement = document.createElement(`i`);
+                            tempElement = createElementWithClassOrID(`i`, `id`, `${object.id}`)
                             tempElement.classList.add(`fa-solid`)
                             tempElement.classList.add(`fa-star`)
-                            tempElement.setAttribute('id', `${object.id}`); 
                             addEventToAddToFavorite(tempElement)
                             if (object.favorite) tempElement.classList.add(`favorite`)
                             if (!object.favorite) tempElement.classList.add(`toggleHidden`)
                         } else {
-                            tempElement = document.createElement('p');
-                            tempElement.setAttribute(`id`, `${object.id}`);
+                            tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`)
                             tempElement.textContent = `${replaceUndefined(tempSelection)}`;
                             tempElement.classList.add(`${key}`);
                         }
@@ -416,7 +609,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
     let objectCount = Object.keys(object[0]).length;
     for (let i = 0; i < objectCount; i++) { //iterate through each book object
         let currentCount = i;
-        allElements = addValuesToElement(object[0][i], `thumbnail`, `title`, `authors`, `averageRating`, `subject`, 'favorite');
+        allElements = addValuesToElement(object[0][i], `thumbnail`, `title`, `authors`, `subject`, 'favorite');
         firstLineDiv = createBookInfo(object[0], currentCount)
         tempBookItem = document.createElement(`div`); 
         tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
@@ -431,7 +624,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
 }
 
 const addSingleBookToPage = (...object) => {
-    allElements = addValuesToElement(object[0][0], `thumbnail`, `title`, `authors`, `averageRating`, `subject`, 'favorite');
+    allElements = addValuesToElement(object[0][0], `thumbnail`, `title`, `authors`, `subject`, 'favorite');
     firstLineDiv = createBookInfo(object[0], 0, Object.keys(bookList.books).length)
     tempBookItem = document.createElement(`div`); 
     tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
@@ -463,99 +656,82 @@ const createElementWithClassOrID = (element, idOrClass, idOrClassName) => {
     return tempElement
 }
 
-const removeElement = (element) => {
-    element.parentNode.removeChild(element)
+const createElementWithInnerText = (element, text) => {
+    let tempElement = document.createElement(`${element}`)
+    tempElement.innerText = `${text}`
+    return tempElement
 }
 
-let coverDiv;
-let titleAndAuthorDiv
-const appendToSearchBox = (...elements) => {
-    tempBookItem.classList.add(`searchedBookInfo`);
-    tempBookItem = document.createElement('div');
-    tempBookItem.classList.add('searchedBookInfo')
-    titleAndAuthorDiv = document.createElement('div') //container for title and author outside of loop
-    titleAndAuthorDiv.classList.add('titleAndAuthor')
-    for (let i = 0; i < elements[0].length; i++) { //each element appended to div container here
-        if (elements[0][i].tagName === `IMG`) {
-            // searchedTextContent = document.createElement('div');
-            coverDiv = document.createElement('div')
-            coverDiv.classList.add('coverContainer')
-            coverDiv.appendChild(elements[0][i])
-        }
-        if (elements[0][i].tagName === `P`) {
-            // searchedTextContent = document.createElement('div');
-            titleAndAuthorDiv.appendChild(elements[0][i])
-        }
-        if (elements[0][i].tagName === 'A') {
-            tempBookItem.setAttribute(`id`, `${elements[0][i].id}`);
-
-        }
-    }
-    if (tempBookItem) tempBookItem.appendChild(coverDiv);
-    if (titleAndAuthorDiv) tempBookItem.appendChild(titleAndAuthorDiv);
-    addEventToAddToObject(searchedBooks, tempBookItem);
-    searchBox.appendChild(tempBookItem); //div container of all searched elements appended to search box
+const removeElement = (element) => {
+    element.parentNode.removeChild(element)
 }
 
 let moreDetailsExpanded = false
 const addMoreDetails = (object, id, existingElement) => {
     newElements = []
+    let previewIcon = document.createElement(`i`);
+    previewIcon.classList.add(`fa-solid`); // preview icon for preview event
+    previewIcon.classList.add(`fa-eye`) ;// preview icon for preview event
+    previewIcon.setAttribute(`id`, `${id}`);
+    addEventToAddToPreview(bookList, previewIcon);
+
     let iconGrabbed = grabChildNodeByClass(existingElement.firstChild, `fa-star`); // grabs correct from icon
     if (moreDetailsExpanded === true && lastElement === existingElement) {
         moreDetailsExpanded = false
         lastElement.classList.remove(`selectedBook`)
         favoriteSelected = grabChildNodeByClass(existingElement.firstChild, `favorite`); //checking if favorite was selected
         if (!favoriteSelected) iconGrabbed.classList.add(`toggleHidden`) //hide favorite icon if not selected
-        lastElement.removeChild(moreDetailsContainer);
+        moreDetailsContainer.classList.add(`removeHeight`)
+        setTimeout(()=> {
+            lastElement.removeChild(moreDetailsContainer);
+        }, 100)
         return
     } else if (moreDetailsExpanded === true && lastElement !== existingElement) {
         lastElement.classList.remove(`selectedBook`)
         let iconGrabbed = grabChildNodeByClass(lastElement.firstChild, `fa-star`); // grabs correct icon from previous element
         favoriteSelected = grabChildNodeByClass(lastElement.firstChild, `favorite`); //checking if favorite was selected
         if (!favoriteSelected) iconGrabbed.classList.add(`toggleHidden`) //hide favorite icon if not selected
-        lastElement.removeChild(moreDetailsContainer);
+        let lastMoreDetails = lastElement.querySelector(`.moreDetails`);
+        lastMoreDetails.classList.add(`removeHeight`)
+        setTimeout(()=> {
+            lastMoreDetails.parentElement.removeChild(lastMoreDetails)
+        }, 500)
     }
     for (const book of object.books) {
         if (book.id === id ) {
-            moreDetailsContainer = document.createElement(`div`);
-            moreDetailsContainer.classList.add(`moreDetails`);
-
-            moreDetailsFirstItems = document.createElement(`div`);
-            moreDetailsFirstItems.classList.add(`additionInfo`);
+            moreDetailsContainer = createElementWithClassOrID(`div`, `class`, `moreDetails`)
+            moreDetailsFirstItems = createElementWithClassOrID(`div`, `class`, `additionInfo`)
             
-            if (book.publishedDate) {
-                publishedDate = document.createElement(`div`);
-                publishedDateTextHeader = document.createElement(`h2`);
-                publishedDateTextHeader.innerText = (`Released`);
-                publishedDateText = document.createElement(`p`);
-                publishedDateText.innerText = (book.publishedDate);
+            publishedDate = document.createElement(`div`);
+            publishedDateTextHeader = document.createElement(`h2`);
+            publishedDateTextHeader.innerText = (`Released`);
+            publishedDateText = document.createElement(`p`);
+            if (book.publishedDate) publishedDateText.innerText = (book.publishedDate);
+            else publishedDateText.innerText = `N/A`;
                 publishedDate.appendChild(publishedDateTextHeader);
                 publishedDate.appendChild(publishedDateText);
                 moreDetailsFirstItems.appendChild(publishedDate);
-            }
             
-            if (book.publisher) {
                 publisher = document.createElement(`div`);
                 publisherTextHeader = document.createElement(`h2`);
                 publisherTextHeader.innerText = (`Publisher`);
                 publisherText = document.createElement(`p`);
-                publisherText.innerText = (book.publisher);
+                if (book.publisher) publisherText.innerText = (book.publisher);
+                else publisherText.innerText = `N/A`;
                 publisher.appendChild(publisherTextHeader);
                 publisher.appendChild(publisherText);
                 moreDetailsFirstItems.appendChild(publisher);
-            }
             
             
-            if (book.pageCount) {
                 pageCount = document.createElement(`div`);
                 pageCountTextHeader = document.createElement(`h2`);
                 pageCountTextHeader.innerText = (`Page Count`);
                 pageCountText = document.createElement(`p`);
-                pageCountText.innerText = (book.pageCount);
+                if (book.pageCount) pageCountText.innerText = (book.pageCount);
+                else pageCountText.innerText = `N/A`;
                 pageCount.appendChild(pageCountTextHeader);
                 pageCount.appendChild(pageCountText);
                 moreDetailsFirstItems.appendChild(pageCount);
-            }
 
             previewButton = document.createElement(`button`);
             if (book.accessViewStatusEmbeddable && book.accessViewStatusEmbeddable === `SAMPLE`) {
@@ -567,11 +743,12 @@ const addMoreDetails = (object, id, existingElement) => {
             } else previewButton.innerText = `Preview Unavailable`;
             moreDetailsFirstItems.appendChild(previewButton);
             
-            descriptionTitle = document.createElement(`p`);
-            descriptionTitle.classList.add(`descriptionTitle`)
+            descriptionTitle = createElementWithClassOrID(`P`, `class`, `descriptionTitle`)
             descriptionTitle.innerText = `Description`;
             description = document.createElement(`p`);
             description.innerText = `${book.description}`;
+
+            moreDetailsFirstItems.appendChild(previewIcon);
             
             moreDetailsContainer.appendChild(descriptionTitle)
             moreDetailsContainer.appendChild(description)
@@ -581,12 +758,9 @@ const addMoreDetails = (object, id, existingElement) => {
 
             existingElement.appendChild(moreDetailsContainer)
             existingElement.classList.add(`selectedBook`)
-            moreDetailsContainer.classList.add(`toggleHeightSmall`)
+            moreDetailsContainer.classList.add(`removeHeight`)
             setTimeout(() =>{
-                moreDetailsContainer.classList.remove(`toggleHeightSmall`);
-                moreDetailsContainer.classList.add(`toggleHeightNormal`);
-                moreDetailsContainer.classList.remove(`toggleHeightNormal`);
-
+                moreDetailsContainer.classList.remove(`removeHeight`);
             }, 10)
         }
     }
@@ -609,22 +783,6 @@ const subjectTitle = document.querySelector('.subjectTitle').addEventListener('c
     bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList)
 
 });
-
-
-const addEventToAddToObject = (objectFrom, ...element) => { //For added elements to be given the listener to be added to the bookList object on click and close searchbox
-    element[0].addEventListener('click', (e) => {
-        selectedBook = pullBookFromObject(objectFrom, e.target.id);
-        result = checkForDublicates(bookList, selectedBook)
-        if (result) {
-            notification(`${selectedBook[0].title} by ${selectedBook[0].authors} is already in your collection`)
-            return
-        }
-        notification(`Added ${selectedBook[0].title} by ${selectedBook[0].authors}!`)
-        addToObject(bookList, selectedBook)
-        addSingleBookToPage(selectedBook)
-        stopSearching()
-    });
-}
 
 const addEventToAddToFavorite = (icon) => {
     icon.addEventListener(`click`, (e) => {
@@ -775,17 +933,35 @@ const grabChildNodeByClass = (parentEl, className) => {
     return result;
 }
 
+const myBookSearch = document.querySelector(`.myBookSearchInput`);
+myBookSearch.addEventListener("keydown", (e) => {
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout( () => {
+        myfilteredBooks = {};
+        myfilteredBooks.books = []
+        searchFilteredBooks = bookList.books.map(book => {
+            titleMatch = toString(book.title).toLowerCase().includes(e.target.value.toLowerCase())
+            authorMatch = toString(book.authors).toLowerCase().includes(e.target.value.toLowerCase())
+            subjectMatch = toString(replaceUndefined(book.subject)).toLowerCase().includes(e.target.value.toLowerCase())
+            if (authorMatch || titleMatch || subjectMatch) myfilteredBooks.books.push(book);
+        })
+        addToPage(myfilteredBooks.books)
+        //make sure to delete existing bookList elements and add these results to page
+        //when search is empty, need to delete myFilteredBooks and add bookList to page again
+    }, 200)
+});
+
 let editIconToggled = false;
 const toggleEditButton = (e) => {
     if (!editIconToggled) {
         addHighlightButton(e.target);
-        for (i = 0; i < bookContainer.children.length; i++) {
+    for (i = 0; i < bookContainer.children.length; i++) {
             if (bookContainer.children[i].className.includes(`bookInfo`)) {
                 editIcon = document.createElement(`i`) //icon for book deletion
                 editIcon.setAttribute(`class`, `editIcon fa-regular fa-pen-to-square`);
                 editIcon.setAttribute('id', `${bookContainer.children[i].id}`);
                 bookContainer.children[i].appendChild(editIcon);
-                editIcon.addEventListener(`click`, openEditBookForm);
+                editIcon.addEventListener(`click`, (e) => openEditBookForm(bookList, e));
             }
         }
         editIconToggled = true;
@@ -807,8 +983,8 @@ editFilter.addEventListener(`click`, toggleEditButton);
 const editBookContainer = document.querySelector(`.editBookContainer`);
 let bookToEdit;
 let editBookButtonToggled = false;
-const openEditBookForm = (e) => {
-    if (e.target) bookToEdit = bookList.books.filter(book => book.id === e.target.id) //if from event listener
+const openEditBookForm = (object, e) => {
+    if (e.target) bookToEdit = object.books.filter(book => book.id === e.target.id) //if from event listener
     let editBookForm = document.querySelector('#editBookForm');
     if (!editBookButtonToggled) {
         addValuesToForm(bookToEdit, editBookForm)
@@ -843,7 +1019,7 @@ submitEditBookForm = (book, form) => {
     addToPage(bookList.books);
     notification(`Saved changes to ${book[0].title}!`)
     toggleEditButton(editFilter)
-    openEditBookForm(editBookContainer)
+    openEditBookForm(bookList, editBookContainer)
 };
 
 submitEditBookButton = document.querySelector(`.submitEditBookButton`);
@@ -853,7 +1029,7 @@ submitEditBookButton.addEventListener(`click`, () => {
 
 const cancelEditBookForm = () => {
     toggleEditButton(editFilter)
-    openEditBookForm(editBookContainer);
+    openEditBookForm(bookList, editBookContainer);
 }
 
 cancelEditBookButton = document.querySelector(`.cancelEditBookButton`);
@@ -876,21 +1052,6 @@ const addHighlightButton = (element) => {
 
 const removeHighlightButton = (element) => {
     if (element) element.classList.remove(`highlightButton`);
-}
-
-const styleSearchBox = () => {
-    searchBox.setAttribute('id', 'toggleSearchStyle'); 
-}
-
-const addSearchBox = () => {
-    if (!searchBox) {
-        searchBox = document.createElement('div');
-        searchBox.classList.add('searchResults');
-        addLoader(searchBox);
-        bookSearchContainer.appendChild(searchBox)
-    } else {
-        bookSearchContainer.appendChild(searchBox)
-    }
 }
 
 const removeSearchBox = () => {
@@ -954,7 +1115,6 @@ const pullBookFromObject = (object, id) => {
             return selectedBookArray;
         } 
     }
-    
 }
 
 const grabBookByID = (object, bookID) => {
@@ -980,17 +1140,6 @@ const addLoader = (parent) => {
     parent.appendChild(loader);
 }
 
-const removeLoader = (parent) => {
-    parent.removeChild(loader);
-}
-
-const removeBooks = (x) => {
-    const nodes = document.querySelectorAll(`${x}`);
-    nodes.forEach((node) => {
-        node.parentElement.removeChild(node);
-    });
-}
-
 const reduceDecimal = (x) => {
     return Number.parseFloat(x).toFixed(2);
   }
@@ -1002,10 +1151,20 @@ const reduceDecimal = (x) => {
     } 
 }
 
+
 ///////////////////////////////////////////////////
 // uploading JSON below
 /////////////////////////////////////////////////
-
+const downloadFile = (data, filename) => {
+    const file = JSON.stringify(data)
+    const link = document.createElement('a')
+    link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file))
+    link.setAttribute('download', filename || 'data.json')
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+}
 
 const input = document.querySelector(`#file-selector`)
 input.type = "file";
