@@ -25,19 +25,29 @@
         left: 0;
     }
     
+    .bookSearch {
+        margin: 0;
+        width: 100%;
+    }
+
     .navBar .bookSearch input {
         display: flex;
         align-items: center;
         color: var(--text-100);
-        font-size: 1.8rem;
-        width: 150px;
-        padding-left: 10px;
+        font-size: 1.6rem;
+        word-spacing: -.07rem;
+        width: 100%;
+        min-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
     
     .bookListContainer {
             overflow: hidden;
             margin: 2vw;
-    
+            height: 100vh;
+            max-height: 100vh;
     }
     
     .filterBox {
@@ -50,7 +60,7 @@
         background-color: var(--bg-200);
         min-width: 190px;
         height: auto;
-        max-height: auto;
+        max-height: fit-content;
         border-radius: var(--book-border-radius);
     }
     
@@ -62,7 +72,6 @@
         max-width: 100%;
         height: auto;
         max-height: auto;
-        margin: 0 2vw;
     }
     
     .favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
@@ -74,8 +83,14 @@
         margin: 2.5px;
     }
     
+    .tag {
+        padding: 5px;
+        margin: 4px;
+    }
+
     .bookInfo {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
+        letter-spacing: -.07rem;
     }
     
     .bookListHeader, .filterHeader {
@@ -91,7 +106,9 @@
     .moreDetails>p {
         font-size: 1.2rem;
         min-height: fit-content;
-        flex-wrap: wrap;
+        max-height: 150px;
+        white-space: normal !important;
+        word-break: break-word;
     }
     
     .additionInfo div h2 {
@@ -115,7 +132,7 @@
     }
     
     .bookInfo div img {
-        max-width: 30px;
+        /* max-width: 30px; */
     }
 
     .coverTitle {
@@ -163,6 +180,8 @@
 
     .previewContainer p {
         font-size: 1.2rem;
+        white-space: normal !important;
+        word-break: break-word;
     }
 
     .previewSubjectDatePublisher div {
@@ -234,6 +253,7 @@
     }
 
     .bookListContainer {
+        flex-direction: column;
         margin: 3vh;
         overflow-y: scroll;
         align-content: flex-start;

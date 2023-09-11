@@ -15,6 +15,7 @@ const newTag = document.querySelector(`.newTag`)
 const addTagContainer = document.querySelector(`.addTagContainer`)
 const addTagForm = document.querySelector(`#addTagForm`)
 const cancelTagButton = document.querySelector(`.cancelTagButton`)
+const randomBookButton = document.querySelector(`.randomBookButton`)
 
 document.addEventListener("DOMContentLoaded", function(){
     if (localStorage.books) {
@@ -72,7 +73,7 @@ window.addEventListener(`click`, (e) => {
     }
 
     if (deleteIconToggled) {
-        if (!bookContainer.contains(e.target) && !e.target.classList.contains(`deleteFilter`)) toggleDeleteButton(deleteFilter)
+        if (!bookContainer.contains(e.target) && !e.target.classList.contains(`deleteFilter`) && !e.target.classList.contains(`deleteIcon`)) toggleDeleteButton(deleteFilter)
     }
 
     if (editIconToggled) {
@@ -465,138 +466,183 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
     });
 }
 
+
+
+
+randomBookButton.addEventListener(`click`, () => {
+    let totalBooks = bookList.books.length
+    let randomNum = Math.floor(Math.random() * totalBooks) + 1;
+    let bookSelected = bookList.books[randomNum]
+
+    if (confirm(`Warning, only continue if you fully intend to read this book...`)) {
+        addToPreview(bookList, bookSelected)
+    }
+
+})
+
+
+
 let previewIterationModifier;
 const addEventToAddToPreview = (obj, element, cycle) => {
     element.addEventListener(`click`, (e) => {
-        if (e.target.className === `addFromSearchButton`) return
-        if (!cycle) previewIterationModifier = 0
-        if (cycle) {
-            if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
-            if (cycle === 'last') previewIterationModifier = -1;
-            if (cycle === 'next') previewIterationModifier = 1;
-        }
-        for (let i = 0; i < obj.books.length; i++) {
-            if(obj.books[i].id === element.id) {
-                try {
+        addToPreview(obj, element, cycle, e)
+        });
+    }
+
+const addToPreview = (obj, element, cycle, e) => {
+    if (e) if (e.target.className === `addFromSearchButton`) return
+    if (!cycle) previewIterationModifier = 0
+    if (cycle) {
+        if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);
+        if (cycle === 'last') previewIterationModifier = -1;
+        if (cycle === 'next') previewIterationModifier = 1;
+    }
+    for (let i = 0; i < obj.books.length; i++) {
+        if(obj.books[i].id === element.id) {
+            try {
                 newIteration = i + previewIterationModifier;
+                let currentBook = obj.books[newIteration]
                 let h1;
-                    let combinedElements = addValuesToElement(obj.books[newIteration], `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
-                    
-                    previewContainerHolder = createElementWithClassOrID(`div`, `class`, `previewContainerHolder flex justify-center items-center align-center fixed top-0 min-h-max min-w-max`)
-                    previewContainer = createElementWithClassOrID(`div`, `class`, `previewContainer flex flex-col h-auto w-auto`)
-                    previewContainer.setAttribute('id', `${obj.books[newIteration].id}`);
-                    previewContainerHolder.appendChild(previewContainer)
-                    
-                    if (combinedElements.some(element => element.className === `thumbnail`)) {
-                        previewCoverAuthorTitle = createElementWithClassOrID(`div`, `class`, `previewCoverAuthorTitle flex flex-row`)
-                        previewCoverAuthorTitle.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+                let combinedElements = addValuesToElement(currentBook, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+                
+                previewContainerHolder = createElementWithClassOrID(`div`, `class`, `previewContainerHolder flex justify-center items-center align-center fixed top-0 min-h-max min-w-max`)
+                previewContainer = createElementWithClassOrID(`div`, `class`, `previewContainer flex flex-col h-auto w-auto`)
+                previewContainer.setAttribute('id', `${currentBook.id}`);
+                previewContainerHolder.appendChild(previewContainer)
+                
+                if (combinedElements.some(element => element.className === `thumbnail`)) {
+                    previewCoverAuthorTitle = createElementWithClassOrID(`div`, `class`, `previewCoverAuthorTitle flex flex-row`)
+                    previewCoverAuthorTitle.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+                }
+                
+                
+                previewauthorAndTitle = createElementWithClassOrID(`div`, `class`, `authorAndTitle`);
+                h1 = createElementWithInnerText(`h1`, `Title`);
+                previewauthorAndTitle.appendChild(h1)
+                if (combinedElements.some(element => element.className === `title`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `title`))
+
+                h1 = createElementWithInnerText(`h1`, `Author`);
+                previewauthorAndTitle.appendChild(h1)
+                if (combinedElements.some(element => element.className === `authors`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `authors`))
+                previewCoverAuthorTitle.appendChild(previewauthorAndTitle)
+                
+                previewSubjectDatePublisher = createElementWithClassOrID(`div`, `class`, `previewSubjectDatePublisher flex flex-row`)
+
+                h1 = createElementWithInnerText(`h1`, `Subject`);
+                previewSubject = createElementWithClassOrID(`div`, `class`, `previewSubject`)
+                previewSubject.appendChild(h1)
+                if (combinedElements.some(element => element.className === `subject`)) previewSubject.appendChild(combinedElements.find(element => element.className === `subject`))
+                
+                h1 = createElementWithInnerText(`h1`, `Published`);
+                previewPublishedDate = createElementWithClassOrID(`div`, `class`, `previewPublishedDate`)
+                previewPublishedDate.appendChild(h1)
+                if (combinedElements.some(element => element.className === `publishedDate`)) previewPublishedDate.appendChild(combinedElements.find(element => element.className === `publishedDate`))
+                
+                h1 = createElementWithInnerText(`h1`, `Publisher`);
+                previewPublisher = createElementWithClassOrID(`div`, `class`, `previewPublisher`)
+                previewPublisher.appendChild(h1)
+                if (combinedElements.some(element => element.className === `publisher`)) previewPublisher.appendChild(combinedElements.find(element => element.className === `publisher`))
+
+                h1 = createElementWithInnerText(`h1`, `Rating`);
+                previewAverageRating = createElementWithClassOrID(`div`, `class`, `previewRating`)
+                previewAverageRating.appendChild(h1)
+                if (combinedElements.some(element => element.className === `averageRating`)) {
+                    averageRating = combinedElements.find(element => element.className === `averageRating`)
+                    totalRatings = combinedElements.find(element => element.className === `ratingsCount`);
+                    if (averageRating.innerText !== "N/A") {
+                        averageRating.innerText = `${averageRating.innerText}/5 (${totalRatings.innerText})`
+                    } else {
+                        averageRating.innerText = `N/A`
                     }
-                    
-                    
-                    previewauthorAndTitle = createElementWithClassOrID(`div`, `class`, `authorAndTitle`);
-                    h1 = createElementWithInnerText(`h1`, `Title`);
-                    previewauthorAndTitle.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `title`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `title`))
+                    previewAverageRating.appendChild(averageRating)
+                }
+                
+                previewSubjectDatePublisher.appendChild(previewSubject)
+                previewSubjectDatePublisher.appendChild(previewPublishedDate)
+                previewSubjectDatePublisher.appendChild(previewPublisher)
+                previewSubjectDatePublisher.appendChild(previewAverageRating)
+                
+                previewDescription = createElementWithClassOrID(`div`, `class`, `previewDescription`)
+                if (combinedElements.some(element => element.className === `description`)) {
+                    previewDescription.appendChild(combinedElements.find(element => element.className === `description`))
+                }
 
-                    h1 = createElementWithInnerText(`h1`, `Author`);
-                    previewauthorAndTitle.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `authors`)) previewauthorAndTitle.appendChild(combinedElements.find(element => element.className === `authors`))
-                    previewCoverAuthorTitle.appendChild(previewauthorAndTitle)
-                    
-                    previewSubjectDatePublisher = createElementWithClassOrID(`div`, `class`, `previewSubjectDatePublisher flex flex-row`)
+                let allElements = [previewCoverAuthorTitle, previewSubjectDatePublisher, previewDescription]
+                allElements.forEach(element => previewContainer.appendChild(element))
+                
+                previewButtons = createElementWithClassOrID(`div`, `class`, `previewButtons`);
+                cancelPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`);
+                cancelPreviewButton.innerText = "Close";
+                cancelPreviewButton.addEventListener(`click`, () => {if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);})
+                previewButtons.appendChild(cancelPreviewButton);
+                
+                lastPreviewButton = createElementWithClassOrID(`button`, `class`, `lastPreviewButton`);
+                if (obj.books[newIteration] === obj.books[0]) lastPreviewButton.innerText = "";
+                lastPreviewButton.innerText = "Last";
+                lastPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
+                addEventToAddToPreview(obj, lastPreviewButton, `last`);
+                previewButtons.appendChild(lastPreviewButton)
+                
+                nextPreviewButton = createElementWithClassOrID(`button`, `class`, `nextPreviewButton`)
+                nextPreviewButton.innerText = "Next";
+                nextPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
+                addEventToAddToPreview(obj, nextPreviewButton, `next`);
+                previewButtons.appendChild(nextPreviewButton)
+                
+                
+                previewBoxTitle = createElementWithClassOrID(`p`, `class`, `previewBoxTitle`)
+                if (searchedBooks) {
+                    if (obj === searchedBooks) {
+                        submitPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`)
+                        submitPreviewButton.innerText = "Add";
+                        addEventToAddToObject(obj, submitPreviewButton);                
+                        previewButtons.appendChild(submitPreviewButton)
+                        previewBoxTitle.innerText = `From Searched Books`;
+                    } 
+                }
+                if (obj === bookList) previewBoxTitle.innerText = `From My Books`;
+                
+                sampleButton = document.createElement(`p`);
+                if (currentBook.accessViewStatusEmbeddable && currentBook.accessViewStatusEmbeddable === `SAMPLE`) {
+                    previewLink = document.createElement(`a`);
+                    previewLink.href = currentBook.previewLink;
+                    previewLink.target = `#`;
+                    previewLink.innerText = `Read Sample`;
+                    sampleButton.appendChild(previewLink)
+                } else sampleButton.innerText = `Sample Unavailable`;
+                
+                
+                previewBoxTitleSpacing = createElementWithClassOrID(`i`, `class`, `previewBoxTitleSpacing fa-solid fa-minus`)
+                
+                previewBoxTitleDiv = createElementWithClassOrID(`div`, `class`, `previewBoxTitleContainer`)
+                previewBoxTitleDiv.appendChild(previewBoxTitle)
+                previewBoxTitleDiv.appendChild(previewBoxTitleSpacing)
+                previewBoxTitleDiv.appendChild(sampleButton)
 
-                    h1 = createElementWithInnerText(`h1`, `Subject`);
-                    previewSubject = createElementWithClassOrID(`div`, `class`, `previewSubject`)
-                    previewSubject.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `subject`)) previewSubject.appendChild(combinedElements.find(element => element.className === `subject`))
-                    
-                    h1 = createElementWithInnerText(`h1`, `Published`);
-                    previewPublishedDate = createElementWithClassOrID(`div`, `class`, `previewPublishedDate`)
-                    previewPublishedDate.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `publishedDate`)) previewPublishedDate.appendChild(combinedElements.find(element => element.className === `publishedDate`))
-                    
-                    h1 = createElementWithInnerText(`h1`, `Publisher`);
-                    previewPublisher = createElementWithClassOrID(`div`, `class`, `previewPublisher`)
-                    previewPublisher.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `publisher`)) previewPublisher.appendChild(combinedElements.find(element => element.className === `publisher`))
-
-                    h1 = createElementWithInnerText(`h1`, `Rating`);
-                    previewAverageRating = createElementWithClassOrID(`div`, `class`, `previewRating`)
-                    previewAverageRating.appendChild(h1)
-                    if (combinedElements.some(element => element.className === `averageRating`)) {
-                        averageRating = combinedElements.find(element => element.className === `averageRating`)
-                        totalRatings = combinedElements.find(element => element.className === `ratingsCount`);
-                        if (averageRating.innerText !== "N/A") {
-                            averageRating.innerText = `${averageRating.innerText}/5 (${totalRatings.innerText})`
-                        } else {
-                            averageRating.innerText = `N/A`
-                        }
-                        previewAverageRating.appendChild(averageRating)
-                    }
-                    
-                    previewSubjectDatePublisher.appendChild(previewSubject)
-                    previewSubjectDatePublisher.appendChild(previewPublishedDate)
-                    previewSubjectDatePublisher.appendChild(previewPublisher)
-                    previewSubjectDatePublisher.appendChild(previewAverageRating)
-                    
-                    previewDescription = createElementWithClassOrID(`div`, `class`, `previewDescription`)
-                    if (combinedElements.some(element => element.className === `description`)) {
-                        previewDescription.appendChild(combinedElements.find(element => element.className === `description`))
-                    }
-
-                    let allElements = [previewCoverAuthorTitle, previewSubjectDatePublisher, previewDescription]
-                    allElements.forEach(element => previewContainer.appendChild(element))
-                    
-                    previewButtons = createElementWithClassOrID(`div`, `class`, `previewButtons`);
-                    cancelPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`);
-                    cancelPreviewButton.innerText = "Close";
-                    cancelPreviewButton.addEventListener(`click`, () => {if (previewContainerHolder) previewContainerHolder.parentNode.removeChild(previewContainerHolder);})
-                    previewButtons.appendChild(cancelPreviewButton);
-                    
-                    lastPreviewButton = createElementWithClassOrID(`button`, `class`, `lastPreviewButton`);
-                    lastPreviewButton.innerText = "Last";
-                    lastPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
-                    addEventToAddToPreview(obj, lastPreviewButton, `last`);
-                    previewButtons.appendChild(lastPreviewButton)
-                    
-                    nextPreviewButton = createElementWithClassOrID(`button`, `class`, `nextPreviewButton`)
-                    nextPreviewButton.innerText = "Next";
-                    nextPreviewButton.setAttribute('id', `${obj.books[newIteration].id}`);
-                    addEventToAddToPreview(obj, nextPreviewButton, `next`);
-                    previewButtons.appendChild(nextPreviewButton)
-                    
-                    
-                    previewBoxTitle = createElementWithClassOrID(`p`, `class`, `previewBoxTitle`)
-                    if (searchedBooks) {
-                        if (obj === searchedBooks) {
-                            submitPreviewButton = createElementWithClassOrID(`button`, `class`, `submitPreviewButton`)
-                            submitPreviewButton.innerText = "Add";
-                            addEventToAddToObject(obj, submitPreviewButton);                
-                            previewButtons.appendChild(submitPreviewButton)
-                            previewBoxTitle.innerText = `Searched Books`;
-                        } 
-                    }
-                    if (obj === bookList) previewBoxTitle.innerText = `All My Books`;
-
-                    previewContainer.appendChild(previewBoxTitle)
-                    previewContainer.appendChild(previewButtons)
-                    
-                    document.body.appendChild(previewContainerHolder)
-                    if (cycle === 'last') previewContainer.classList.add(`toggleSlideOut`)
-                    if (cycle === 'next') previewContainer.classList.add(`toggleSlideOutRight`)
-                    
-                    setTimeout(() => {
-                        if (cycle === 'next') previewContainer.classList.remove(`toggleSlideOutRight`);
-                        if (cycle === 'last') previewContainer.classList.remove(`toggleSlideOut`);
-                    }, 100)
-                } 
-                catch(err) {
-                    if (cycle === 'last') notification(`Reached beginning of list`);
-                    if (cycle === 'next') notification(`Reached end of list`);
-                }   
-            }
+                previewContainer.appendChild(previewBoxTitleDiv)
+                previewContainer.appendChild(previewButtons)
+                document.body.appendChild(previewContainerHolder)
+                if (cycle === 'last') previewContainer.classList.add(`toggleSlideOut`)
+                if (cycle === 'next') previewContainer.classList.add(`toggleSlideOutRight`)
+                
+                setTimeout(() => {
+                    if (cycle === 'next') previewContainer.classList.remove(`toggleSlideOutRight`);
+                    if (cycle === 'last') previewContainer.classList.remove(`toggleSlideOut`);
+                }, 100)
+            } 
+            catch(err) {
+                console.log(err)
+                if (cycle === 'last') {
+                    notification(`Reached beginning of list`);
+                    addToPreview(obj, element)
+                }
+                if (cycle === 'next') {
+                    notification(`Reached end of list`);
+                    addToPreview(obj, element)
+                }
+            }   
         }
-    });
+    }
 }
     
     //Fetching from Books API
@@ -996,7 +1042,7 @@ const addMoreDetails = (object, id, existingElement) => {
                 previewLink.target = `#`;
                 previewLink.innerText = `Preview`;
                 previewButton.appendChild(previewLink)
-            } else previewButton.innerText = `Preview Unavailable`;
+            } else previewButton.innerText = `No preview`;
             moreDetailsFirstItems.appendChild(previewButton);
             
             descriptionTitle = createElementWithClassOrID(`P`, `class`, `descriptionTitle`)

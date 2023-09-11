@@ -75,7 +75,7 @@ body {
     border-radius: var(--border-radius);
     box-shadow: 0 0 10px black;
     font-size: 1.6rem;
-    z-index: 99;
+    z-index: 999;
     opacity: 1;
 }
 
@@ -232,7 +232,7 @@ body {
     min-height: 100%;
     background: rgba(0, 0, 0, 0.858);
     justify-content: center;
-    z-index: 98;
+    z-index: 99;
 }
 
 .previewContainer {
@@ -250,13 +250,30 @@ body {
     transition: .3s;
 }
 
-.previewBoxTitle {
+.previewBoxTitleContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     position: absolute;
     top: 0px;
     right: 0px;
-    font-size: 2.4rem;
     margin: 10px;
+}
+
+.previewBoxTitleContainer p {
+    font-size: 2.4rem;
     font-style: italic;
+    margin: 0;
+    color: black;
+}
+
+.previewBoxTitleContainer a {
+    color: rgb(0, 56, 129);
+}
+
+.previewBoxTitleSpacing {
+    margin: 0 7px;
+    font-size: .6rem;
 }
 
 .previewContainer div {
@@ -663,7 +680,6 @@ body {
     height: calc(100vh - var(--navBar-height) - var(--navBar-border) - 8vw);
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
     justify-content: space-evenly;
     align-items: flex-start;
     margin: 3vw;
@@ -881,8 +897,8 @@ cursor: pointer;
 .tag {
     position: absolute;
     left: 0;
-    margin-left: .5vw;
-    padding: 6.2px;
+    padding: 7px;
+    margin: 3px;
     border-radius: 25px;
     background: var(--bg-100);
 }
@@ -1182,6 +1198,7 @@ input:checked + .slider:before {
     pointer-events: all !important;
     font-size: 1.5rem;
     min-width: 100%;
+    max-width: 100%;
     min-height: fit-content;
     max-height: 26vh;
     overflow-y: scroll;
