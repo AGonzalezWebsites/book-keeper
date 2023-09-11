@@ -82,210 +82,6 @@ window.addEventListener(`click`, (e) => {
 
 })
 
-const openNewTagForm = () => {
-    if (addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.remove(`toggleHidden`);
-}
-newTag.addEventListener(`click`, openNewTagForm)
-
-const closeNewTagForm = () => {
-    if (!addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.add(`toggleHidden`);
-    let tagName = document.querySelector(".tagName");
-    tagName.value = "";
-}
-cancelTagButton.addEventListener(`click`, closeNewTagForm)
-
-const createNewTag = (e) => {
-    let tagName = document.querySelector(".tagName");
-    let tagColor = document.querySelector(".tagColor");
-    for (const tag of bookList.userSettings.allTags) {
-        if (tagName.value === tag[0]) {
-            notification(`Unable to use duplicate tag name`)
-            return
-        }
-    }
-    tagArr = [`${tagName.value}`, `${tagColor.value}`];
-    bookList.userSettings.allTags.push(tagArr);
-    addTagToPage(tagName.value, tagColor.value);
-}
-
-const removeTag = (books, tagName) => {
-    bookList.userSettings.allTags = bookList.userSettings.allTags.filter(element => element[0] !== tagName)
-    for (const book of books) {
-        if (book.tag === `${tagName}`) book.tag = "none";
-    }
-    removeAllTagsFromPage(); 
-    addAllTagsToPage(); // removing and adding all tags to not display recently deleted tag
-    addToPage(bookList.books); // adds elements back to page to filter out tag that was deleted
-}
-
-const removeAllTagsFromPage = () => { //this removes every tag so the tags minus the deleted tag are added with addAllTagsToPage()
-    let nodeLength = tagButtons.children.length
-    for (let i = 0; i < nodeLength; i++) {
-        let tempNode = tagButtons.children[0]
-        if (tempNode.innerText === `Add New`) tempNode = tagButtons.children[1]
-        if (tempNode) removeElement(tempNode)
-    }
-}
-
-const addAllTagsToPage = () => {
-    bookList.userSettings.allTags.forEach(element => {
-        if (element[0] !== `none`) addTagToPage(element[0], element[1])
-    })
-}
-
-const addTagToPage = (tagName, tagColor) => {
-    let tempTag = createElementWithClassOrID(`button`, `class`, `tagButton ${tagName}Tag py-1 px-3`);
-    tempTag.innerText = `${tagName}`;
-    tempTag.style.setProperty('background', `${tagColor}`);
-    addEventToFilterByTag(tempTag);
-
-    closeTag = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
-    closeTag.addEventListener(`click`, (e) => {
-        if (!confirm(`Are you sure you want to remove tag?`)) {
-            addToPage(bookList.books); //refreshes book list after tag deletion
-            return
-        }
-        removeTag(bookList.books, e.target.parentNode.innerText)
-    })
-    tempTag.appendChild(closeTag)
-    tagButtons.appendChild(tempTag);
-    addObjectToLocalStorage(bookList)
-}
-
-addTagForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    createNewTag(e);
-    closeNewTagForm();
-});
-
-let lastElement;
-const addEventToFilterByTag = (...element) => {
-    for (const el of element) el.addEventListener(`click`, () => {
-            if (el.parentNode !== tagButtons) return // stops execustion if this tag was deleted (clicking to remove also clicks tag)
-            if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
-                if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
-            }
-            console.log(el.innerText);
-            bookList.toggleParameters.toggleFilterByTag(el.innerText);
-            lastElement = el;
-        })
-}
-
-const toggleTag = (e) => {
-    let allTags = bookList.userSettings.allTags;
-    let bookGrabbed = grabBookByID(bookList, e.target.id)
-    for (let i = 0; i < allTags.length; i++) {
-        if (bookGrabbed.tag === allTags[i][0]) {
-
-            if (allTags[i + 1]) {
-                bookGrabbed.tag = allTags[i + 1][0]
-                e.target.style.setProperty('background', `${allTags[i + 1][1]}`);
-            }
-            else {
-                bookGrabbed.tag = allTags[0][0]
-                e.target.style.setProperty('background', `${allTags[0][1]}`);
-            }
-            if (bookGrabbed.tag === allTags[0][0]) notification(`Removed tags`)
-            else notification(`Added to #${bookGrabbed.tag}`)
-            addObjectToLocalStorage(bookList)
-            return
-        }
-    }
-    console.log(bookGrabbed.tag)
-}
-
-const setTag = (el) => {
-    let allTags = bookList.userSettings.allTags;
-    let bookGrabbed = grabBookByID(bookList, el.id)
-    if (bookGrabbed.id === el.id) {
-        for (let i = 0; i < allTags.length; i++) {
-            if (bookGrabbed.tag === allTags[i][0]) {
-                el.style.setProperty('background', `${allTags[i][1]}`);
-            }
-        }
-    }
-}
-
-const initializeTags = () => { //for users that didn't have tag update
-    for (const book of bookList.books) {
-        if (!book.tag) book.tag = `none`;
-    }
-    addObjectToLocalStorage(bookList);
-}
-
-const closeSpotlight = () => {
-    spotlightContainer.removeChild(scrollLeft)
-    spotlightContainer.removeChild(scrollRight)
-    spotlightContainer.removeChild(spotlightBooks)
-    spotlightContainer.classList.add(`closeSpotlight`)
-} 
-
-const closeAndOpenSpotlight = (obj) => {
-    if (spotlightOpen){
-        toggleSpotlight(obj);
-        toggleSpotlight(obj);
-    }
-}
-
-let spotlightBooks;
-let spotlightOpen = false;
-const toggleSpotlight = (obj) => {
-    if (spotlightOpen) {
-        toggleSpotlightIcon.classList.remove(`rotate180`)
-        closeSpotlight()
-        spotlightOpen = false;
-        return
-    } else if (!spotlightOpen) {
-        spotlightBooks = createElementWithClassOrID(`div`, `class`, `spotlightBooks`)
-
-        scrollLeft = createElementWithClassOrID(`div`, `class`, `scrollLeft flex justify-center items-center`)
-        scrollLeftIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollLeftIcon`)
-        scrollLeft.appendChild(scrollLeftIcon)
-        scrollLeft.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `left`))
-        
-        scrollRight = createElementWithClassOrID(`div`, `class`, `scrollRight flex justify-center items-center`)
-        scrollRightIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollRightIcon`)
-        scrollRight.appendChild(scrollRightIcon)
-        
-        scrollRight.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `right`))
-        for (const book of obj.books) {
-            let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
-            let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
-            if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-            addEventToAddToPreview(bookList, spotlightBookItem);
-            spotlightBooks.appendChild(spotlightBookItem)
-        }
-        spotlightContainer.classList.remove(`closeSpotlight`)
-        spotlightOpen = true;
-        toggleSpotlightIcon.classList.add(`rotate180`)
-        spotlightContainer.appendChild(scrollLeft)
-        spotlightContainer.appendChild(scrollRight)
-        spotlightContainer.appendChild(spotlightBooks)
-        setTimeout(() => {
-            scrollLeft.classList.add(`toggleShow`)
-            scrollRight.classList.add(`toggleShow`)
-            spotlightBooks.classList.add(`toggleShow`)
-        }, 500)
-    }
-}
-
-const spotlightScroll = (element, direction) => {
-    let scrollPosition = element.scrollLeft;
-    let deviceWidth = document.defaultView.window.innerWidth;
-    if (direction === `left`) element.scrollTo((scrollPosition - deviceWidth), 0);
-    if (direction === `right`) element.scrollTo((scrollPosition + deviceWidth), 0);
-
-};
-
-const addSingleBookToSpotLight = (obj) => {
-    let tempObj = obj[0][0];
-    let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
-    let combinedElements = addValuesToElement(tempObj, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
-    if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-    addEventToAddToPreview(bookList, spotlightBookItem);
-    spotlightBooks.appendChild(spotlightBookItem)
-}
-
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
 
@@ -470,14 +266,31 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
 
 
 randomBookButton.addEventListener(`click`, () => {
-    let totalBooks = bookList.books.length
+    let totalBooks = bookList.books.length;
     let randomNum = Math.floor(Math.random() * totalBooks) + 1;
-    let bookSelected = bookList.books[randomNum]
+    let bookSelected = bookList.books[randomNum];
 
-    if (confirm(`Warning, only continue if you fully intend to read this book...`)) {
-        addToPreview(bookList, bookSelected)
+    let nodeSelected;
+    if (spotlightOpen) {
+        spotlightBooks.childNodes.forEach(element => {
+            if (element.id === bookSelected.id) nodeSelected = element
+        })
+        let nodePositionLeft = nodeSelected.offsetLeft;
+        let deviceWidth = document.defaultView.window.innerWidth;
+        spotlightBooks.scrollTo(`${nodePositionLeft - (deviceWidth / 2)}`, 0)
     }
+    
+    bookContainer.childNodes.forEach(element => {
+        if (element.id === bookSelected.id) nodeSelected = element
+    })
+    console.log(nodeSelected)
+    let nodePositionTop = nodeSelected.offsetTop;
+    let deviceHeight = document.defaultView.window.innerHeight;
+    bookContainer.scrollTo(0, `${nodePositionTop - (deviceHeight / 2)}`)
 
+    setTimeout(() => {
+        addToPreview(bookList, bookSelected)
+    }, 1000)
 })
 
 
@@ -1068,6 +881,210 @@ const addMoreDetails = (object, id, existingElement) => {
     }
     lastElement = existingElement; //used to reference element to be closed even if new element is clicked
     moreDetailsExpanded = true;
+}
+
+const closeSpotlight = () => {
+    spotlightContainer.removeChild(scrollLeft)
+    spotlightContainer.removeChild(scrollRight)
+    spotlightContainer.removeChild(spotlightBooks)
+    spotlightContainer.classList.add(`closeSpotlight`)
+} 
+
+const closeAndOpenSpotlight = (obj) => {
+    if (spotlightOpen){
+        toggleSpotlight(obj);
+        toggleSpotlight(obj);
+    }
+}
+
+let spotlightBooks;
+let spotlightOpen = false;
+const toggleSpotlight = (obj) => {
+    if (spotlightOpen) {
+        toggleSpotlightIcon.classList.remove(`rotate180`)
+        closeSpotlight()
+        spotlightOpen = false;
+        return
+    } else if (!spotlightOpen) {
+        spotlightBooks = createElementWithClassOrID(`div`, `class`, `spotlightBooks`)
+
+        scrollLeft = createElementWithClassOrID(`div`, `class`, `scrollLeft flex justify-center items-center`)
+        scrollLeftIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollLeftIcon`)
+        scrollLeft.appendChild(scrollLeftIcon)
+        scrollLeft.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `left`))
+        
+        scrollRight = createElementWithClassOrID(`div`, `class`, `scrollRight flex justify-center items-center`)
+        scrollRightIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollRightIcon`)
+        scrollRight.appendChild(scrollRightIcon)
+        
+        scrollRight.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `right`))
+        for (const book of obj.books) {
+            let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
+            let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+            if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+            addEventToAddToPreview(bookList, spotlightBookItem);
+            spotlightBooks.appendChild(spotlightBookItem)
+        }
+        spotlightContainer.classList.remove(`closeSpotlight`)
+        spotlightOpen = true;
+        toggleSpotlightIcon.classList.add(`rotate180`)
+        spotlightContainer.appendChild(scrollLeft)
+        spotlightContainer.appendChild(scrollRight)
+        spotlightContainer.appendChild(spotlightBooks)
+        setTimeout(() => {
+            scrollLeft.classList.add(`toggleShow`)
+            scrollRight.classList.add(`toggleShow`)
+            spotlightBooks.classList.add(`toggleShow`)
+        }, 500)
+    }
+}
+
+const spotlightScroll = (element, direction) => {
+    let scrollPosition = element.scrollLeft;
+    let deviceWidth = document.defaultView.window.innerWidth;
+    if (direction === `left`) element.scrollTo((scrollPosition - deviceWidth), 0);
+    if (direction === `right`) element.scrollTo((scrollPosition + deviceWidth), 0);
+
+};
+
+const addSingleBookToSpotLight = (obj) => {
+    let tempObj = obj[0][0];
+    let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
+    let combinedElements = addValuesToElement(tempObj, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+    if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+    addEventToAddToPreview(bookList, spotlightBookItem);
+    spotlightBooks.appendChild(spotlightBookItem)
+}
+
+const openNewTagForm = () => {
+    if (addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.remove(`toggleHidden`);
+}
+newTag.addEventListener(`click`, openNewTagForm)
+
+const closeNewTagForm = () => {
+    if (!addTagContainer.classList.contains(`toggleHidden`)) addTagContainer.classList.add(`toggleHidden`);
+    let tagName = document.querySelector(".tagName");
+    tagName.value = "";
+}
+cancelTagButton.addEventListener(`click`, closeNewTagForm)
+
+const createNewTag = (e) => {
+    let tagName = document.querySelector(".tagName");
+    let tagColor = document.querySelector(".tagColor");
+    for (const tag of bookList.userSettings.allTags) {
+        if (tagName.value === tag[0]) {
+            notification(`Unable to use duplicate tag name`)
+            return
+        }
+    }
+    tagArr = [`${tagName.value}`, `${tagColor.value}`];
+    bookList.userSettings.allTags.push(tagArr);
+    addTagToPage(tagName.value, tagColor.value);
+}
+
+const removeTag = (books, tagName) => {
+    bookList.userSettings.allTags = bookList.userSettings.allTags.filter(element => element[0] !== tagName)
+    for (const book of books) {
+        if (book.tag === `${tagName}`) book.tag = "none";
+    }
+    removeAllTagsFromPage(); 
+    addAllTagsToPage(); // removing and adding all tags to not display recently deleted tag
+    addToPage(bookList.books); // adds elements back to page to filter out tag that was deleted
+}
+
+const removeAllTagsFromPage = () => { //this removes every tag so the tags minus the deleted tag are added with addAllTagsToPage()
+    let nodeLength = tagButtons.children.length
+    for (let i = 0; i < nodeLength; i++) {
+        let tempNode = tagButtons.children[0]
+        if (tempNode.innerText === `Add New`) tempNode = tagButtons.children[1]
+        if (tempNode) removeElement(tempNode)
+    }
+}
+
+const addAllTagsToPage = () => {
+    bookList.userSettings.allTags.forEach(element => {
+        if (element[0] !== `none`) addTagToPage(element[0], element[1])
+    })
+}
+
+const addTagToPage = (tagName, tagColor) => {
+    let tempTag = createElementWithClassOrID(`button`, `class`, `tagButton ${tagName}Tag py-1 px-3`);
+    tempTag.innerText = `${tagName}`;
+    tempTag.style.setProperty('background', `${tagColor}`);
+    addEventToFilterByTag(tempTag);
+
+    closeTag = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
+    closeTag.addEventListener(`click`, (e) => {
+        if (!confirm(`Are you sure you want to remove tag?`)) {
+            addToPage(bookList.books); //refreshes book list after tag deletion
+            return
+        }
+        removeTag(bookList.books, e.target.parentNode.innerText)
+    })
+    tempTag.appendChild(closeTag)
+    tagButtons.appendChild(tempTag);
+    addObjectToLocalStorage(bookList)
+}
+
+addTagForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    createNewTag(e);
+    closeNewTagForm();
+});
+
+let lastElement;
+const addEventToFilterByTag = (...element) => {
+    for (const el of element) el.addEventListener(`click`, () => {
+            if (el.parentNode !== tagButtons) return // stops execustion if this tag was deleted (clicking to remove also clicks tag)
+            if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
+                if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
+            }
+            console.log(el.innerText);
+            bookList.toggleParameters.toggleFilterByTag(el.innerText);
+            lastElement = el;
+        })
+}
+
+const toggleTag = (e) => {
+    let allTags = bookList.userSettings.allTags;
+    let bookGrabbed = grabBookByID(bookList, e.target.id)
+    for (let i = 0; i < allTags.length; i++) {
+        if (bookGrabbed.tag === allTags[i][0]) {
+
+            if (allTags[i + 1]) {
+                bookGrabbed.tag = allTags[i + 1][0]
+                e.target.style.setProperty('background', `${allTags[i + 1][1]}`);
+            }
+            else {
+                bookGrabbed.tag = allTags[0][0]
+                e.target.style.setProperty('background', `${allTags[0][1]}`);
+            }
+            if (bookGrabbed.tag === allTags[0][0]) notification(`Removed tags`)
+            else notification(`Added to #${bookGrabbed.tag}`)
+            addObjectToLocalStorage(bookList)
+            return
+        }
+    }
+    console.log(bookGrabbed.tag)
+}
+
+const setTag = (el) => {
+    let allTags = bookList.userSettings.allTags;
+    let bookGrabbed = grabBookByID(bookList, el.id)
+    if (bookGrabbed.id === el.id) {
+        for (let i = 0; i < allTags.length; i++) {
+            if (bookGrabbed.tag === allTags[i][0]) {
+                el.style.setProperty('background', `${allTags[i][1]}`);
+            }
+        }
+    }
+}
+
+const initializeTags = () => { //for users that didn't have tag update
+    for (const book of bookList.books) {
+        if (!book.tag) book.tag = `none`;
+    }
+    addObjectToLocalStorage(bookList);
 }
 
 const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
