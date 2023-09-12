@@ -290,7 +290,7 @@ randomBookButton.addEventListener(`click`, () => {
 
     setTimeout(() => {
         addToPreview(bookList, bookSelected)
-    }, 1000)
+    }, 1800)
 })
 
 

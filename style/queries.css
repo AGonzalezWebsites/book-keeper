@@ -1,14 +1,24 @@
-@media (max-width: 600px) {
+@media (max-width: 625px) {
+
+    :root {
+
+        --navBar-height: 35px;
+          
+    }
+
+    .navBar {
+        min-height: var(--navBar-height);
+        max-height: var(--navBar-height);
+    }
 
     .navBar .logo {
-        max-width: 10px;
+        min-width: 40px;
         overflow: hidden;
         flex-direction: column;
     }
     
     .navBar .logo img {
-        max-width: 35px;
-        min-width: 10;
+        width: 100%;
     }
     
     .navBar .logo h1 {
@@ -19,6 +29,10 @@
         padding: 0 10px;
     }
     
+    .dropdown:hover .dropdown-content, .dropdown:active .dropdown-content {
+        top: var(--navBar-height);
+    }
+
     .sideMenu:hover .sideMenuContent, .sideMenu:active .sideMenuContent {
         display: flex;
         top: 35px;
@@ -234,6 +248,12 @@
     }
 
 @media (max-width: 900px) {
+
+    .navBar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     .navBar .logo {
         max-width: 20px;
