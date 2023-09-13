@@ -676,17 +676,8 @@ body {
     background-color: var(--bg-100);;
 }
 
-.bookListContainer {
-    height: calc(100vh - var(--navBar-height) - var(--navBar-border) - 8vw);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: flex-start;
-    margin: 3vw;
-    overflow: hidden;
-}
-
 .books {
+    position: relative;
     overflow-y: scroll;
     overflow-x: hidden;
     flex: 4 1 60vw;
@@ -700,6 +691,16 @@ body {
     z-index: 0;
 }
 
+.bookListContainer {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    margin: 1.5vw;
+    overflow: hidden;
+}
+
 .books:nth-child(1n + 1) {
     background: var(--bg-200);
 
@@ -711,7 +712,7 @@ body {
     align-items: center;
     flex-wrap: wrap;
     flex: 1 4 8vw;
-    margin: 0 3vw 3vw 0;
+    margin: 0 1.5vw 1.5vw 0;
     background-color: var(--bg-200);
     min-width: 190px;
     max-height: 400px;
@@ -772,6 +773,112 @@ body {
 }
 .filterButtons, .tagButtons {
     flex-wrap: wrap;
+}
+
+.bookListHeader {
+    position: sticky;
+    top: 0px;
+    z-index: 2;
+}
+
+.bookListHeader, .filterHeader {
+    height: 35px;
+    background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200));
+    font-size: 1.6rem;
+    color: var(--bg-100);
+    margin: 0;
+    border-radius: var(--book-border-radius-top)
+}
+
+.bookListHeader, .bookInfo {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    flex: 1;
+    padding: 5px 0;
+    border-bottom: 2px solid var(--primary-200);
+}
+
+.bookListHeader .removeCover {
+    max-width: 0px;
+    opacity: 0;
+}
+
+.bookInfo {
+    flex-direction: column;
+    position: relative;
+    background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
+    font-size: 1.8rem;
+    transition: .2s;
+    color: var(--text-100);
+}
+
+.bookInfo>div {
+    width: 100%;
+    z-index: 1;
+}
+
+.bookInfo div>i {
+    font-size: 1.4rem;
+    position: absolute;
+    top:0;
+    right:0;
+    margin: 10px;
+}
+
+.coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
+    margin: 0 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: .3s;
+}
+
+.coverTitle {
+    min-width: 40px;
+}
+
+.bookInfo div p, .bookInfo div img, .bookInfo div a {
+    pointer-events: none;
+}
+
+
+.bookInfo .lineNumber {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.titleTitle, .title {
+    flex: 3 1 25px;
+    max-width: 400px;
+}
+
+.titleTitle:hover, .authorTitle:hover, .ratingTitle:hover, .subjectTitle:hover {
+    cursor: pointer;
+    color: silver;
+}
+
+.ratingTitle {
+    max-width: 50px;
+}
+
+.authorTitle, .authors {
+    flex: 2 1 25px !important;
+}
+
+.subjectTitle, .subject {
+    flex: 2 1 25px !important;
+    max-width: 350px;
+}
+
+.coverTitle {
+    max-width: 40px;
+    margin: 0 3vw 0 4vw;
+    opacity: 1;
 }
 
 .favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
@@ -991,102 +1098,6 @@ input:checked + .slider:before {
     border-radius: var(--book-border-radius-top)
 }
 
-.bookListHeader, .filterHeader {
-    top: 0;
-    height: 35px;
-    background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200));
-    font-size: 1.6rem;
-    color: var(--bg-100);
-    margin: 0;
-    border-radius: var(--book-border-radius-top)
-}
-
-.bookListHeader, .bookInfo {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    width: 100%;
-    flex: 1;
-    padding: 5px 0;
-    border-bottom: 2px solid var(--primary-200);
-}
-
-.bookInfo {
-    flex-direction: column;
-    position: relative;
-    background-image: -webkit-linear-gradient(var(--bg-100), var(--bg-200));
-    font-size: 1.8rem;
-    transition: .2s;
-    color: var(--text-100);
-}
-
-.bookInfo>div {
-    width: 100%;
-    z-index: 1;
-}
-
-.bookInfo div>i {
-    font-size: 1.4rem;
-    position: absolute;
-    top:0;
-    right:0;
-    margin: 10px;
-}
-
-.coverTitle, .titleTitle, .authorTitle, .subjectTitle, .ratingTitle, .bookInfo p, .bookInfo img, .bookInfo a {
-    margin: 0 20px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    transition: .3s;
-}
-
-.coverTitle {
-    min-width: 40px;
-}
-
-.bookInfo div p, .bookInfo div img, .bookInfo div a {
-    pointer-events: none;
-}
-
-
-.bookInfo .lineNumber {
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin: 0;
-    font-size: 1rem;
-}
-
-.titleTitle, .title {
-    flex: 3 1 25px;
-    max-width: 400px;
-}
-
-.titleTitle:hover, .authorTitle:hover, .ratingTitle:hover, .subjectTitle:hover {
-    cursor: pointer;
-    color: silver;
-}
-
-.ratingTitle {
-    max-width: 50px;
-}
-
-.authorTitle, .authors {
-    flex: 2 1 25px !important;
-}
-
-.subjectTitle, .subject {
-    flex: 2 1 25px !important;
-    max-width: 350px;
-}
-
-.coverTitle {
-    max-width: 40px;
-    margin: 0 3vw 0 4vw;
-    opacity: 1;
-}
-
 .deleteIcon {
     position: absolute;
     background-color: #ff4848;
@@ -1160,11 +1171,6 @@ input:checked + .slider:before {
 .selectedBook {
     background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200)) !important;
     color: var(--bg-100) !important;
-}
-
-.bookListHeader .removeCover {
-    max-width: 0px;
-    opacity: 0;
 }
 
 .removeCover div img {
@@ -1348,3 +1354,7 @@ input:checked + .slider:before {
 .closeSpotlight {
     height: 5px;
 }
+
+.unclickable { 
+    pointer-events: none; 
+} 

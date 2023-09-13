@@ -266,32 +266,49 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
 
 
 randomBookButton.addEventListener(`click`, () => {
+    ChooseRandomBook()
+})
+
+const ChooseRandomBook = () => {
+    if (bookList.books.length < 10) {
+        notification(`Add at least 10 books to use this feature`)
+        return
+    }
+
     let totalBooks = bookList.books.length;
     let randomNum = Math.floor(Math.random() * totalBooks) + 1;
     let bookSelected = bookList.books[randomNum];
+    document.body.classList.add(`unclickable`)
 
-    let nodeSelected;
-    if (spotlightOpen) {
-        spotlightBooks.childNodes.forEach(element => {
-            if (element.id === bookSelected.id) nodeSelected = element
-        })
-        let nodePositionLeft = nodeSelected.offsetLeft;
-        let deviceWidth = document.defaultView.window.innerWidth;
-        spotlightBooks.scrollTo(`${nodePositionLeft - (deviceWidth / 2)}`, 0)
-    }
-    
-    bookContainer.childNodes.forEach(element => {
-        if (element.id === bookSelected.id) nodeSelected = element
-    })
-    console.log(nodeSelected)
-    let nodePositionTop = nodeSelected.offsetTop;
-    let deviceHeight = document.defaultView.window.innerHeight;
-    bookContainer.scrollTo(0, `${nodePositionTop - (deviceHeight / 2)}`)
+    scrollToBook(bookSelected);
 
     setTimeout(() => {
         addToPreview(bookList, bookSelected)
+        document.body.classList.remove(`unclickable`)
     }, 1800)
-})
+}
+
+const scrollToBook = (book) => {
+    let nodeSelected;
+    if (spotlightOpen) {
+        spotlightBooks.childNodes.forEach(element => {
+            if (element.id === book.id) nodeSelected = element
+        })
+        let nodePositionLeft = nodeSelected.offsetLeft;
+        let elementWidth = spotlightBooks.offsetWidth;
+        spotlightBooks.scrollTo(`${nodePositionLeft - (elementWidth / 2)}`, 0);
+    }
+    
+    bookContainer.childNodes.forEach(element => {
+        if (element.id === book.id) nodeSelected = element
+    })
+
+    let nodePositionTop = nodeSelected.offsetTop;
+    let elementHeight = bookContainer.offsetHeight;
+
+    if (nodeSelected) bookContainer.scrollTo(0, `${nodePositionTop - (elementHeight / 2)}`);
+    else return
+}
 
 
 
@@ -310,6 +327,12 @@ const addToPreview = (obj, element, cycle, e) => {
         if (cycle === 'last') previewIterationModifier = -1;
         if (cycle === 'next') previewIterationModifier = 1;
     }
+
+    if (obj.toggleParameters) { 
+        if (obj.toggleParameters.favorites) obj = favoriteBooks;
+        else if (obj.toggleParameters.tag) obj = tagBooks;
+    }
+
     for (let i = 0; i < obj.books.length; i++) {
         if(obj.books[i].id === element.id) {
             try {
@@ -414,6 +437,8 @@ const addToPreview = (obj, element, cycle, e) => {
                     } 
                 }
                 if (obj === bookList) previewBoxTitle.innerText = `From My Books`;
+                if (typeof(favoriteBooks) === `object`) if (obj === favoriteBooks) previewBoxTitle.innerText = `From My Favorites`;
+                if (typeof(tagBooks) === `object`) if (obj === tagBooks) previewBoxTitle.innerText = `From Selected Tag`;
                 
                 sampleButton = document.createElement(`p`);
                 if (currentBook.accessViewStatusEmbeddable && currentBook.accessViewStatusEmbeddable === `SAMPLE`) {
@@ -438,6 +463,8 @@ const addToPreview = (obj, element, cycle, e) => {
                 if (cycle === 'last') previewContainer.classList.add(`toggleSlideOut`)
                 if (cycle === 'next') previewContainer.classList.add(`toggleSlideOutRight`)
                 
+                if (obj !== searchedBooks) scrollToBook(currentBook);
+
                 setTimeout(() => {
                     if (cycle === 'next') previewContainer.classList.remove(`toggleSlideOutRight`);
                     if (cycle === 'last') previewContainer.classList.remove(`toggleSlideOut`);
@@ -537,7 +564,7 @@ const addToObjectFromApi = (object, bookSelected) => {
 const addToObject = (object, bookSelected, userSettings) => {
     if (object === searchedBooks) object.books = [];
     
-    if (object === bookList) object.userSettings = userSettings;
+    if (userSettings) if (object === bookList) object.userSettings = userSettings;
 
     if (Array.isArray(bookSelected)) {
         for (const book of bookSelected) {
@@ -792,14 +819,7 @@ const addMoreDetails = (object, id, existingElement) => {
 
     let iconGrabbed = grabChildNodeByClass(existingElement.firstChild, `fa-star`); // grabs correct from icon
     if (moreDetailsExpanded === true && lastElement === existingElement) {
-        moreDetailsExpanded = false
-        lastElement.classList.remove(`selectedBook`)
-        favoriteSelected = grabChildNodeByClass(existingElement.firstChild, `favorite`); //checking if favorite was selected
-        if (!favoriteSelected) iconGrabbed.classList.add(`toggleHidden`) //hide favorite icon if not selected
-        moreDetailsContainer.classList.add(`removeHeight`)
-        setTimeout(()=> {
-            lastElement.removeChild(moreDetailsContainer);
-        }, 100)
+        closePreviewWithoutNewPreview(existingElement, lastElement, moreDetailsContainer, iconGrabbed)
         return
     } else if (moreDetailsExpanded === true && lastElement !== existingElement) {
         lastElement.classList.remove(`selectedBook`)
@@ -812,6 +832,11 @@ const addMoreDetails = (object, id, existingElement) => {
             lastMoreDetails.parentElement.removeChild(lastMoreDetails)
         }, 500)
     }
+    
+    window.addEventListener(`click`, (e) => {
+        if (!bookContainer.contains(e.target) && (!spotlightContainer.contains(e.target))) closePreviewWithoutNewPreview(existingElement, lastElement, moreDetailsContainer, iconGrabbed)
+    })
+
     for (const book of object.books) {
         if (book.id === id ) {
             moreDetailsContainer = createElementWithClassOrID(`div`, `class`, `moreDetails`)
@@ -874,6 +899,7 @@ const addMoreDetails = (object, id, existingElement) => {
             existingElement.appendChild(moreDetailsContainer)
             existingElement.classList.add(`selectedBook`)
             moreDetailsContainer.classList.add(`removeHeight`)
+            scrollToBook(book);
             setTimeout(() =>{
                 moreDetailsContainer.classList.remove(`removeHeight`);
             }, 10)
@@ -881,6 +907,17 @@ const addMoreDetails = (object, id, existingElement) => {
     }
     lastElement = existingElement; //used to reference element to be closed even if new element is clicked
     moreDetailsExpanded = true;
+}
+
+const closePreviewWithoutNewPreview = (existingElement, lastEl, moreDetailsContainer, icon) => {
+    moreDetailsExpanded = false
+    lastEl.classList.remove(`selectedBook`)
+    favoriteSelected = grabChildNodeByClass(existingElement.firstChild, `favorite`); //checking if favorite was selected
+    if (!favoriteSelected) icon.classList.add(`toggleHidden`) //hide favorite icon if not selected
+    moreDetailsContainer.classList.add(`removeHeight`)
+    setTimeout(()=> {
+        lastEl.removeChild(moreDetailsContainer);
+    }, 100)
 }
 
 const closeSpotlight = () => {
@@ -1140,6 +1177,7 @@ const submitAddBookForm = () => {
     bookItem.id = giveBookNewID();
     tempFormBook.books.push(bookItem);
     tempFormBook.books[0].favorite = false;
+    tempFormBook.books[0].tag = `none`;
     addToObject(bookList, tempFormBook.books)
     addToPage(bookList.books)
     notification(`Added ${tempFormBook.books[0].title}!`)
