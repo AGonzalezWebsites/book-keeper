@@ -72,6 +72,10 @@ window.addEventListener(`click`, (e) => {
         }
     }
 
+    if(bookList.toggleParameters.tag) {
+        if (!bookContainer.contains(e.target) && !spotlightContainer.contains(e.target)) bookList.toggleParameters.toggleFilterByTag();
+    }
+
     if (deleteIconToggled) {
         if (!bookContainer.contains(e.target) && !e.target.classList.contains(`deleteFilter`) && !e.target.classList.contains(`deleteIcon`)) toggleDeleteButton(deleteFilter)
     }
@@ -1073,12 +1077,19 @@ let lastElement;
 const addEventToFilterByTag = (...element) => {
     for (const el of element) el.addEventListener(`click`, () => {
             if (el.parentNode !== tagButtons) return // stops execustion if this tag was deleted (clicking to remove also clicks tag)
-            if (lastElement !== el) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
+            if (lastElement === el && bookList.toggleParameters.tag) {
+                setTimeout(()=>{ // delay corrects toggling issue
+                    bookList.toggleParameters.toggleFilterByTag();
+                }, 50)
+            }
+            if (lastElement !== el && bookList.toggleParameters.tag) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
                 if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
             }
             console.log(el.innerText);
-            bookList.toggleParameters.toggleFilterByTag(el.innerText);
-            lastElement = el;
+            setTimeout(()=>{ // delay corrects toggling issue
+                bookList.toggleParameters.toggleFilterByTag(el.innerText);
+                lastElement = el;
+            }, 50)
         })
 }
 

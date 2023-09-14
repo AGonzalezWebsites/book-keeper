@@ -15,7 +15,7 @@ Google Fonts: Tangerine, Roboto, Inspiration, Forum, Italianno, Julee, Dancing S
     --book-border-radius: 10px;
     --border-radius: 5px;
     --border-radius-round: 25px;
-    --spotlight-container-height: 250px;
+    --spotlight-container-height: 175px;
     
       /* hazelnut */
     --primary-100:#BFAE9F;
@@ -566,9 +566,8 @@ body {
 .spotlightContainer {
     position: relative;
     display: flex;
-    height: var(--spotlight-container-height);
+    min-height: var(--spotlight-container-height);
     overflow: hidden;
-    min-height: fit-content;
     width: 100vw;
     padding: 20px 0 5px 0;
     background-color: var(--primary-200);
@@ -646,9 +645,9 @@ body {
 }
 
 .spotlightBooks div {
-    aspect-ratio: 1 / 1.8;
-    min-height: calc(var(--spotlight-container-height) - 100px);
-    max-height: calc(var(--spotlight-container-height) - 100px);
+    aspect-ratio: 1 / 1.5;
+    min-height: calc(var(--spotlight-container-height) - 40px);
+    max-height: calc(var(--spotlight-container-height) - 40px);
     margin: 10px 4vw;
 }
 
@@ -662,7 +661,9 @@ body {
 
 .spotlightBooks div img {
     min-height: 85%;
+    max-height: 85%;
     min-width: 85%;
+    max-width: 85%;
     z-index: 2;
     position: relative;
     box-shadow: 5px 5px 15px black;
@@ -1352,6 +1353,7 @@ input:checked + .slider:before {
 }
 
 .closeSpotlight {
+    min-height: 5px;
     height: 5px;
 }
 

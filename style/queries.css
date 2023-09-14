@@ -41,7 +41,7 @@
         top: 35px;
         left: 0;
     }
-    
+
     .bookSearch {
         margin: 0;
         width: 100%;
@@ -59,7 +59,7 @@
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-    
+
     .bookListContainer {
             overflow: hidden;
             margin: 2vw;
