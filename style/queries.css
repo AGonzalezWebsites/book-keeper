@@ -115,7 +115,7 @@
         font-size: 1.2rem;
         height: 25px;
     }
-    
+
     .moreDetails {
         min-height: fit-content;
         flex-wrap: wrap;
@@ -138,19 +138,26 @@
     }
     
     .additionInfo button {
-        border: 2px solid var(--text-100);
-        background-color: var(--bg-100);
         font-size: 1.2rem;
-        color: var(--text-100);
         border-radius: 2px;
         padding: 2px 0px;
         margin: 0px;
         min-width: fit-content;
         max-width: fit-content;
     }
-    
-    .bookInfo div img {
-        /* max-width: 30px; */
+
+    .additionalInfoTagsContainer h2 {
+        font-size: 1.2rem;
+    }
+
+    .booksTags h1 {
+        font-size: 1rem;
+        margin: 0 2px 0px 2px;
+        padding: 2px 5px;
+        border: 1px solid black;
+        border-radius: 25px;
+        color: var(--bg-100);
+        background: var(--primary-200);
     }
 
     .coverTitle {

@@ -28,7 +28,16 @@ document.addEventListener("DOMContentLoaded", function(){
             bookList.userSettings = {}
             if (!bookList.userSettings.colorScheme) bookList.userSettings.colorScheme = "hazlenut"
         }
-        if (!bookList.userSettings.allTags) bookList.userSettings.allTags = [[`none`, `var(--bg-100)`], [`read`, `#890000`], [`reading`, `#009016`], [`readnext`, `#b3aa00`]]
+        if (!bookList.userSettings.allTags) bookList.userSettings.allTags = [[`read`, `#890000`], [`reading`, `#009016`], [`readnext`, `#b3aa00`]]
+        if (Array.isArray(bookList.userSettings.allTags)) {
+            let indexOfNone = bookList.userSettings.allTags.findIndex(tag => tag[0] === 'none');
+            if (typeof(indexOfNone) === `number` && indexOfNone >= 0) bookList.userSettings.allTags.splice(indexOfNone, 1)
+        }
+        
+        for (const book of bookList.books) {
+            if (!Array.isArray(book.tag)) book.tag = [];
+        }
+
         initializeTags()
         console.log(bookList.books[0])
         addObjectToLocalStorage(bookList)
@@ -37,7 +46,10 @@ document.addEventListener("DOMContentLoaded", function(){
         addAllTagsToPage()
     }
 
-    for (const book of bookList.books) if (!book.tag) book.tag = `none`;
+    for (const book of bookList.books) {
+        if (!book.tag) book.tag = [];
+        if (typeof(book.tag) === `string`) book.tag = []
+    }
     //prevents submitting both forms on enter key press
     addBookForm.onkeypress = function(e) { 
         var key = e.charCode || e.keyCode || 0;     
@@ -191,6 +203,7 @@ const searchBooks = () => {
         addToObjectFromApi(searchedBooks, searchedList) //send full searched list to function
 
         for (const book of searchedBooks.books) {
+                book.tag = []
                 appendToSearchBox(addValuesToElement(book, `thumbnail`, `title`, `authors`, 'id'));
             }
     })
@@ -343,7 +356,7 @@ const addToPreview = (obj, element, cycle, e) => {
                 newIteration = i + previewIterationModifier;
                 let currentBook = obj.books[newIteration]
                 let h1;
-                let combinedElements = addValuesToElement(currentBook, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+                let combinedElements = addValuesToElement(currentBook, `tag`, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
                 
                 previewContainerHolder = createElementWithClassOrID(`div`, `class`, `previewContainerHolder flex justify-center items-center align-center fixed top-0 min-h-max min-w-max`)
                 previewContainer = createElementWithClassOrID(`div`, `class`, `previewContainer flex flex-col h-auto w-auto`)
@@ -407,7 +420,27 @@ const addToPreview = (obj, element, cycle, e) => {
                     previewDescription.appendChild(combinedElements.find(element => element.className === `description`))
                 }
 
-                let allElements = [previewCoverAuthorTitle, previewSubjectDatePublisher, previewDescription]
+
+                tagTextHeader = document.createElement(`h2`);
+                tagTextHeader.innerText = `Tags`;
+                booksTags = createElementWithClassOrID(`div`, `class`, `booksTags`)
+                bookList.userSettings.allTags.forEach(element => {
+                    tempTag = createElementWithClassOrID(`h1`, `id`, `${currentBook.id}`)
+                    tempTag.innerText = `${element[0]}`
+                    tempTag.addEventListener(`click`, (e) => {
+                        addTagToBook(e)
+                    })
+
+                    colorTag(checkTagMatch(currentBook.tag, element))
+                    booksTags.appendChild(tempTag)
+                })
+                tagsContainer = createElementWithClassOrID(`div`, `class`, `additionalInfoTagsContainer`)
+                tagsContainer.appendChild(tagTextHeader)
+                tagsContainer.appendChild(booksTags)
+
+
+
+                let allElements = [previewCoverAuthorTitle, previewSubjectDatePublisher, tagsContainer, previewDescription]
                 allElements.forEach(element => previewContainer.appendChild(element))
                 
                 previewButtons = createElementWithClassOrID(`div`, `class`, `previewButtons`);
@@ -675,7 +708,11 @@ bookList.toggleParameters = {
     toggleFilterByTag(tagGiven) {
         if (!bookList.toggleParameters.tag) {
             tagBooks = {};
-            tagBooks.books = bookList.books.filter(element => (element.tag === tagGiven));
+            tagBooks.books = []
+            bookList.books.forEach(book => {
+                for (const tag of book.tag)
+                if (tag[0] === tagGiven) tagBooks.books.push(book)
+            });
             addToPage(tagBooks.books);
             closeAndOpenSpotlight(tagBooks)
             bookList.toggleParameters.tag = true;
@@ -725,23 +762,28 @@ const addValuesToElement = (object, ...keys) => {
                         tempSelection = object[key] //tempSelection points to book object value
                         if (Array.isArray(tempSelection)) tempSelection = tempSelection.join() //*averageRating might not be passing here
                         if (key === `tag`) {
-                            tempElement = createElementWithClassOrID(`button`, `id`, `${object.id}`)
-                            tempElement.classList.add(`${key}`);
-                            tempElement.addEventListener(`click`, toggleTag)
-                            setTag(tempElement)
+                            if (object.tag && Array.isArray(object.tag)) {
+                                tempElement = createElementWithClassOrID(`div`, `class`, `tagColors`);
+                                tempElement.setAttribute(`id`, `${object.id}`);
+                                if (Array.isArray(object.tag)) {
+                                    object.tag.forEach((tag) => {
+                                        addTagReferenceToElement(tempElement, tag)
+                                    })
+                                }
+                            } else return
                         } else if (key === `thumbnail`) {
-                            tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`)
+                            tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`);
                             tempElement.src = tempSelection;
                             tempElement.classList.add(`${key}`);
                         } else if (key[0] === `i` && key[1] === 'd') {
-                            tempElement = createElementWithClassOrID(`a`, `id`, `${object.id}`)
+                            tempElement = createElementWithClassOrID(`a`, `id`, `${object.id}`);
                             tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
                             tempElement.target = `#`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === `averageRating`) {
                             tempSelection = reduceDecimal(tempSelection, 2);
-                            tempSelection = replaceUndefined(tempSelection)
-                            tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`)
+                            tempSelection = replaceUndefined(tempSelection);
+                            tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`);
                             tempElement.textContent = `${tempSelection}`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === 'favorite') {
@@ -767,7 +809,7 @@ const addValuesToElement = (object, ...keys) => {
 //iterate through allElements (an array) and append them to page
 const addToPage = (...object) => { //using ...objects to potentially combine objects and append to page
     removeAllClass(`bookInfo`);
-    console.log(object[0])
+    console.log(object[0]);
     let objectCount = Object.keys(object[0]).length;
     for (let i = 0; i < objectCount; i++) { //iterate through each book object
         let currentCount = i;
@@ -786,7 +828,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
 
 const addSingleBookToPage = (...object) => {
     if (spotlightOpen) addSingleBookToSpotLight(object);
-    allElements = addValuesToElement(object[0][0], `thumbnail`, `title`, `authors`, `subject`, 'favorite');
+    allElements = addValuesToElement(object[0][0], `tag`, `thumbnail`, `title`, `authors`, `subject`, 'favorite');
     firstLineDiv = createBookInfo(object[0], 0, Object.keys(bookList.books).length)
     tempBookItem = document.createElement(`div`); 
     tempBookItem = createElementWithClassOrID(`div`, `class`, `bookInfo`) //the container div for the link item
@@ -838,14 +880,15 @@ const addMoreDetails = (object, id, existingElement) => {
     }
     
     window.addEventListener(`click`, (e) => {
-        if (!bookContainer.contains(e.target) && (!spotlightContainer.contains(e.target))) closePreviewWithoutNewPreview(existingElement, lastElement, moreDetailsContainer, iconGrabbed)
+        if (moreDetailsExpanded) if (!bookContainer.contains(e.target) && (!spotlightContainer.contains(e.target))) closePreviewWithoutNewPreview(existingElement, lastElement, moreDetailsContainer, iconGrabbed)
     })
 
     for (const book of object.books) {
         if (book.id === id ) {
             moreDetailsContainer = createElementWithClassOrID(`div`, `class`, `moreDetails`)
             moreDetailsFirstItems = createElementWithClassOrID(`div`, `class`, `additionInfo`)
-            
+            moreDetailsTags = createElementWithClassOrID(`div`, `class`, `moreDetailsTags`)
+
             publishedDate = document.createElement(`div`);
             publishedDateTextHeader = document.createElement(`h2`);
             publishedDateTextHeader.innerText = (`Released`);
@@ -892,11 +935,36 @@ const addMoreDetails = (object, id, existingElement) => {
             description = document.createElement(`p`);
             description.innerText = `${book.description}`;
 
+            if (book.tag) {
+                tagTextHeader = document.createElement(`h2`);
+                tagTextHeader.innerText = `Tags`;
+                
+                booksTags = createElementWithClassOrID(`div`, `class`, `booksTags`)
+
+                bookList.userSettings.allTags.forEach(element => {
+                    tempTag = createElementWithClassOrID(`h1`, `id`, `${book.id}`)
+                    tempTag.innerText = `${element[0]}`
+                    tempTag.addEventListener(`click`, (e) => {
+                        addTagToBook(e)
+                    })
+
+                    colorTag(checkTagMatch(book.tag, element))
+
+                    booksTags.appendChild(tempTag)
+                })
+                
+                tagsContainer = createElementWithClassOrID(`div`, `class`, `additionalInfoTagsContainer`)
+                tagsContainer.appendChild(tagTextHeader)
+                tagsContainer.appendChild(booksTags)
+            }
+
+
             moreDetailsFirstItems.appendChild(previewIcon);
             
             moreDetailsContainer.appendChild(descriptionTitle)
             moreDetailsContainer.appendChild(description)
             moreDetailsContainer.appendChild(moreDetailsFirstItems);
+            moreDetailsContainer.appendChild(tagsContainer);
 
             iconGrabbed.classList.remove(`toggleHidden`)
 
@@ -1017,6 +1085,11 @@ const createNewTag = (e) => {
             notification(`Unable to use duplicate tag name`)
             return
         }
+        if (tagName.value === `none`) {
+            notification(`Unable to use the name none`)
+            return
+        }
+        
     }
     tagArr = [`${tagName.value}`, `${tagColor.value}`];
     bookList.userSettings.allTags.push(tagArr);
@@ -1025,12 +1098,32 @@ const createNewTag = (e) => {
 
 const removeTag = (books, tagName) => {
     bookList.userSettings.allTags = bookList.userSettings.allTags.filter(element => element[0] !== tagName)
-    for (const book of books) {
-        if (book.tag === `${tagName}`) book.tag = "none";
+    for (const book of bookList.books) {
+        if (Array.isArray(book.tag)) {
+            let tempTags = []
+            let tagLength = book.tag.length;
+            for (let i = 0; i < tagLength; i++) {
+                let indexOf = book.tag.findIndex(tag => tag === book.tag[i])
+                console.log(`Before Splice:${book.tag}`)
+                let tempTagPopped = book.tag.splice(indexOf, 1);
+                tempTagPopped = tempTagPopped[0]
+                console.log(`After Splice:${book.tag}`)
+                if (tempTagPopped[0] !== tagName) tempTags.push(tempTagPopped);
+                else if (tempTagPopped[0] === tagName) {
+                    let tagRemoved = grabChildByClassAndID(document.body, `${tempTagPopped}`, `${book.id}`);
+                    tagRemoved.parentNode.removeChild(tagRemoved);
+                }
+                
+                
+                
+            }
+            book.tag = tempTags;
+            addObjectToLocalStorage(bookList)
+        }
     }
     removeAllTagsFromPage(); 
     addAllTagsToPage(); // removing and adding all tags to not display recently deleted tag
-    addToPage(bookList.books); // adds elements back to page to filter out tag that was deleted
+    // addToPage(bookList.books); // adds elements back to page to filter out tag that was deleted
 }
 
 const removeAllTagsFromPage = () => { //this removes every tag so the tags minus the deleted tag are added with addAllTagsToPage()
@@ -1072,6 +1165,68 @@ addTagForm.addEventListener("submit", (e) => {
     createNewTag(e);
     closeNewTagForm();
 });
+
+
+
+const addTagToBook = (e) => {
+    for (const book of bookList.books) {
+        if (book.id === e.target.id) {
+            if (!Array.isArray(book.tag)) book.tag = []
+
+            bookList.userSettings.allTags.forEach(element => {
+                if (e.target.innerText === element[0]) {
+                    if (book.tag.some(tag => tag[0] === element[0])) {
+                        book.tag = book.tag.filter(tag => tag[0] !== element[0])
+                        e.target.style.backgroundColor = ``
+                        e.target.style.color = `inherit`;
+                        removeTagReferenceToElement(grabChildByClassAndID(document.body, `${element}`, `${book.id}`));
+                        notification(`Removed #${element[0]}`)
+                        addObjectToLocalStorage(bookList)
+                        return
+                    }
+                    if (!book.tag.some(tag => tag[0] === element[0])) {
+                        book.tag.push(element)
+                        e.target.style.backgroundColor = `${element[1]}`
+                        e.target.style.color = `white`;
+                        notification(`Added #${element[0]}`)
+                        addTagReferenceToElement(grabChildByClassAndID(document.body, `tagColors`, `${book.id}`), element)
+                        addObjectToLocalStorage(bookList)
+                    }
+                }
+            })
+        }
+    }
+}
+
+const checkTagMatch = (bookTags, tag) => {
+    if (Array.isArray(bookTags)) {
+        for (const bookTag of bookTags) {
+            if (bookTag[0] === tag[0]) {
+                return bookTag[1]
+            }
+        }
+    }
+}
+
+const colorTag = (color) => {
+    if (color) {
+        tempTag.style.backgroundColor = `${color}`
+        tempTag.style.color = `white`;
+    }
+    console.log(color)
+    console.log(tempTag)
+}
+
+const addTagReferenceToElement = (parentEl, tag) => {
+    let tempTagEl = createElementWithClassOrID(`div`, `class`, `${tag}`);
+    tempTagEl.setAttribute(`id`, `${parentEl.id}`);
+    tempTagEl.style.backgroundColor = `${tag[1]}`;
+    parentEl.appendChild(tempTagEl);
+}
+
+const removeTagReferenceToElement = (element) => {
+    if (element) element.parentNode.removeChild(element)
+}
 
 let lastElement;
 const addEventToFilterByTag = (...element) => {
@@ -1188,9 +1343,13 @@ const submitAddBookForm = () => {
     bookItem.id = giveBookNewID();
     tempFormBook.books.push(bookItem);
     tempFormBook.books[0].favorite = false;
-    tempFormBook.books[0].tag = `none`;
+    tempFormBook.books[0].tag = [];
     addToObject(bookList, tempFormBook.books)
     addToPage(bookList.books)
+    if (spotlightOpen) {
+        toggleSpotlight(bookList)
+        toggleSpotlight(bookList)
+    }
     notification(`Added ${tempFormBook.books[0].title}!`)
     toggleAddBookContainer();
 }

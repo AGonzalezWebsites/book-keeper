@@ -242,8 +242,8 @@ body {
     align-items: center;
     max-width: 550px;
     min-width: 500px;
-    max-height: 500px;
-    min-height: 500px;
+    max-height: fit-content;
+    min-height: fit-content;
     padding: 10px;
     margin: 5px;
     border-radius: var(--border-radius);
@@ -716,7 +716,6 @@ body {
     margin: 0 1.5vw 1.5vw 0;
     background-color: var(--bg-200);
     min-width: 190px;
-    max-height: 400px;
     max-width: var(--container-max-width);
     border-radius: var(--book-border-radius);
 }
@@ -746,7 +745,7 @@ body {
 
 .myBookSearch input {
     display: flex;
-    border: 2px solid var(--text-100);
+    border: 1px solid var(--text-100);
     color: rgb(15, 15, 15);
     font-size: 1.8rem;
     width: 100%;
@@ -836,6 +835,11 @@ body {
     transition: .3s;
 }
 
+.bookInfo p {
+    margin: 0;
+    padding: 0;
+}
+
 .coverTitle {
     min-width: 40px;
 }
@@ -851,6 +855,26 @@ body {
     left: 0;
     margin: 0;
     font-size: 1rem;
+}
+
+.tagColors {
+    pointer-events: none;
+}
+
+.bookInfo div .tagColors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    margin: 0 auto 0 auto;
+}
+
+.bookInfo div .tagColors div {
+    width: 40px;
+    height: 3.5px;
+    pointer-events: none;
 }
 
 .titleTitle, .title {
@@ -883,7 +907,7 @@ body {
 }
 
 .favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
-    border: 2px solid var(--text-100);
+    border: 1px solid var(--text-100);
     background-color: var(--primary-200);
     font-size: 1.6rem;
     color: var(--primary-300);
@@ -956,7 +980,7 @@ cursor: pointer;
 .tagButtons button {
     border: 1px solid white;
     border-radius: 25px;
-    margin: 5px;
+    margin: 1px;
 }
 
 .tagButton::before {
@@ -1091,11 +1115,11 @@ input:checked + .slider:before {
 }
 
 
-.books div:last-child {
+.books>div:last-child {
     border-radius: var(--book-border-radius-botom)
 }
 
-.books div:first-child {
+.books>div:first-child {
     border-radius: var(--book-border-radius-top)
 }
 
@@ -1129,7 +1153,7 @@ input:checked + .slider:before {
     z-index: 2;
 }
 
-.bookInfo div:first-child {
+.bookInfo>div:first-child {
     display: flex;
     margin: var(--container-margins);
     align-items: center;
@@ -1171,7 +1195,7 @@ input:checked + .slider:before {
 
 .selectedBook {
     background-image: -webkit-linear-gradient(var(--primary-200), var(--primary-200)) !important;
-    color: var(--bg-100) !important;
+    color: var(--bg-100);
 }
 
 .removeCover div img {
@@ -1186,7 +1210,8 @@ input:checked + .slider:before {
     flex-direction: column;
     height: fit-content;
     transition: .1s ease-in;
-    padding: 10px 10vw 10px 10vw;
+    padding: 10px 10vw 0px 10vw;
+    margin-top: 5px;
     overflow: hidden;
     max-height: 500px;
     opacity: 1;
@@ -1217,11 +1242,11 @@ input:checked + .slider:before {
 
 .additionInfo {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    border-top: 2px inset var(--bg-100);
-    padding-top: 10px;
-
+    padding: 10px 0px;
+    border-top: 1px solid var(--bg-100);
+    border-bottom: 1px solid var(--bg-100);
 }
 
 .additionInfo button, .additionInfo div {
@@ -1230,7 +1255,6 @@ input:checked + .slider:before {
 
 
 .additionInfo button {
-    border: 2px solid var(--text-100);
     background-color: var(--bg-100);
     font-size: 1.8rem;
     color: var(--text-100);
@@ -1279,6 +1303,71 @@ input:checked + .slider:before {
 .additionInfo .fa-eye {
     right: 25px;
 }
+
+.previewContainer>.additionalInfoTagsContainer {
+    display: flex;
+    justify-content: center;
+    width: 95%;
+    padding: 0px 0 0px 0;
+    margin: 5px 0px;
+}
+
+.previewContainer>.additionalInfoTagsContainer>.booksTags {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    background: inherit;
+    border-radius: 25px;
+    padding: 2px 1px;
+    width: 100%;
+    margin: 0 10px;
+}
+
+.previewContainer>.additionalInfoTagsContainer>.booksTags h1:hover {
+    cursor: pointer;
+}
+
+.additionalInfoTagsContainer {
+    display: flex;
+    align-items: center;
+    height: fit-content;
+    border-radius: 0px;
+    padding: 10px 0 10px 0;
+    margin: 0;
+}
+
+.additionalInfoTagsContainer i {
+    position: static !important;
+}
+
+.additionalInfoTagsContainer h2 {
+    font-weight: 600;
+    font-size: 1.6rem;
+}
+
+.booksTags {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-radius: 25px;
+    padding: 2px 1px;
+    margin: 0 10px;
+}
+
+.booksTags h1::before {
+    content: '#';
+}
+
+.booksTags h1 {
+    font-size: 1.2rem;
+    margin: 0 2px 0px 2px;
+    padding: 2px 5px;
+    border-radius: 25px;
+    color: inherit;
+}
+
 
 .favorite {
     color: gold !important;

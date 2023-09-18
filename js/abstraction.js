@@ -1,4 +1,25 @@
 //grouping all (general) small abstraction functions
+const grabChildByClassAndID = (element, className, idName) => {
+    if (element.childNodes) {
+        for (const node of element.childNodes) {
+            if (node.nodeType != Node.TEXT_NODE && typeof(node.className) === 'string' && typeof(node.id) === 'string') {
+                if (node.className.includes(`${className}`) && node.id.includes(`${idName}`)) {
+                    console.log(node)
+                    return node
+                }
+            }   
+            if (node.childNodes) {
+                const result = grabChildByClassAndID(node, className, idName);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+
 
 const toStringIfArray = (x) => {
     if (Array.isArray(x)) {
