@@ -1006,6 +1006,23 @@ const closeAndOpenSpotlight = (obj) => {
     }
 }
 
+const addEventToTogglePreviewButton = (element, toggleElement, book) => {
+    element.addEventListener(`click`, () => {
+        console.log(`active`)
+        scrollToBook(book)
+        toggleElement.style.display = `flex`
+        setTimeout(()=> {
+            toggleElement.style.opacity = `1`
+        }, 50)
+        setTimeout(() => {
+            toggleElement.style.opacity = `0`
+            setTimeout(() => {
+                toggleElement.style.display = `none`
+            }, 1000)
+        }, 3000)
+    })
+}
+
 let spotlightBooks;
 let spotlightOpen = false;
 const toggleSpotlight = (obj) => {
@@ -1029,9 +1046,17 @@ const toggleSpotlight = (obj) => {
         scrollRight.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `right`))
         for (const book of obj.books) {
             let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
+
+            let spotlightBookItemPreviewEvent = createElementWithClassOrID(`div`, `id`, `${book.id}`);
+            spotlightBookItemPreviewEvent.classList.add(`spotlightBookItemPreviewEvent`);
+            let tempH2 = createElementWithInnerText(`h2`, `Click again to Preview`)
+            spotlightBookItemPreviewEvent.appendChild(tempH2)
+
             let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
             if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-            addEventToAddToPreview(bookList, spotlightBookItem);
+            spotlightBookItem.appendChild(spotlightBookItemPreviewEvent)
+            addEventToAddToPreview(bookList, spotlightBookItemPreviewEvent);
+            addEventToTogglePreviewButton(spotlightBookItem, spotlightBookItemPreviewEvent, book)
             spotlightBooks.appendChild(spotlightBookItem)
         }
         spotlightContainer.classList.remove(`closeSpotlight`)
@@ -1058,10 +1083,13 @@ const spotlightScroll = (element, direction) => {
 
 const addSingleBookToSpotLight = (obj) => {
     let tempObj = obj[0][0];
+    let spotlightBookItemPreviewEvent = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
+    spotlightBookItemPreviewEvent.classList.add(`spotlightBookItemPreviewEvent`)
     let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
     let combinedElements = addValuesToElement(tempObj, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+    spotlightBookItem.appendChild(spotlightBookItemPreviewEvent)
     if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-    addEventToAddToPreview(bookList, spotlightBookItem);
+    addEventToAddToPreview(bookList, spotlightBookItemPreviewEvent);
     spotlightBooks.appendChild(spotlightBookItem)
 }
 
