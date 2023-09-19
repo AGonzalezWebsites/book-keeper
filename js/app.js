@@ -2,20 +2,20 @@ const alertBox = document.querySelector(`.alertBox`)
 const bookListContainer = document.querySelector(".bookListContainer");
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
-const spotlightContainer = document.querySelector(`.spotlightContainer`)
-const toggleSpotlightIcon = document.querySelector(`.toggleSpotlightIcon`)
+const spotlightContainer = document.querySelector(`.spotlightContainer`);
+const toggleSpotlightIcon = document.querySelector(`.toggleSpotlightIcon`);
 const deleteFilter = document.querySelector(`.deleteFilter`);
 const favoriteFilter = document.querySelector(`.favoriteFilter`);
 const editFilter = document.querySelector(`.editFilter`);
-const tagButtons = document.querySelector(`.tagButtons`)
-const readTag = document.querySelector(`.readTag`)
-const readingTag = document.querySelector(`.readingTag`)
-const notReadTag = document.querySelector(`.notReadTag`)
-const newTag = document.querySelector(`.newTag`)
-const addTagContainer = document.querySelector(`.addTagContainer`)
-const addTagForm = document.querySelector(`#addTagForm`)
-const cancelTagButton = document.querySelector(`.cancelTagButton`)
-const randomBookButton = document.querySelector(`.randomBookButton`)
+const tagButtons = document.querySelector(`.tagButtons`);
+const readTag = document.querySelector(`.readTag`);
+const readingTag = document.querySelector(`.readingTag`);
+const notReadTag = document.querySelector(`.notReadTag`);
+const newTag = document.querySelector(`.newTag`);
+const addTagContainer = document.querySelector(`.addTagContainer`);
+const addTagForm = document.querySelector(`#addTagForm`);
+const cancelTagButton = document.querySelector(`.cancelTagButton`);
+const randomBookButton = document.querySelector(`.randomBookButton`);
 
 document.addEventListener("DOMContentLoaded", function(){
     if (localStorage.books) {
@@ -100,26 +100,6 @@ window.addEventListener(`click`, (e) => {
 
 const loader = document.createElement(`div`);
 loader.classList.add('loader');
-
-let timeoutId;
-const notification = (message) => {
-    if (!alertBox.classList[1]) clearNotification()
-    textElement = document.createElement(`p`);
-    textElement.innerText = `${message}`;
-    alertBox.appendChild(textElement);
-    alertBox.classList.remove(`toggleHidden`)
-    if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    timeoutId = setTimeout(() => {
-        if (!alertBox.classList[1]) clearNotification()
-    }, 4000)
-}
-
-const clearNotification = () => {
-    alertBox.removeChild(textElement);
-    alertBox.classList.add(`toggleHidden`)
-}
 
 const addMoreDetailsEvent = (element) => {
     element.addEventListener(`click`, (e) => {
@@ -428,12 +408,13 @@ const addToPreview = (obj, element, cycle, e) => {
                     tempTag = createElementWithClassOrID(`h1`, `id`, `${currentBook.id}`)
                     tempTag.innerText = `${element[0]}`
                     tempTag.addEventListener(`click`, (e) => {
-                        addTagToBook(e)
+                        if (searching) addTagToBook(e, obj)
+                        else addTagToBook(e, bookList)
                     })
-
                     colorTag(checkTagMatch(currentBook.tag, element))
                     booksTags.appendChild(tempTag)
                 })
+
                 tagsContainer = createElementWithClassOrID(`div`, `class`, `additionalInfoTagsContainer`)
                 tagsContainer.appendChild(tagTextHeader)
                 tagsContainer.appendChild(booksTags)
@@ -827,7 +808,7 @@ const addToPage = (...object) => { //using ...objects to potentially combine obj
 }
 
 const addSingleBookToPage = (...object) => {
-    if (spotlightOpen) addSingleBookToSpotLight(object);
+    if (spotlightOpen) addSingleBookToSpotLight(object[0]);
     allElements = addValuesToElement(object[0][0], `tag`, `thumbnail`, `title`, `authors`, `subject`, 'favorite');
     firstLineDiv = createBookInfo(object[0], 0, Object.keys(bookList.books).length)
     tempBookItem = document.createElement(`div`); 
@@ -945,7 +926,7 @@ const addMoreDetails = (object, id, existingElement) => {
                     tempTag = createElementWithClassOrID(`h1`, `id`, `${book.id}`)
                     tempTag.innerText = `${element[0]}`
                     tempTag.addEventListener(`click`, (e) => {
-                        addTagToBook(e)
+                        addTagToBook(e, bookList)
                     })
 
                     colorTag(checkTagMatch(book.tag, element))
@@ -1033,6 +1014,7 @@ const toggleSpotlight = (obj) => {
         return
     } else if (!spotlightOpen) {
         spotlightBooks = createElementWithClassOrID(`div`, `class`, `spotlightBooks`)
+        spotlightBooks.setAttribute(`id`, `spotlightBooks`)
 
         scrollLeft = createElementWithClassOrID(`div`, `class`, `scrollLeft flex justify-center items-center`)
         scrollLeftIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollLeftIcon`)
@@ -1042,28 +1024,16 @@ const toggleSpotlight = (obj) => {
         scrollRight = createElementWithClassOrID(`div`, `class`, `scrollRight flex justify-center items-center`)
         scrollRightIcon = createElementWithClassOrID(`div`, `class`, `fa-solid fa-chevron-down scrollRightIcon`)
         scrollRight.appendChild(scrollRightIcon)
-        
         scrollRight.addEventListener(`click`, () => spotlightScroll(spotlightBooks, `right`))
-        for (const book of obj.books) {
-            let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
 
-            let spotlightBookItemPreviewEvent = createElementWithClassOrID(`div`, `id`, `${book.id}`);
-            spotlightBookItemPreviewEvent.classList.add(`spotlightBookItemPreviewEvent`);
-            let tempH2 = createElementWithInnerText(`h2`, `Click again to Preview`)
-            spotlightBookItemPreviewEvent.appendChild(tempH2)
+        spotlightContainer.appendChild(scrollLeft)
+        spotlightContainer.appendChild(scrollRight)
 
-            let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
-            if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-            spotlightBookItem.appendChild(spotlightBookItemPreviewEvent)
-            addEventToAddToPreview(bookList, spotlightBookItemPreviewEvent);
-            addEventToTogglePreviewButton(spotlightBookItem, spotlightBookItemPreviewEvent, book)
-            spotlightBooks.appendChild(spotlightBookItem)
-        }
+        addSingleBookToSpotLight(obj.books)
+
         spotlightContainer.classList.remove(`closeSpotlight`)
         spotlightOpen = true;
         toggleSpotlightIcon.classList.add(`rotate180`)
-        spotlightContainer.appendChild(scrollLeft)
-        spotlightContainer.appendChild(scrollRight)
         spotlightContainer.appendChild(spotlightBooks)
         setTimeout(() => {
             scrollLeft.classList.add(`toggleShow`)
@@ -1081,16 +1051,27 @@ const spotlightScroll = (element, direction) => {
 
 };
 
-const addSingleBookToSpotLight = (obj) => {
-    let tempObj = obj[0][0];
-    let spotlightBookItemPreviewEvent = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
-    spotlightBookItemPreviewEvent.classList.add(`spotlightBookItemPreviewEvent`)
-    let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${tempObj.id}`)
-    let combinedElements = addValuesToElement(tempObj, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
-    spotlightBookItem.appendChild(spotlightBookItemPreviewEvent)
-    if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
-    addEventToAddToPreview(bookList, spotlightBookItemPreviewEvent);
-    spotlightBooks.appendChild(spotlightBookItem)
+const addSingleBookToSpotLight = (obj) => { //only use if spotlight is open
+    for (const book of obj) {
+        let spotlightBookItem = createElementWithClassOrID(`div`, `id`, `${book.id}`)
+        
+        let spotlightBookItemPreviewEvent = createElementWithClassOrID(`div`, `id`, `${book.id}`);
+        spotlightBookItemPreviewEvent.classList.add(`spotlightBookItemPreviewEvent`);
+        let tempH2 = createElementWithInnerText(`h2`, `Click again to Preview`)
+        spotlightBookItemPreviewEvent.appendChild(tempH2)
+        
+        let combinedElements = addValuesToElement(book, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+        if (combinedElements.some(element => element.className === `thumbnail`)) spotlightBookItem.appendChild(combinedElements.find(element => element.className === `thumbnail`))
+        spotlightBookItem.appendChild(spotlightBookItemPreviewEvent)
+        addEventToAddToPreview(bookList, spotlightBookItemPreviewEvent);
+        addEventToTogglePreviewButton(spotlightBookItem, spotlightBookItemPreviewEvent, book)
+        
+        if (spotlightOpen) {
+        openedSpotlightBooks = grabChildByClassAndID(spotlightContainer, `spotlightBooks`, `spotlightBooks`)
+        if (openedSpotlightBooks) openedSpotlightBooks.appendChild(spotlightBookItem)
+        else notification(`Unable to add book to the spotlight section, please refresh browser`)
+        } else spotlightBooks.appendChild(spotlightBookItem)
+    }
 }
 
 const openNewTagForm = () => {
@@ -1196,8 +1177,8 @@ addTagForm.addEventListener("submit", (e) => {
 
 
 
-const addTagToBook = (e) => {
-    for (const book of bookList.books) {
+const addTagToBook = (e, obj) => {
+    for (const book of obj.books) {
         if (book.id === e.target.id) {
             if (!Array.isArray(book.tag)) book.tag = []
 

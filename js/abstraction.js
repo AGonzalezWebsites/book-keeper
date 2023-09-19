@@ -1,25 +1,4 @@
 //grouping all (general) small abstraction functions
-const grabChildByClassAndID = (element, className, idName) => {
-    if (element.childNodes) {
-        for (const node of element.childNodes) {
-            if (node.nodeType != Node.TEXT_NODE && typeof(node.className) === 'string' && typeof(node.id) === 'string') {
-                if (node.className.includes(`${className}`) && node.id.includes(`${idName}`)) {
-                    console.log(node)
-                    return node
-                }
-            }   
-            if (node.childNodes) {
-                const result = grabChildByClassAndID(node, className, idName);
-                if (result) {
-                    return result;
-                }
-            }
-        }
-    }
-    return null;
-}
-
-
 
 const toStringIfArray = (x) => {
     if (Array.isArray(x)) {
@@ -144,4 +123,45 @@ const grabBookByID = (object, bookID) => {
         if (book.id === bookID) return book;
     }
     return "Book not found";
+}
+
+// grabChildByClassAndID filters through all branches of children if more children are found
+const grabChildByClassAndID = (element, className, idName) => {
+    if (element.childNodes) {
+        for (const node of element.childNodes) {
+            if (node.nodeType != Node.TEXT_NODE && typeof(node.className) === 'string' && typeof(node.id) === 'string') {
+                if (node.className.includes(`${className}`) && node.id.includes(`${idName}`)) {
+                    console.log(node)
+                    return node
+                }
+            }   
+            if (node.childNodes) {
+                const result = grabChildByClassAndID(node, className, idName);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+let timeoutId;
+const notification = (message) => {
+    if (!alertBox.classList[1]) clearNotification()
+    textElement = document.createElement(`p`);
+    textElement.innerText = `${message}`;
+    alertBox.appendChild(textElement);
+    alertBox.classList.remove(`toggleHidden`)
+    if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    timeoutId = setTimeout(() => {
+        if (!alertBox.classList[1]) clearNotification()
+    }, 4000)
+}
+
+const clearNotification = () => {
+    alertBox.removeChild(textElement);
+    alertBox.classList.add(`toggleHidden`)
 }

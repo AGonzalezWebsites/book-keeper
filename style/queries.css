@@ -151,13 +151,14 @@
     }
 
     .booksTags h1 {
-        font-size: 1rem;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
         margin: 0 2px 0px 2px;
         padding: 2px 5px;
         border: 1px solid black;
         border-radius: 25px;
         color: var(--bg-100);
-        background: var(--primary-200);
+        background: rgb(231, 231, 231);
     }
 
     .coverTitle {
