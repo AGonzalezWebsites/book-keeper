@@ -11,7 +11,7 @@
 - [Tags](#tags)
 - [Favorites](#favorites)
 - [Spotlight](#spotlight)
-- [Add Custom Book](#add-custom-book)
+- [Add Book Manually](#add-book-manually)
 - [Edit and Delete](#edit-and-delete)
 - [Local Storage](#local-storage)
 - [Download and Import](#download-and-import)
@@ -46,7 +46,7 @@
 - There is a thin bar/panel under the navigation bar with a down arrow. Clicking this will expand the spotlight section, which shows all the covers of your books. You can use the left and right arrows to scroll through the book. This feature is intended to
 work hand in hand with your book list. So, every time you filter or sort your book list, the spotlight section will update as well. Also, if you click on one of your books from either section, it will automatically scroll into view in the other section.
 
-## Add Custom Book
+## Add Book Manually
 
 - If you are unable to find the book you were searching for, you can use this form to input all the details of the book, including an image url for the covor. After submitting the form, this book will be added to your booklist.
 
