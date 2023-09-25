@@ -2,6 +2,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="A book saving website application for searching books and adding them to your personalized book list.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/img/bookLogoFavicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tangerine&family=Roboto:wght@400;900&family=Inspiration&family=Forum&family=Italianno&family=Julee&family=Dancing+Script">
@@ -22,7 +23,7 @@
         <div onclick="void(0)" class="dropdown">
             <span>File</span>
             <div class="dropdown-content flex items-center">
-                <input type="file" id="file-selector" accept=".bkls, .books" style="display: none;">
+                <input type="file" id="file-selector" accept=".bkls, .books, .txt" style="display: none;">
                 <button type="button" class="downloadButton py-1 px-3" onclick="downloadFile(bookList, `MyBookList.books`)">Download Book List</button>
                 <input type="button" value="Import Book List" onclick="document.getElementById('file-selector').click();" />
             </div>
@@ -118,7 +119,7 @@
     </div>
 
 
-    <div class="addBookContainer toggleHidden flex justify-center items-center fixed">
+    <div class="addBookContainer toggleHidden flex justify-center items-center fixed top-0 left-0 h-screen w-screen bg-black/75 z-99">
         <div class="addBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Add Book Info</h1>
             
@@ -148,7 +149,7 @@
         </div>
     </div>
 
-    <div class="editBookContainer toggleHidden flex justify-center items-center fixed">
+    <div class="editBookContainer toggleHidden flex justify-center items-center fixed top-0 left-0 h-screen w-screen bg-black/75 z-99">
         <div class="editBook flex items-center flex-col justify-center p-9 bg-white">
             <h1 class="text-4xl">Edit Book Info</h1>
             <form class="overflow-scroll" id="editBookForm" action="/index.html" onsubmit="return false">
@@ -188,7 +189,7 @@
             </div>
         </div>
     </div>
-        
+
     <script src="/js/app.js"></script>
     <script src="/js/abstraction.js"></script>
     <script src="/js/colorScheme.js"></script>

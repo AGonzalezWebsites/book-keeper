@@ -271,6 +271,14 @@ body {
     color: rgb(0, 56, 129);
 }
 
+.previewBoxTitleContainer>div .industryIdentifiers:first-child + p::before {
+    content: "/";
+} 
+
+.previewBoxTitleContainer>div {
+    margin: 0 !important;
+}
+
 .previewBoxTitleSpacing {
     margin: 0 7px;
     font-size: .6rem;
@@ -347,16 +355,6 @@ body {
     margin: 0 5px;
 }
 
-.addBookContainer {
-    top: 0px;
-    left: 0px;
-    background: rgba(0, 0, 0, 0.723);
-    height: 100vh;
-    width: 100vw;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 99;
-}
-
 .addBook {
     border: 3px solid var(--text-100);
     border-radius: var(--border-radius);
@@ -376,16 +374,6 @@ body {
 
 .addBook .cancelButton {
     background: rgb(231, 66, 66);
-}
-
-.editBookContainer {
-    top: 0px;
-    left: 0px;
-    background: rgba(0, 0, 0, 0.723);
-    height: 100vh;
-    width: 100vw;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 99;
 }
 
 .editBook {
@@ -912,7 +900,6 @@ body {
 
 .titleTitle:hover, .authorTitle:hover, .ratingTitle:hover, .subjectTitle:hover {
     cursor: pointer;
-    color: silver;
 }
 
 .ratingTitle {
@@ -1009,6 +996,10 @@ cursor: pointer;
     border: 1px solid white;
     border-radius: 25px;
     margin: 1px;
+}
+
+.tagButton:first-child:before {
+    content: "";
 }
 
 .tagButton::before {
@@ -1298,7 +1289,6 @@ input:checked + .slider:before {
 .additionInfo div {
     display: flex;
     flex-direction: column;
-    min-width: 75px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

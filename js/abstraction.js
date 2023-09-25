@@ -146,6 +146,19 @@ const grabChildByClassAndID = (element, className, idName) => {
     return null;
 }
 
+const createContainerAndContentBox = () => {
+    let tempArr = []
+    tempArr[0] = createElementWithClassOrID(`div`, `class`, `flex justify-center items-center fixed top-0 left-0 h-screen w-screen bg-black/75 z-99`);
+    tempArr[1] = createElementWithClassOrID(`div`, `class`, `flex flex-col justify-center items-center w-fit h-fit p-4 border-2 border-solid border-black rounded-lg bg-white`);
+    return tempArr
+}
+
+const appendMultipleChildren = (parent, ...elems) => {
+    for (const el of elems) {
+        parent.appendChild(el)
+    }
+}
+
 let timeoutId;
 const notification = (message) => {
     if (!alertBox.classList[1]) clearNotification()
@@ -164,4 +177,40 @@ const notification = (message) => {
 const clearNotification = () => {
     alertBox.removeChild(textElement);
     alertBox.classList.add(`toggleHidden`)
+}
+
+const confirmCustom = (msg, func, ...params) => { // up to 5 params to pass into function
+    let confirmContainers = createContainerAndContentBox()
+
+    let confirmMessage = createElementWithClassOrID(`p`, `class`, `confirmMessage self-center max-w-confirm text-center text-2xl p-4`)
+    confirmMessage.innerText = `${msg}`
+
+    let buttonContainer = createElementWithClassOrID(`button`, `class`, `buttonContainer flex justify-center items-center p-4`)
+    let cancelButton = createElementWithClassOrID(`button`, `class`, `cancelButton p-4 min-w-b min-h-b bg-orange-600 border-solid border-black rounded-lg`)
+    cancelButton.innerText = `No`
+    cancelButton.addEventListener(`click`, () => {
+        notification(`Cancelled`)
+        document.body.removeChild(confirmContainers[0])
+    })
+
+    let submitButton = createElementWithClassOrID(`button`, `class`, `submitButton p-4 ml-4 min-w-b min-h-b bg-green-600 border-solid border-black rounded-lg`)
+    submitButton.classList.add(`bg-green`)
+    submitButton.innerText = `Yes`
+    submitButton.addEventListener(`click`, () => {
+        document.body.removeChild(confirmContainers[0])
+        if (params) {
+            if (params.length === 0) func()
+            if (params.length === 1) func(params[0])
+            if (params.length === 2) func(params[0], params[1])
+            if (params.length === 3) func(params[0], params[1], params[2])
+            if (params.length === 4) func(params[0], params[1], params[2], params[3])
+            if (params.length === 5) func(params[0], params[1], params[2], params[3], params[4])
+        } else func()
+    })
+
+    appendMultipleChildren(buttonContainer, cancelButton, submitButton);
+    confirmContainers[1].appendChild(confirmMessage);
+    confirmContainers[1].appendChild(buttonContainer);
+    confirmContainers[0].appendChild(confirmContainers[1])
+    document.body.appendChild(confirmContainers[0])
 }

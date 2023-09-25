@@ -60,7 +60,25 @@
         text-overflow: ellipsis;
     }
 
+    .spotlightBooks > div {
+        aspect-ratio: 1 / 1.5;
+        min-height: calc(var(--spotlight-container-height) - 40px);
+        max-height: calc(var(--spotlight-container-height) - 40px);
+        min-width: calc(var(--spotlight-container-height) - 85px);
+        max-width: calc(var(--spotlight-container-height) - 85px);
+        margin: 10px 4vw;
+    }
+    
+    .spotlightBooks div img {
+        aspect-ratio: 1 / 1.5 !important;
+        min-height: 85%;
+        max-height: 85%;
+        min-width: 85%;
+        max-width: 85%;
+    }
+
     .bookListContainer {
+            justify-content: flex-start;
             overflow: hidden;
             margin: 2vw;
             height: 100vh;
@@ -78,18 +96,49 @@
         background-color: var(--bg-200);
         min-width: 190px;
         height: auto;
-        max-height: fit-content;
+        max-height: fit-content !important;
         border-radius: var(--book-border-radius);
     }
     
+    .filterBox div:nth-child(1n + 2) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 5px 5px 5px;
+    }
+
+    .myBookSearch input {
+        border: 1px solid var(--text-100);
+        color: rgb(15, 15, 15);
+        font-size: 1.4rem;
+        letter-spacing: -.05rem;
+        max-width: 125px;
+        padding-left: 10px;
+    }
+    
+    .lineHeightContainer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0 5px 0 !important;
+    }
+    
+    .lineHeightContainer p {
+        font-size: 0px;
+    }
+    
+    .favoriteFilter {
+        font-size: 1.2rem !important;
+        letter-spacing: -.05rem;
+        flex-wrap: nowrap;
+    }
+
     .books {
         overflow-y: scroll;
         overflow-x: hidden;
-        flex: 1 4 800px;
+        flex: 4 1 1000px;
         transition: .5s;
         max-width: 100%;
-        height: auto;
-        max-height: auto;
     }
     
     .favoriteFilter, .filterButtons .deleteFilter, .filterButtons .editFilter {
@@ -157,7 +206,7 @@
         padding: 2px 5px;
         border: 1px solid black;
         border-radius: 25px;
-        color: var(--bg-100);
+        color: black;
         background: rgb(231, 231, 231);
     }
 
@@ -218,6 +267,10 @@
     .previewDescription {
         max-height: 150px;
         min-height: 150px;
+    }
+
+    .previewBoxTitleContainer {
+        flex-direction: column;
     }
 
     .addBookContainer {

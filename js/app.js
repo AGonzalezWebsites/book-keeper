@@ -184,7 +184,7 @@ const searchBooks = () => {
 
         for (const book of searchedBooks.books) {
                 book.tag = []
-                appendToSearchBox(addValuesToElement(book, `thumbnail`, `title`, `authors`, 'id'));
+                appendToSearchBox(book, addValuesToElement(book, `thumbnail`, `title`, `authors`));
             }
     })
 };
@@ -200,8 +200,9 @@ const stopSearching = () => {
 
 let coverDiv;
 let titleAndAuthorDiv
-const appendToSearchBox = (...elements) => {
+const appendToSearchBox = (book, ...elements) => {
     tempBookItem = createElementWithClassOrID(`div`, `class`, `searchedBookInfo`)
+    tempBookItem.setAttribute(`id`, `${book.id}`);
     titleAndAuthorDiv = createElementWithClassOrID(`div`, `class`, `titleAndAuthor`) //container for title and author outside of loop
     
     searchedBookButtons = createElementWithClassOrID(`div`, `class`, `searchedBookButtons`) //container for title and author outside of loop
@@ -263,7 +264,7 @@ const addEventToAddToObject = (objectFrom, ...element) => { //For added elements
 
 
 randomBookButton.addEventListener(`click`, () => {
-    ChooseRandomBook()
+    confirmCustom(`A random book from your list will be chosen. Are you sure you're ready to commit to this book?`, ChooseRandomBook)
 })
 
 const ChooseRandomBook = () => {
@@ -336,7 +337,7 @@ const addToPreview = (obj, element, cycle, e) => {
                 newIteration = i + previewIterationModifier;
                 let currentBook = obj.books[newIteration]
                 let h1;
-                let combinedElements = addValuesToElement(currentBook, `tag`, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`);
+                let combinedElements = addValuesToElement(currentBook, `tag`, `thumbnail`, `title`, `authors`, `subject`, `description`, `publishedDate`, `publisher`, `averageRating`, `ratingsCount`, `industryIdentifiers`);
                 
                 previewContainerHolder = createElementWithClassOrID(`div`, `class`, `previewContainerHolder flex justify-center items-center align-center fixed top-0 min-h-max min-w-max`)
                 previewContainer = createElementWithClassOrID(`div`, `class`, `previewContainer flex flex-col h-auto w-auto`)
@@ -458,6 +459,9 @@ const addToPreview = (obj, element, cycle, e) => {
                 if (typeof(favoriteBooks) === `object`) if (obj === favoriteBooks) previewBoxTitle.innerText = `From My Favorites`;
                 if (typeof(tagBooks) === `object`) if (obj === tagBooks) previewBoxTitle.innerText = `From Selected Tag`;
                 
+                previewBoxTitleDiv = createElementWithClassOrID(`div`, `class`, `previewBoxTitleContainer`)
+                previewBoxTitleDiv.appendChild(previewBoxTitle)
+                
                 sampleButton = document.createElement(`p`);
                 if (currentBook.accessViewStatusEmbeddable && currentBook.accessViewStatusEmbeddable === `SAMPLE`) {
                     previewLink = document.createElement(`a`);
@@ -465,16 +469,26 @@ const addToPreview = (obj, element, cycle, e) => {
                     previewLink.target = `#`;
                     previewLink.innerText = `Read Sample`;
                     sampleButton.appendChild(previewLink)
-                } else sampleButton.innerText = `Sample Unavailable`;
+                    previewBoxTitleSpacing = createElementWithClassOrID(`i`, `class`, `previewBoxTitleSpacing fa-solid fa-minus`)
+                    previewBoxTitleDiv.appendChild(previewBoxTitleSpacing)
+                    previewBoxTitleDiv.appendChild(sampleButton)
+                } else {
+                    sampleButton.innerText = `No Sample`;
+                    previewBoxTitleSpacing = createElementWithClassOrID(`i`, `class`, `previewBoxTitleSpacing fa-solid fa-minus`)
+                    previewBoxTitleDiv.appendChild(previewBoxTitleSpacing)
+                    previewBoxTitleDiv.appendChild(sampleButton)
+                }
                 
-                
-                previewBoxTitleSpacing = createElementWithClassOrID(`i`, `class`, `previewBoxTitleSpacing fa-solid fa-minus`)
-                
-                previewBoxTitleDiv = createElementWithClassOrID(`div`, `class`, `previewBoxTitleContainer`)
-                previewBoxTitleDiv.appendChild(previewBoxTitle)
-                previewBoxTitleDiv.appendChild(previewBoxTitleSpacing)
-                previewBoxTitleDiv.appendChild(sampleButton)
-
+                if (typeof currentBook.industryIdentifiers === `object`) {
+                    if (combinedElements.some(element => element.className === `industryIdentifiers`)) {
+                        let amazonLinks = combinedElements.find(element => element.className === `industryIdentifiers`)
+                        amazonLinks.setAttribute(`class`, `flex flex-row`)
+                        previewBoxTitleSpacing = createElementWithClassOrID(`i`, `class`, `previewBoxTitleSpacing fa-solid fa-minus`)
+                        previewBoxTitleDiv.appendChild(previewBoxTitleSpacing)
+                        previewBoxTitleDiv.appendChild(amazonLinks)
+                    }
+                }
+            
                 previewContainer.appendChild(previewBoxTitleDiv)
                 previewContainer.appendChild(previewButtons)
                 document.body.appendChild(previewContainerHolder)
@@ -488,8 +502,9 @@ const addToPreview = (obj, element, cycle, e) => {
                     if (cycle === 'last') previewContainer.classList.remove(`toggleSlideOut`);
                 }, 100)
             } 
-            catch(err) {
-                console.log(err)
+            catch(syntaxError) {
+                console.log(syntaxError)
+                console.error("Syntax error:", syntaxError.message);
                 if (cycle === 'last') {
                     notification(`Reached beginning of list`);
                     addToPreview(obj, element)
@@ -755,25 +770,53 @@ const addValuesToElement = (object, ...keys) => {
                         } else if (key === `thumbnail`) {
                             tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`);
                             tempElement.src = tempSelection;
+                            tempElement.alt = `Book cover`;
                             tempElement.classList.add(`${key}`);
-                        } else if (key[0] === `i` && key[1] === 'd') {
-                            tempElement = createElementWithClassOrID(`a`, `id`, `${object.id}`);
-                            tempElement.href = `https://www.amazon.com/dp/${tempSelection}`;
-                            tempElement.target = `#`;
-                            tempElement.classList.add(`${key}`);
-                        } else if (key === `averageRating`) {
+                        } else if (key === `industryIdentifiers` && typeof object.industryIdentifiers) {
+                            
+                            tempElement = createElementWithClassOrID(`div`, `id`, `${object.id}`);
+                            
+                            if (typeof object.industryIdentifiers[1] === `object`) {
+
+                                tempElementP = createElementWithClassOrID(`p`, `id`, `${object.id}`);
+                                tempElementLink = createElementWithClassOrID(`a`, `id`, `${object.id}`);
+                                tempElementLink.href = `https://www.amazon.com/dp/${object[`${key}`][1].identifier}?&linkCode=ll1&tag=symphonicwebs-20&linkId=95439b61b8ad1059a044a67a17e83e15&language=en_US&ref_=as_li_ss_tl`;
+                                tempElementLink.target = `#`;
+                                tempElementLink.innerText = `Amazon A`;
+                                tempElementP.classList.add(`${key}`);
+                                
+                                tempElementP.appendChild(tempElementLink)
+                                tempElement.appendChild(tempElementP)
+                            }
+                            
+                            if (typeof object.industryIdentifiers[0] === `object`) {
+
+                                
+                                tempElementP2 = createElementWithClassOrID(`p`, `id`, `${object.id}`);
+                                tempElementLink = createElementWithClassOrID(`a`, `id`, `${object.id}`);
+                                tempElementLink.href = `https://www.amazon.com/dp/${object[`${key}`][0].identifier}?&linkCode=ll1&tag=symphonicwebs-20&linkId=95439b61b8ad1059a044a67a17e83e15&language=en_US&ref_=as_li_ss_tl`;
+                                tempElementLink.target = `#`;
+                                tempElementLink.innerText = `Amazon B`;
+                                tempElementP2.classList.add(`${key}`);
+                                tempElementP2.appendChild(tempElementLink)
+                                
+                                tempElement.appendChild(tempElementP2)
+                            }
+                                tempElement.classList.add(`${key}`);
+                                
+                            } else if (key === `averageRating`) {
                             tempSelection = reduceDecimal(tempSelection, 2);
                             tempSelection = replaceUndefined(tempSelection);
                             tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`);
                             tempElement.textContent = `${tempSelection}`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === 'favorite') {
-                            tempElement = createElementWithClassOrID(`i`, `id`, `${object.id}`)
-                            tempElement.classList.add(`fa-solid`)
-                            tempElement.classList.add(`fa-star`)
-                            addEventToAddToFavorite(tempElement)
-                            if (object.favorite) tempElement.classList.add(`favorite`)
-                            if (!object.favorite) tempElement.classList.add(`toggleHidden`)
+                        tempElement = createElementWithClassOrID(`i`, `id`, `${object.id}`)
+                        tempElement.classList.add(`fa-solid`)
+                        tempElement.classList.add(`fa-star`)
+                        addEventToAddToFavorite(tempElement)
+                        if (object.favorite) tempElement.classList.add(`favorite`)
+                        if (!object.favorite) tempElement.classList.add(`toggleHidden`)
                         } else {
                             tempElement = createElementWithClassOrID(`p`, `id`, `${object.id}`)
                             tempElement.textContent = `${replaceUndefined(tempSelection)}`;
@@ -906,9 +949,9 @@ const addMoreDetails = (object, id, existingElement) => {
                 previewLink = document.createElement(`a`);
                 previewLink.href = book.previewLink;
                 previewLink.target = `#`;
-                previewLink.innerText = `Preview`;
+                previewLink.innerText = `Sample`;
                 previewButton.appendChild(previewLink)
-            } else previewButton.innerText = `No preview`;
+            } else previewButton.innerText = `No Sample`;
             moreDetailsFirstItems.appendChild(previewButton);
             
             descriptionTitle = createElementWithClassOrID(`P`, `class`, `descriptionTitle`)
@@ -1158,11 +1201,14 @@ const addTagToPage = (tagName, tagColor) => {
 
     closeTag = createElementWithClassOrID(`i`, `class`, `fa-solid fa-x`)
     closeTag.addEventListener(`click`, (e) => {
-        if (!confirm(`Are you sure you want to remove tag?`)) {
-            addToPage(bookList.books); //refreshes book list after tag deletion
-            return
-        }
-        removeTag(bookList.books, e.target.parentNode.innerText)
+
+        confirmCustom(`Are you sure you want to remove ${e.target.parentNode.innerText} tag?`, removeTag, bookList.books, e.target.parentNode.innerText)
+
+        // if (!confirm(`Are you sure you want to remove tag?`)) {
+        //     addToPage(bookList.books); //refreshes book list after tag deletion
+        //     return
+        // }
+        // removeTag(bookList.books, e.target.parentNode.innerText)
     })
     tempTag.appendChild(closeTag)
     tagButtons.appendChild(tempTag);
@@ -1187,7 +1233,7 @@ const addTagToBook = (e, obj) => {
                     if (book.tag.some(tag => tag[0] === element[0])) {
                         book.tag = book.tag.filter(tag => tag[0] !== element[0])
                         e.target.style.backgroundColor = ``
-                        e.target.style.color = `inherit`;
+                        e.target.style.color = `black`;
                         removeTagReferenceToElement(grabChildByClassAndID(document.body, `${element}`, `${book.id}`));
                         notification(`Removed #${element[0]}`)
                         addObjectToLocalStorage(bookList)
@@ -1588,32 +1634,13 @@ const input = document.querySelector(`#file-selector`)
 input.type = "file";
 input.addEventListener("change", async event => {
     const json = JSON.parse(await input.files[0].text());
+    confirmCustom(`Are you sure you want to import this book list? Doing so will replace the books on this page.`, importBookList, json)
+});
 
-    console.log(json);
+const importBookList = (json) => {
     addObjectToLocalStorage(json)
     bookList.books = [];
     addToObject(bookList, json.books, json.userSettings);
     location.reload();
     addToPage(bookList.books);
-});
-
-
-
-// TEST FEATURE TO REPLACE CONFIRM() - UNFINISHED
-
-// const promptContainer = document.querySelector(`.promptContainer`);
-// const cancelPromptButton = document.querySelector(`.cancelPromptButton`);
-// const submitPromptButton = document.querySelector(`.submitPromptButton`);
-// const promptText = document.querySelector(`.promptText`);
-
-// const openPrompt = (message = `Are you Sure`) => {
-//     promptText.innerText = `${message}`
-//     promptContainer.classList.remove(`toggleHidden`);
-//     //need to wait for user reponse (yes or no)
-// }
-
-// const closePrompt = () => {
-//     promptText.innerText = ``
-//     promptContainer.classList.add(`toggleHidden`);
-//     //need to wait for user reponse (yes or no)
-// }
+}
