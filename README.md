@@ -1,6 +1,6 @@
 # book-keeper
 
-## At it's core, this website is a book list with an api search feature to import selected books into your personalized list, however, there are a many features that enable you to maintain, personalize and organize your list.
+- At it's core, this website is a book list with an api search feature to import selected books into your personalized list, however, there are a many features that enable you to maintain, personalize and organize your list.
 
 ## Table of Contents
 
