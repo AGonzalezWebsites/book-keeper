@@ -133,6 +133,11 @@
         flex-wrap: nowrap;
     }
 
+    .removeCover div img {
+        width: 0px;
+        min-width: 0px;
+    }
+
     .books {
         overflow-y: scroll;
         overflow-x: hidden;
@@ -160,6 +165,10 @@
         letter-spacing: -.07rem;
     }
     
+    .bookInfo>div>p {
+        padding-right: 5px;
+    }
+
     .bookListHeader, .filterHeader {
         font-size: 1.2rem;
         height: 25px;

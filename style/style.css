@@ -58,6 +58,16 @@ body {
     background: rgba(0, 0, 0, 0.695);
 }
 
+.welcomeContainer {
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.695);
+}
+
+.welcomeContainer h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
 .alertBox {
     display: flex;
     position: fixed;
@@ -828,11 +838,16 @@ body {
     font-size: 1.8rem;
     transition: .2s;
     color: var(--text-100);
+    overflow: hidden;
 }
 
 .bookInfo>div {
     width: 100%;
     z-index: 1;
+}
+
+.bookInfo>div>p {
+    padding-right: 20px;
 }
 
 .bookInfo div>i {
@@ -1202,12 +1217,13 @@ input:checked + .slider:before {
 
 .bookInfo div img {
     aspect-ratio: 1 / 1.5;
-    height: auto;
     background: silver;
     max-width: 40px;
     min-width: 40px;
+    width: 40px;
     transition: max-width opacity .3s ease-in-out;
-    max-height: auto;
+    height: 60px;
+    max-height: 900px;
     margin: 0 3vw 0 4vw;
     opacity: 1;
 }
@@ -1218,8 +1234,8 @@ input:checked + .slider:before {
 }
 
 .removeCover div img {
-    max-width: 0px;
-    min-width: 0px;
+    height: 0px;
+    min-height: 0px;
     transition: max-width opacity 1s ease-in;
     opacity: 0;
 }

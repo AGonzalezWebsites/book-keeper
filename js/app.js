@@ -3,10 +3,13 @@ const bookListContainer = document.querySelector(".bookListContainer");
 const bookContainer = document.querySelector(".books");
 const bookSearchContainer = document.querySelector('.bookSearch');
 const spotlightContainer = document.querySelector(`.spotlightContainer`);
+const welcomeContainer = document.querySelector(`.welcomeContainer`);
+const closeWelcomeButton = document.querySelector(`.closeWelcomeButton`);
 const toggleSpotlightIcon = document.querySelector(`.toggleSpotlightIcon`);
 const deleteFilter = document.querySelector(`.deleteFilter`);
 const favoriteFilter = document.querySelector(`.favoriteFilter`);
 const editFilter = document.querySelector(`.editFilter`);
+const newListButton = document.querySelector(`.newList`);
 const tagButtons = document.querySelector(`.tagButtons`);
 const readTag = document.querySelector(`.readTag`);
 const readingTag = document.querySelector(`.readingTag`);
@@ -18,6 +21,14 @@ const cancelTagButton = document.querySelector(`.cancelTagButton`);
 const randomBookButton = document.querySelector(`.randomBookButton`);
 
 document.addEventListener("DOMContentLoaded", function(){
+
+    if(!localStorage.getItem("visited")){
+        localStorage.setItem("visited", true);
+        let tempBookList = demoBookList;
+        addObjectToLocalStorage(tempBookList)
+        welcomeContainer.classList.remove(`toggleHidden`)
+    }
+
     if (localStorage.books) {
         const tempBookList = {};
         tempBookList.books = [];
@@ -39,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
         initializeTags()
-        console.log(bookList.books[0])
         addObjectToLocalStorage(bookList)
         setColorScheme(bookList.userSettings.colorScheme)
         addToPage(bookList.books);
@@ -96,6 +106,32 @@ window.addEventListener(`click`, (e) => {
         if (!bookContainer.contains(e.target) && !e.target.classList.contains(`editFilter`)) toggleEditButton(editFilter)
     }
 
+if (favoriteIconToggled) {
+    let tempElA;
+    let tempElB;
+    if (typeof previewContainer !== 'undefined') tempElA = previewContainer;
+    else tempElA = bookContainer //if doesn't exist, make it bookContainer so it's safe check
+    if (typeof spotlightBooks !== 'undefined') tempElB = spotlightBooks;
+    else tempElB = bookContainer //if doesn't exist, make it bookContainer so it's safe check
+
+    if (!bookContainer.contains(e.target) && !tempElA.contains(e.target) && !tempElB.contains(e.target) && !toggleSpotlightIcon.contains(e.target) && e.target !== favoriteFilter) removeToggleManunally()
+    if (e.target.parentElement.classList.contains(`bookListHeader`)) removeToggleManunally()
+}
+})
+
+closeWelcomeButton.addEventListener(`click`, () => {
+    welcomeContainer.classList.add(`toggleHidden`)
+})
+
+const newBookList = () => {
+    bookList.books = [];
+    bookList.userSettings.allTags = false;
+    bookList.userSettings.colorScheme = `hazlenut`;
+    addObjectToLocalStorage(bookList)
+    location.reload()
+}
+newListButton.addEventListener(`click`, () => {
+confirmCustom(`Are you sure you want to create a new booklist? This will erase the currect booklist.`, newBookList)
 })
 
 const loader = document.createElement(`div`);
@@ -120,7 +156,7 @@ bookSearch.addEventListener("keydown", (e) => {
         cancelCurrentSearch = checkSearchInput(e)
         if (cancelCurrentSearch) return
         if (bookSearch.nextElementSibling) removeAllChildren(searchBox);
-        removeBooks('.searchedBookInfo');//remove from previous search
+        removeBooks('.searchedBookInfo'); //remove from previous search
         if (searchBox) addLoader(searchBox);
         if (searching) {
             addSearchBox();
@@ -294,7 +330,7 @@ const scrollToBook = (book) => {
         })
         let nodePositionLeft = nodeSelected.offsetLeft;
         let elementWidth = spotlightBooks.offsetWidth;
-        spotlightBooks.scrollTo(`${nodePositionLeft - (elementWidth / 2)}`, 0);
+        spotlightBooks.scrollTo(`${nodePositionLeft - (elementWidth / 2 - 37.5)}`, 0);
     }
     
     bookContainer.childNodes.forEach(element => {
@@ -304,7 +340,7 @@ const scrollToBook = (book) => {
     let nodePositionTop = nodeSelected.offsetTop;
     let elementHeight = bookContainer.offsetHeight;
 
-    if (nodeSelected) bookContainer.scrollTo(0, `${nodePositionTop - (elementHeight / 2)}`);
+    if (nodeSelected) bookContainer.scrollTo(0, `${nodePositionTop - (elementHeight / 2 - 30)}`);
     else return
 }
 
@@ -769,7 +805,10 @@ const addValuesToElement = (object, ...keys) => {
                             } else return
                         } else if (key === `thumbnail`) {
                             tempElement = createElementWithClassOrID(`img`, `id`, `${object.id}`);
-                            tempElement.src = tempSelection;
+                            if (typeof tempSelection === `string`) {
+                                if (!tempSelection.includes(`https`)) tempSelection = tempSelection.replace(`http`, `https`)
+                                tempElement.src = tempSelection;
+                            } else tempElement.src = `img/noCover.jpeg`;
                             tempElement.alt = `Book cover`;
                             tempElement.classList.add(`${key}`);
                         } else if (key === `industryIdentifiers` && typeof object.industryIdentifiers) {
@@ -1448,6 +1487,12 @@ const toggleFavoriteButton = (e) => {
     }
 }
 favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
+
+const removeToggleManunally = () => {
+    removeHighlightButton(favoriteFilter, `highlightButtonGold`);
+    bookList.toggleParameters.toggleFilterByFavorite()
+    favoriteIconToggled = false;
+}
 
 let deleteIconToggled = false;
 const toggleDeleteButton = (e) => {

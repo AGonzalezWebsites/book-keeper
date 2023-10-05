@@ -13,9 +13,9 @@
 - [Spotlight](#spotlight)
 - [Add Book Manually](#add-book-manually)
 - [Edit and Delete](#edit-and-delete)
+- [Extras](#extras)
 - [Local Storage](#local-storage)
 - [Download and Import](#download-and-import)
-
 
 ## Searching
 
@@ -44,7 +44,7 @@
 ## Spotlight
 
 - There is a thin bar/panel under the navigation bar with a down arrow. Clicking this will expand the spotlight section, which shows all the covers of your books. You can use the left and right arrows to scroll through the book. This feature is intended to
-work hand in hand with your book list. So, every time you filter or sort your book list, the spotlight section will update as well. Also, if you click on one of your books from either section, it will automatically scroll into view in the other section.
+  work hand in hand with your book list. So, every time you filter or sort your book list, the spotlight section will update as well. Also, if you click on one of your books from either section, it will automatically scroll into view in the other section.
 
 ## Add Book Manually
 
@@ -54,11 +54,16 @@ work hand in hand with your book list. So, every time you filter or sort your bo
 
 - Accessed from the navbar, there is an Edit button that contains the buttons `edit book` and `delete book` within. Clicking either will display their specific icons to the right of each book. `edit book` will pull up a form and import all the books information into that form. From here, you can edit the info to your liking, then save to update the book on your list. If you click on the `delete` icon, you will remove the specific book from your book list.
 
+## Extras
+
+- **Color Scheme:** There are 5 color scheme choices, found in the Options menu of the navigation bar.
+
+- **Next Book To Read:** Select this from the Extras option in the Navigation bar to have a random book from your book list chosen and displayed in the Focus View.
+
 ## Local Storage
 
-- Any action or change to your book list is stored in the local storage, so unless cookies are cleared, the booklist and personalized settings, such as your color scheme, will remain.
+- Any action or change to your book list is stored in the local storage, so unless cookies are cleared, the booklist and personalized settings will remain.
 
 ## Downlaod and Import
 
 - As a back-up to local storage, you can download your book list as a custom json file. This will a text fill with a .books extention. You can then, from any device, upload the same file to restore your booklist and personal settings.
-
