@@ -57,13 +57,12 @@
 ## Extras
 
 - **Color Scheme:** There are 5 color scheme choices, found in the Options menu of the navigation bar.
-
 - **Next Book To Read:** Select this from the Extras option in the Navigation bar to have a random book from your book list chosen and displayed in the Focus View.
 
 ## Local Storage
 
 - Any action or change to your book list is stored in the local storage, so unless cookies are cleared, the booklist and personalized settings will remain.
 
-## Downlaod and Import
+## Download and Import
 
 - As a back-up to local storage, you can download your book list as a custom json file. This will a text fill with a .books extention. You can then, from any device, upload the same file to restore your booklist and personal settings.

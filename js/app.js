@@ -106,17 +106,17 @@ window.addEventListener(`click`, (e) => {
         if (!bookContainer.contains(e.target) && !e.target.classList.contains(`editFilter`)) toggleEditButton(editFilter)
     }
 
-if (favoriteIconToggled) {
-    let tempElA;
-    let tempElB;
-    if (typeof previewContainer !== 'undefined') tempElA = previewContainer;
-    else tempElA = bookContainer //if doesn't exist, make it bookContainer so it's safe check
-    if (typeof spotlightBooks !== 'undefined') tempElB = spotlightBooks;
-    else tempElB = bookContainer //if doesn't exist, make it bookContainer so it's safe check
+    if (favoriteIconToggled) {
+        let tempElA;
+        let tempElB;
+        if (typeof previewContainer !== 'undefined') tempElA = previewContainer;
+        else tempElA = bookContainer //if doesn't exist, make it bookContainer so it's safe check
+        if (typeof spotlightBooks !== 'undefined') tempElB = spotlightBooks;
+        else tempElB = bookContainer //if doesn't exist, make it bookContainer so it's safe check
 
-    if (!bookContainer.contains(e.target) && !tempElA.contains(e.target) && !tempElB.contains(e.target) && !toggleSpotlightIcon.contains(e.target) && e.target !== favoriteFilter) removeToggleManunally()
-    if (e.target.parentElement.classList.contains(`bookListHeader`)) removeToggleManunally()
-}
+        if (!bookContainer.contains(e.target) && !tempElA.contains(e.target) && !tempElB.contains(e.target) && !toggleSpotlightIcon.contains(e.target) && e.target !== favoriteFilter) removeToggleManunally()
+        if (e.target.parentElement.classList.contains(`bookListHeader`)) removeToggleManunally()
+    }
 })
 
 closeWelcomeButton.addEventListener(`click`, () => {
@@ -156,7 +156,7 @@ bookSearch.addEventListener("keydown", (e) => {
         cancelCurrentSearch = checkSearchInput(e)
         if (cancelCurrentSearch) return
         if (bookSearch.nextElementSibling) removeAllChildren(searchBox);
-        removeBooks('.searchedBookInfo'); //remove from previous search
+        removeBookChildren('.searchedBookInfo'); //remove from previous search
         if (searchBox) addLoader(searchBox);
         if (searching) {
             addSearchBox();
@@ -180,8 +180,8 @@ const checkSearchInput = (e) => {
     searching = true;
 }
 
-const removeBooks = (x) => {
-    const nodes = document.querySelectorAll(`${x}`);
+const removeBookChildren = (parentClass) => {
+    const nodes = document.querySelectorAll(`${parentClass}`);
     nodes.forEach((node) => {
         node.parentElement.removeChild(node);
     });
@@ -227,7 +227,7 @@ const searchBooks = () => {
 
 const stopSearching = () => {
     removeSearchBox();
-    removeBooks('.searchedBookInfo');
+    removeBookChildren('.searchedBookInfo');
     removeAllChildren(searchBox)
     searching = false;
     if (bookSearch.value) bookSearch.value = ""
