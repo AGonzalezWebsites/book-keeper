@@ -95,7 +95,7 @@ window.addEventListener(`click`, (e) => {
     }
 
     if(bookList.toggleParameters.tag) {
-        if (!bookContainer.contains(e.target) && !spotlightContainer.contains(e.target)) bookList.toggleParameters.toggleFilterByTag();
+        if (!bookContainer.contains(e.target) && !spotlightContainer.contains(e.target)) bookList.toggleFilterByTag();
     }
 
     if (deleteIconToggled) {
@@ -678,87 +678,95 @@ const addObjectToLocalStorage = (object) => {
     if (object.userSettings) localStorage.setItem(`userSettings`, `${JSON.stringify(object.userSettings)}`)
 }
 
-const bookList = {};
-bookList.books = [];
-bookList.userSettings = {
-    colorScheme: `hazlenut`
-}
-bookList.toggleParameters = {
-    title: {
-        alphabeticalOrder: {ascending: false}},
-    authors: {
-        alphabeticalOrder: {ascending: false}},
-    subject: {
-        alphabeticalOrder: {ascending: false}},
-    averageRating: {
-        alphabeticalOrder: {ascending: false}},
-    favorites: false,
-    tag: false,
-    filterAlphabetically(key) {
-        if (!bookList.toggleParameters[key].ascending) {
-            bookList.toggleParameters[key].ascending = true;
-            bookList.books.sort((a,b) => {
-                fa = a[key]
-                fb = b[key]
-                if (fa < fb) return -1;
-                if (fa > fb) return 1;
-                else return 0;
-            })
-        } else if (bookList.toggleParameters[key].ascending) {
-            bookList.toggleParameters[key].ascending = false;
-            bookList.books.sort((a,b) => {
-                fa = a[key]
-                fb = b[key]
-                if (fa > fb) return -1;
-                if (fa < fb) return 1;
-                else return 0;
-            })
-        } else alert('Error: Unable to filter')
+function Books() {
+    this.books = []
+    this.userSettings = {
+        colorScheme: `hazlenut`
     },
-    filterNumerically(key) {
-        if (!bookList.toggleParameters[key].ascending) {
-        bookList.toggleParameters[key].ascending = true;
-        return bookList.books.sort((a,b) => a[key] - b[key])
-        } else if (bookList.toggleParameters[key].ascending) {
-        bookList.toggleParameters[key].ascending = false;
-        return bookList.books.sort((a,b) => a[key] - b[key]) //toggles in the same way order for now. Will switch is utilized
-        } else alert('Error: Unable to filter')
-    }, 
-    toggleFilterByFavorite() {
-        if (!bookList.toggleParameters.favorites) {
-            favoriteBooks = {};
-            favoriteBooks.books = bookList.books.filter(element => (element.favorite));
-            addToPage(favoriteBooks.books);
-            closeAndOpenSpotlight(favoriteBooks);
-            bookList.toggleParameters.favorites = true;
-        } else if (bookList.toggleParameters.favorites) {
-            addToPage(bookList.books);
-            closeAndOpenSpotlight(bookList);
-            bookList.toggleParameters.favorites = false;
+    this.toggleParameters = {
+        title: {
+            alphabeticalOrder: {ascending: false}},
+        authors: {
+            alphabeticalOrder: {ascending: false}},
+        subject: {
+            alphabeticalOrder: {ascending: false}},
+        averageRating: {
+            alphabeticalOrder: {ascending: false}},
+        favorites: false,
+        tag: false,
         }
-    },
-    toggleFilterByTag(tagGiven) {
-        if (!bookList.toggleParameters.tag) {
-            tagBooks = {};
-            tagBooks.books = []
-            bookList.books.forEach(book => {
-                for (const tag of book.tag)
-                if (tag[0] === tagGiven) tagBooks.books.push(book)
-            });
-            addToPage(tagBooks.books);
-            closeAndOpenSpotlight(tagBooks)
-            bookList.toggleParameters.tag = true;
-        } else if (bookList.toggleParameters.tag) {
-            addToPage(bookList.books);
-            closeAndOpenSpotlight(bookList)
-            bookList.toggleParameters.tag = false;
-        }
-    },
-    removeClassesAndAddToPage(element, object) {
-        removeAllClass(element)
-        addToPage(object.books);
+};
+
+Books.prototype.filterAlphabetically = function(key) {
+    if (!this.toggleParameters[key].ascending) {
+        this.toggleParameters[key].ascending = true;
+        this.books.sort((a,b) => {
+            fa = a[key]
+            fb = b[key]
+            if (fa < fb) return -1;
+            if (fa > fb) return 1;
+            else return 0;
+        })
+    } else if (this.toggleParameters[key].ascending) {
+        this.toggleParameters[key].ascending = false;
+        this.books.sort((a,b) => {
+            fa = a[key]
+            fb = b[key]
+            if (fa > fb) return -1;
+            if (fa < fb) return 1;
+            else return 0;
+        })
+    } else alert('Error: Unable to filter')
+};
+
+Books.prototype.filterNumerically = function(key) {
+    if (!this.toggleParameters[key].ascending) {
+    this.toggleParameters[key].ascending = true;
+    return this.books.sort((a,b) => a[key] - b[key])
+    } else if (this.toggleParameters[key].ascending) {
+    this.toggleParameters[key].ascending = false;
+    return this.books.sort((a,b) => a[key] - b[key]) //toggles in the same way order for now. Will switch is utilized
+    } else alert('Error: Unable to filter')
+};
+
+Books.prototype.toggleFilterByFavorite = function() {
+    if (!this.toggleParameters.favorites) {
+        favoriteBooks = {};
+        favoriteBooks.books = this.books.filter(element => (element.favorite));
+        addToPage(favoriteBooks.books);
+        closeAndOpenSpotlight(favoriteBooks);
+        this.toggleParameters.favorites = true;
+    } else if (this.toggleParameters.favorites) {
+        addToPage(this.books);
+        closeAndOpenSpotlight(this);
+        this.toggleParameters.favorites = false;
     }
-}
+};
+
+Books.prototype.toggleFilterByTag = function(tagGiven) {
+    if (!this.toggleParameters.tag) {
+        tagBooks = {};
+        tagBooks.books = []
+        this.books.forEach(book => {
+            for (const tag of book.tag)
+            if (tag[0] === tagGiven) tagBooks.books.push(book)
+        });
+        addToPage(tagBooks.books);
+        closeAndOpenSpotlight(tagBooks)
+        this.toggleParameters.tag = true;
+    } else if (this.toggleParameters.tag) {
+        addToPage(this.books);
+        closeAndOpenSpotlight(this)
+        this.toggleParameters.tag = false;
+    }
+};
+
+Books.prototype.removeClassesAndAddToPage = function(element) {
+    removeAllClass(element)
+    addToPage(this.books);
+};
+
+const bookList = new Books()
 
 let filteringByKeyword = false;
 const myBookSearch = document.querySelector(`.myBookSearchInput`);
@@ -1328,15 +1336,15 @@ const addEventToFilterByTag = (...element) => {
             if (el.parentNode !== tagButtons) return // stops execustion if this tag was deleted (clicking to remove also clicks tag)
             if (lastElement === el && bookList.toggleParameters.tag) {
                 setTimeout(()=>{ // delay corrects toggling issue
-                    bookList.toggleParameters.toggleFilterByTag();
+                    bookList.toggleFilterByTag();
                 }, 50)
             }
             if (lastElement !== el && bookList.toggleParameters.tag) { //this ensures that toggleFilterByTag runs again before the new tag is chosen
-                if (typeof(lastElement) === `object`) bookList.toggleParameters.toggleFilterByTag(lastElement.innerText);
+                if (typeof(lastElement) === `object`) bookList.toggleFilterByTag(lastElement.innerText);
             }
             console.log(el.innerText);
             setTimeout(()=>{ // delay corrects toggling issue
-                bookList.toggleParameters.toggleFilterByTag(el.innerText);
+                bookList.toggleFilterByTag(el.innerText);
                 lastElement = el;
             }, 50)
         })
@@ -1385,20 +1393,20 @@ const initializeTags = () => { //for users that didn't have tag update
 }
 
 const titleTitle = document.querySelector('.titleTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterAlphabetically('title');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    bookList.filterAlphabetically('title');
+    bookList.removeClassesAndAddToPage(`bookInfo`);
     closeAndOpenSpotlight(bookList);
 });
 
 const authorTitle = document.querySelector('.authorTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterAlphabetically('authors');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    bookList.filterAlphabetically('authors');
+    bookList.removeClassesAndAddToPage(`bookInfo`);
     closeAndOpenSpotlight(bookList);
 });
 
 const subjectTitle = document.querySelector('.subjectTitle').addEventListener('click', () => {
-    bookList.toggleParameters.filterAlphabetically('subject');
-    bookList.toggleParameters.removeClassesAndAddToPage(`bookInfo`, bookList);
+    bookList.filterAlphabetically('subject');
+    bookList.removeClassesAndAddToPage(`bookInfo`);
     closeAndOpenSpotlight(bookList);
 });
 
@@ -1478,11 +1486,11 @@ let favoriteIconToggled = false;
 const toggleFavoriteButton = (e) => {
     if (!favoriteIconToggled) {
         addHighlightButton(e.target, `highlightButtonGold`);
-        bookList.toggleParameters.toggleFilterByFavorite()
+        bookList.toggleFilterByFavorite()
         favoriteIconToggled = true;
     } else if (favoriteIconToggled) {
         removeHighlightButton(e.target, `highlightButtonGold`);
-        bookList.toggleParameters.toggleFilterByFavorite()
+        bookList.toggleFilterByFavorite()
         favoriteIconToggled = false;
     }
 }
@@ -1490,7 +1498,7 @@ favoriteFilter.addEventListener(`click`, toggleFavoriteButton)
 
 const removeToggleManunally = () => {
     removeHighlightButton(favoriteFilter, `highlightButtonGold`);
-    bookList.toggleParameters.toggleFilterByFavorite()
+    bookList.toggleFilterByFavorite()
     favoriteIconToggled = false;
 }
 
